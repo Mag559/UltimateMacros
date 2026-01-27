@@ -1,0 +1,14 @@
+OPEN
+Jaki protokół jest bezpośrednim poprzednikiem DHCP (podaj\nakronim lub jego rozwinięcie do pełnej nazwy)?
+BOOTP
+
+MULTIPLE_CHOICE
+Usługa mDNS:
+Wymaga zapewnienia dos tępności Serwera ONS
+Działa w oparciu o protokół transportowy TCP
++Wykorzystuje numer portu 5353
+
+TF
+Czy to działa?
+1
+
