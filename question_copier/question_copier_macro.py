@@ -38,6 +38,7 @@ class QuestionCopier(BaseMacro):
 
         match event_code:
             case ImportantEvents.COPY:
+                # read question or answer
                 match self.state:
                     case State.READING_QUESTION:
                         self.question = self.replace_newlines(pyperclip.paste())
@@ -50,6 +51,7 @@ class QuestionCopier(BaseMacro):
                         self.answers.append(answer)
                         self.are_answers_correct.append(False)
             case ImportantEvents.SHORTCUT2:
+                # save question and answers to the file
                 self.state = State.READING_QUESTION
                 self.write_question_to_file()
 
@@ -57,6 +59,7 @@ class QuestionCopier(BaseMacro):
                 self.answers = []
                 self.are_answers_correct = []
             case ImportantEvents.RIGHT_CLICK:
+                # mark last question as correct
                 if len(self.answers) == 0:
                     return
                 self.are_answers_correct[-1] = not self.are_answers_correct[-1]
@@ -135,4 +138,4 @@ class QuestionCopier(BaseMacro):
 
 
 if __name__ == "__main__":
-    QuestionCopier(Path("dhcp.txt"), completely_remove_newlines=True)
+    QuestionCopier(Path("a.txt"), completely_remove_newlines=True)
