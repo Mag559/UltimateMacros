@@ -2,6 +2,7 @@ import re
 from enum import Enum
 from functools import reduce
 from pathlib import Path
+from time import sleep
 
 import pyperclip
 
@@ -39,6 +40,13 @@ class QuestionCopier(BaseMacro):
         match event_code:
             case ImportantEvents.COPY:
                 # read question or answer
+                if pyperclip.paste() == "":
+                    for i in range(10):
+                        if pyperclip.paste() != "":
+                            break
+                        sleep(0.1)
+                    else:
+                        print(f"Copying failed at question {self.question}")
                 match self.state:
                     case State.READING_QUESTION:
                         self.question = self.replace_newlines(pyperclip.paste())
@@ -103,7 +111,7 @@ class QuestionCopier(BaseMacro):
 
     def replace_newlines(self, string: str) -> str:
         if self.completely_remove_newlines:
-            return re.sub(r"\r?\n", "", string)
+            return re.sub(r"\r?\n", " ", string)
 
         return re.sub(r"\r?\n", "\\\\n", string)
 
@@ -138,4 +146,4 @@ class QuestionCopier(BaseMacro):
 
 
 if __name__ == "__main__":
-    QuestionCopier(Path("a.txt"), completely_remove_newlines=True)
+    QuestionCopier(Path("nat.txt"), completely_remove_newlines=True)

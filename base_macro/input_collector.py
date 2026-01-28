@@ -175,7 +175,7 @@ class InputCollector(Emitter):
         """
         if self.debug_mode:
             print(f"event: {event}")
-        sleep(0.1)
+        sleep(0.15)
         self.emit(event)
 
 
