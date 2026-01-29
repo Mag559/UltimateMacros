@@ -50,10 +50,10 @@ class PreviewWindow(tk.Tk):
         # --- Resize handling ---
         self.bind("<Configure>", self._on_resize)
         # qol moving via keys
-        self.bind("<Up>", lambda _: self.number_vars[1].set(self.number_vars[1].get() - 10))
-        self.bind("<Down>", lambda _: self.number_vars[1].set(self.number_vars[1].get() + 10))
-        self.bind("<Left>", lambda _: self.number_vars[0].set(self.number_vars[0].get() - 10))
-        self.bind("<Right>", lambda _: self.number_vars[0].set(self.number_vars[0].get() + 10))
+        self.bind("<Up>", lambda _: self.number_vars[1].set(self.get_number(1) - 10))
+        self.bind("<Down>", lambda _: self.number_vars[1].set(self.get_number(1) + 10))
+        self.bind("<Left>", lambda _: self.number_vars[0].set(self.get_number(0) - 10))
+        self.bind("<Right>", lambda _: self.number_vars[0].set(self.get_number(0) + 10))
 
         self.text_entry.bind("<Return>", lambda _: on_text_submitted(self.text_var.get()))
     # ---------- Internal helpers ----------
@@ -85,21 +85,16 @@ class PreviewWindow(tk.Tk):
         self._original_image = image
         self._update_image()
 
-    def get_number(self, index: int):
+    def get_number(self, index: int) -> int:
         """Return a single numeric input as float or None."""
         try:
-            return float(self.number_vars[index].get())
-        except (ValueError, IndexError):
-            return 0
+            return int(self.number_vars[index].get())
+        except Exception:
+            return 1
 
-    def get_all_numbers(self):
+    def get_all_numbers(self) -> list[int]:
         """Return all 4 numeric inputs."""
-        values = []
-        for var in self.number_vars:
-            try:
-                values.append(float(var.get()))
-            except ValueError:
-                values.append(0)
+        values:list[int] = [self.get_number(q) for q in range(4)]
         return values
 
     def get_text(self):

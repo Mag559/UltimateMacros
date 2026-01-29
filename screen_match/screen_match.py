@@ -1,5 +1,5 @@
 from PIL import Image
-from capturer import Capturer
+from capturer import Capturer, Section
 from matcher import Matcher
 from pathlib import Path
 
@@ -10,7 +10,7 @@ class ScreenMatch:
     is similar to the provided reference image
     """
     def __init__(self) -> None:
-        self.capturer: Capturer = Capturer((0, 0, 1, 1))
+        self.capturer: Capturer = Capturer(Section(0, 0, 10, 10))
         self.matcher: Matcher = Matcher(Image.new("RGB", (1, 1), color=(255, 255, 255)))
 
 

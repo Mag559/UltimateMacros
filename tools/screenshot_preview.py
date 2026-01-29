@@ -1,11 +1,11 @@
 from pathlib import Path
 from preview_window import PreviewWindow
-from screen_match.capturer import Capturer
+from screen_match.capturer import Capturer, Section
 
 
 class ScreenshotPreview:
     def __init__(self):
-        self.capturer = Capturer((0, 0, 1920, 1080), 0)
+        self.capturer = Capturer(Section(100, 100, 100, 100), 0)
         self.window = PreviewWindow(self.capturer.capture_screenshot(), self.save)
         self.schedule_next_update()
         self.window.mainloop()
@@ -16,18 +16,17 @@ class ScreenshotPreview:
 
 
     def update(self):
-        self.capturer.section = self.get_section()
+        self.capturer.set_section(self.get_section())
         self.window.set_image(self.capturer.capture_screenshot())
         self.schedule_next_update()
 
 
     def get_section(self):
         """
-        Converts left, top, width, height supplied by the window input
-        to left, top, right, bottom required by PIL crop
+        Converts left, top, width, height to a Section object.
         """
-        v = self.window.get_all_numbers()
-        return v[0], v[1], v[0] + v[2], v[1] + v[3]
+
+        return Section(*self.window.get_all_numbers())
 
 
     def save(self, name):
