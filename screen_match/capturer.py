@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-
+from logging import getLogger
 from PIL import Image
 from mss import mss
 
@@ -22,6 +22,7 @@ class Capturer:
         """
         self.monitor = None
         self.monitor_number = monitor_number
+        self.logger = getLogger(__name__)
         try:
             self.capturer = mss()
         except Exception:
@@ -29,10 +30,12 @@ class Capturer:
 
         self.section = section
         self.set_monitor(monitor_number)
+        self.logger.debug("Capturer initialized")
 
 
     def set_section(self, section: Section):
         self.section = section
+        self.logger.debug(f"Section updated to: {section}")
         self.set_monitor(self.monitor_number)
 
 
@@ -48,10 +51,12 @@ class Capturer:
             "height": self.section.height,
             "mon": monitor_number,
         }
+        self.logger.debug(f"Monitor updated to: {self.monitor}")
 
 
     def capture_screenshot(self) -> Image.Image:
         screenshot = self.capturer.grab(self.monitor)
+        self.logger.info(f"Screenshot captured: {screenshot.size}")
         return Image.frombytes(
             "RGB",
             screenshot.size,
