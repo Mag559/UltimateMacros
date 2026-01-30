@@ -1,3 +1,9 @@
 .venv
 .idea
 __pycache__/
+
+question_copier/*
+!question_copier/question_copier_macro.py
+
+myapp.log
+match_failed.png
