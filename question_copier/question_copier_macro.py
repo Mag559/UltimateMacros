@@ -146,4 +146,4 @@ class QuestionCopier(BaseMacro):
 
 
 if __name__ == "__main__":
-    QuestionCopier(Path("nat.txt"), completely_remove_newlines=True)
+    QuestionCopier(Path("C:\\Users\\macie\\GitHub\\test_generator\\pakiety_pytan\\sieci\\other.txt"), completely_remove_newlines=True)
