@@ -18,9 +18,12 @@ def _goto_wikamp():
 
 @goto_group.action("youtube")
 def _goto_youtube():
-    print("you")
+    fh = FirefoxHandler(lambda: quit(1))
+    fh.open_website("https://www.youtube.com/")
 
-
+@completer.action("exit")
+def _exit():
+    quit(0)
 
 
 

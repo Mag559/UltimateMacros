@@ -49,6 +49,7 @@ class FirefoxHandler:
         if not self.screen_match.wait_for_match():
             self.on_fail()
 
+        sleep(0.1)
         InputPresser.tap(PyKey.down)
         InputPresser.enter(1)
         InputPresser.enter(1)

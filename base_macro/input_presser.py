@@ -5,6 +5,13 @@ py_keyboard_controller = Controller()
 
 TYPING_WAIT_TIME = 0.03
 
+def delay(func):
+    def wrapper(*args, **kwargs):
+        sleep(TYPING_WAIT_TIME)
+        return func(*args, **kwargs)
+    return wrapper
+
+
 class InputPresser:
     @staticmethod
     def paste():
@@ -12,6 +19,7 @@ class InputPresser:
         InputPresser.tap_with_ctrl('v')
 
     @staticmethod
+    @delay
     def tap_with_ctrl(key):
         with py_keyboard_controller.pressed(PyKey.ctrl):
             py_keyboard_controller.tap(key)
@@ -22,6 +30,7 @@ class InputPresser:
         py_keyboard_controller.tap(PyKey.enter)
 
     @staticmethod
+    @delay
     def tap(key):
         py_keyboard_controller.tap(key)
 
