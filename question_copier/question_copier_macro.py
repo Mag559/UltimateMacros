@@ -6,8 +6,7 @@ from time import sleep
 
 import pyperclip
 
-from base_macro.base_macro import BaseMacro
-from base_macro.input_collector import ImportantEvents
+from base_macro import BaseMacro, ImportantEvents
 
 
 class State(Enum):

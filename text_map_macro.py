@@ -3,11 +3,7 @@ from time import sleep
 
 import pyperclip
 
-from base_macro.base_macro import BaseMacro
-from base_macro.input_collector import ImportantEvents
-from base_macro.input_presser import InputPresser
-
-
+from base_macro import BaseMacro, InputPresser, ImportantEvents
 
 
 class TextMapMacro(BaseMacro):

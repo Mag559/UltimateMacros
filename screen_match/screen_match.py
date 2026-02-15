@@ -89,8 +89,3 @@ class ScreenMatch:
     def set_brightness_diff_allowed(self, brightness_diff_allowed: float) -> 'ScreenMatch':
         self.matcher.brightness_diff_allowed = brightness_diff_allowed
         return self
-
-
-
-if __name__ == "__main__":
-    print("Hello")

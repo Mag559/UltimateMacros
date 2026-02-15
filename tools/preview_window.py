@@ -1,6 +1,7 @@
 import tkinter as tk
+from collections.abc import Callable
 from tkinter import ttk
-from typing import Callable
+
 
 from PIL import Image, ImageTk
 

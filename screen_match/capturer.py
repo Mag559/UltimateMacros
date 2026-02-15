@@ -62,8 +62,3 @@ class Capturer:
             screenshot.size,
             screenshot.rgb
         )
-
-
-
-if __name__ == "__main__":
-    pass

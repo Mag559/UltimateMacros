@@ -20,6 +20,7 @@ class ImportantEvents(Enum):
     DOUBLE_CLICK = 6
     RIGHT_CLICK = 7
     MIDDLE_CLICK = 8
+    SAVE = 10
 
 
 class InputCollector(Emitter):
@@ -108,6 +109,8 @@ class InputCollector(Emitter):
                 self.emit_event(ImportantEvents.PASTE)
             case "'\\x18'":
                 self.emit_event(ImportantEvents.CUT)
+            case "'\x13'":
+                self.emit_event(ImportantEvents.SAVE)
             case "Key.num_lock":
                 self.emit_event(ImportantEvents.TOGGLE)
             case "Key.cmd":

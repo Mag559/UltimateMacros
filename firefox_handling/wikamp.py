@@ -5,9 +5,8 @@ from time import sleep
 from pynput.keyboard import Key as PyKey
 import pyperclip
 
-from base_macro.input_presser import InputPresser
-from screen_match.capturer import Section
-from screen_match.screen_match import ScreenMatch
+from base_macro import InputPresser
+from screen_match import ScreenMatch
 
 CAS = "https://login.p.lodz.pl/login?service=https%3A%2F%2Fedu.p.lodz.pl%2Flogin%2Findex.php%3FauthCAS%3DCAS"
 REFERENCE_IMAGES = Path(__file__).parent.parent / "reference_images"

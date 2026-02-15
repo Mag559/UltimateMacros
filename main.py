@@ -9,6 +9,8 @@ completer = ActionCompleter()
 goto_group = completer.group("goto")
 
 
+
+
 @goto_group.action("wikamp")
 def _goto_wikamp():
     fh = FirefoxHandler(lambda: quit(1))
@@ -22,9 +24,10 @@ def _goto_youtube():
     fh.open_website("https://www.youtube.com/")
 
 @completer.action("exit")
+@completer.action("quit")
+@completer.action("q")
 def _exit():
     quit(0)
-
 
 
 if __name__ == "__main__":
