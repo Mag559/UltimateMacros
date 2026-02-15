@@ -2,6 +2,7 @@ import logging
 from prompt_toolkit import PromptSession
 from action_completer import ActionCompleter
 
+from firefox_handling.wikamp import FirefoxHandler
 
 completer = ActionCompleter()
 
@@ -10,7 +11,9 @@ goto_group = completer.group("goto")
 
 @goto_group.action("wikamp")
 def _goto_wikamp():
-    print("Visiting wikamp!")
+    fh = FirefoxHandler(lambda: quit(1))
+    fh.open_wikamp()
+    fh.open_website("https://ftims.edu.p.lodz.pl/course/view.php?id=3012")
 
 
 @goto_group.action("youtube")

@@ -33,7 +33,7 @@ class ScreenMatch:
         for i in range(round(timeout / interval)):
             if self.check_match():
                 return True
-            self.logger.info(f"{i}th match failed")
+            self.logger.debug(f"{i}th match failed")
             sleep(interval)
         self.logger.warning("Screen matching timeout out")
         self.capturer.capture_screenshot().save("match_failed.png")
@@ -48,6 +48,17 @@ class ScreenMatch:
     def load_reference_image(self, image_path: Path) -> 'ScreenMatch':
         with Image.open(image_path) as image:
             self.set_reference_image(image.copy())
+
+        section_file = image_path.with_suffix('.txt')
+        if not section_file.exists():
+            return self
+
+        with open(section_file, 'r') as f:
+            self.set_compared_section(
+                Section(*[
+                    int(x) for x in f.readline().strip('\n').split(',')
+                ])
+            )
         return self
 
 

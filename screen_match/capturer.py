@@ -56,7 +56,7 @@ class Capturer:
 
     def capture_screenshot(self) -> Image.Image:
         screenshot = self.capturer.grab(self.monitor)
-        self.logger.info(f"Screenshot captured: {screenshot.size}")
+        self.logger.debug(f"Screenshot captured: {screenshot.size}")
         return Image.frombytes(
             "RGB",
             screenshot.size,

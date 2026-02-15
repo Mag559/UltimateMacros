@@ -9,10 +9,10 @@ class InputPresser:
     @staticmethod
     def paste():
         # py_keyboard_controller.release('c')
-        InputPresser.press_with_ctrl('v')
+        InputPresser.tap_with_ctrl('v')
 
     @staticmethod
-    def press_with_ctrl(key):
+    def tap_with_ctrl(key):
         with py_keyboard_controller.pressed(PyKey.ctrl):
             py_keyboard_controller.tap(key)
 

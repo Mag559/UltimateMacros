@@ -1,7 +1,9 @@
 from pathlib import Path
+
 from preview_window import PreviewWindow
 from screen_match.capturer import Capturer, Section
 
+REFERENCE_IMAGES = Path(__file__).parent.parent / "reference_images"
 
 class ScreenshotPreview:
     def __init__(self):
@@ -31,9 +33,11 @@ class ScreenshotPreview:
 
     def save(self, name):
         self.capturer.capture_screenshot().save(
-            Path(__file__).parent.parent / "reference_images" / f"{name}.png",
+            REFERENCE_IMAGES / f"{name}.png",
             "PNG"
         )
+        with open(REFERENCE_IMAGES / f"{name}.txt", "w") as f:
+            f.write(",".join([str(x) for x in self.window.get_all_numbers()]))
         self.window.destroy()
 
 
