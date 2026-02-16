@@ -8,7 +8,9 @@ from base_macro import BaseMacro, InputPresser, ImportantEvents
 
 class TextMapMacro(BaseMacro):
     """
-    Ctrl+c the text
+    Ctrl+c the text,
+    the copied text is processed by the `text_map` function
+    and pasted in place of the original text.
     """
     def __init__(self, text_map: Callable[[str], str], debug_mode: bool=False):
         self.text_map = text_map

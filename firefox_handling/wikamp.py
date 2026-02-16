@@ -1,4 +1,5 @@
 from collections.abc import Callable
+from logging import getLogger
 from os import system
 from pathlib import Path
 from time import sleep
@@ -21,6 +22,7 @@ class FirefoxHandler:
     """
     def __init__(self, on_fail: Callable[[], None] = lambda: None):
         self.on_fail = on_fail
+        self.logger = getLogger(__name__)
         self.screen_match = ScreenMatch()
         self.open_firefox()
 
@@ -29,6 +31,7 @@ class FirefoxHandler:
 
         system('start firefox')
         if not self.screen_match.wait_for_match():
+            self.logger.error("Firefox failed to open")
             self.on_fail()
 
 
@@ -38,6 +41,7 @@ class FirefoxHandler:
         pyperclip.copy(url)
         InputPresser.paste()
         InputPresser.enter()
+        self.logger.debug(f"Visiting {url}")
 
 
     def open_wikamp(self):
@@ -46,6 +50,7 @@ class FirefoxHandler:
         self.screen_match.load_reference_image(REFERENCE_IMAGES / "cas_open.png")
 
         if not self.screen_match.wait_for_match():
+            self.logger.error("CAS failed to load")
             self.on_fail()
 
         sleep(0.1)
@@ -55,4 +60,5 @@ class FirefoxHandler:
 
         self.screen_match.load_reference_image(REFERENCE_IMAGES / "wikamp_open.png")
         if not self.screen_match.wait_for_match():
+            self.logger.error("wikamp failed to load")
             self.on_fail()

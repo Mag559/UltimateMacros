@@ -1,17 +1,22 @@
 from prompt_toolkit import PromptSession
-from prompt_toolkit.completion import WordCompleter
+from logging import getLogger
 
-main_completer = WordCompleter(
-    []
-)
+from prompt_toolkit.validation import DummyValidator
 
-completer = WordCompleter(
-    ["load", "save", "exit", "help"],
-    ignore_case=True
-)
+from .console_base import defaults, completer
+from .goto import goto_group
+from .miscellaneous import _exit
+from .macro import macro_group
+from .tool import tool_group
 
-session = PromptSession()
+def main() -> None:
+    session = PromptSession()
+    logger = getLogger(__name__)
 
-while True:
-    text = session.prompt("> ", completer=completer)
-    print("You typed:", text)
+    while True:
+        prompt_result = session.prompt("> ", completer=completer, validator=DummyValidator())
+        logger.debug(f"User prompt: {prompt_result}")
+        if prompt_result in defaults:
+            defaults[prompt_result]()
+        else:
+            completer.run_action(prompt_result)

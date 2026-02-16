@@ -1,4 +1,5 @@
 from pathlib import Path
+from time import sleep
 
 from preview_window import PreviewWindow
 from screen_match import Capturer, Section
@@ -32,6 +33,7 @@ class ScreenshotPreview:
 
 
     def save(self, name):
+        sleep(1)
         self.capturer.capture_screenshot().save(
             REFERENCE_IMAGES / f"{name}.png",
             "PNG"

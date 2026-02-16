@@ -193,7 +193,7 @@ class InputCollector(Emitter):
 #     """
 #     Compared to the normal input collector, ignores self produced events
 #     """
-#     def __init__(self, debug_mode=False):
+#     def __init__.py(self, debug_mode=False):
 #         """
 #         Initialize the SelfIgnoringInputCollector and enable tracking of events it generates.
 #
@@ -203,7 +203,7 @@ class InputCollector(Emitter):
 #         Detailed behavior:
 #             The instance starts with `produced_event` set to `False`; set to `True` when this collector simulates an input so the subsequent emitted event can be identified and ignored.
 #         """
-#         super().__init__(debug_mode)
+#         super().__init__.py(debug_mode)
 #         self.produced_event = False
 #
 #
