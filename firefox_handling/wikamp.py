@@ -32,7 +32,7 @@ class FirefoxHandler:
         self.screen_match.load_reference_image(REFERENCE_IMAGES / "firefox_minimized.png")
         self.screen_match.set_compared_section(Section(570, 1020, 1000, 60))
 
-        possible_match = self.screen_match.find_match()
+        possible_match = self.screen_match.find_match(0.98)
         if not possible_match:
             self.logger.debug("Firefox isn't open, need to open a new window")
             self.open_firefox()

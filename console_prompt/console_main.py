@@ -15,7 +15,7 @@ def main() -> None:
 
     while True:
         prompt_result = session.prompt("> ", completer=completer, validator=DummyValidator())
-        logger.debug(f"User prompt: {prompt_result}")
+        logger.info(f"User prompt: {prompt_result}")
         if prompt_result.strip() in defaults:
             defaults[prompt_result.strip()]()
         else:
