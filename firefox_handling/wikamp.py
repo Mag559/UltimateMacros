@@ -7,7 +7,7 @@ from pynput.keyboard import Key as PyKey
 import pyperclip
 
 from base_macro import InputPresser
-from screen_match import ScreenMatch
+from screen_match import ScreenMatch, Section
 
 CAS = "https://login.p.lodz.pl/login?service=https%3A%2F%2Fedu.p.lodz.pl%2Flogin%2Findex.php%3FauthCAS%3DCAS"
 REFERENCE_IMAGES = Path(__file__).parent.parent / "reference_images"
@@ -24,7 +24,25 @@ class FirefoxHandler:
         self.on_fail = on_fail
         self.logger = getLogger(__name__)
         self.screen_match = ScreenMatch()
-        self.open_firefox()
+
+        self.use_firefox_if_open()
+
+
+    def use_firefox_if_open(self):
+        self.screen_match.load_reference_image(REFERENCE_IMAGES / "firefox_minimized.png")
+        self.screen_match.set_compared_section(Section(570, 1020, 1000, 60))
+
+        possible_match = self.screen_match.find_match()
+        if not possible_match:
+            self.logger.debug("Firefox isn't open, need to open a new window")
+            self.open_firefox()
+            return
+
+        InputPresser.move_mouse((570 + possible_match[0], 1020 + possible_match[1]))
+        InputPresser.left_click()
+        self.logger.debug("Firefox already open, hijacking the window")
+        InputPresser.tap_with_ctrl('t')
+
 
     def open_firefox(self):
         self.screen_match.load_reference_image(REFERENCE_IMAGES / "firefox_open.png")
@@ -53,7 +71,7 @@ class FirefoxHandler:
             self.logger.error("CAS failed to load")
             self.on_fail()
 
-        sleep(0.1)
+        sleep(0.2)
         InputPresser.tap(PyKey.down)
         InputPresser.enter(1)
         InputPresser.enter(1)

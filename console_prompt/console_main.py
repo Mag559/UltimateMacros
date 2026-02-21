@@ -16,7 +16,10 @@ def main() -> None:
     while True:
         prompt_result = session.prompt("> ", completer=completer, validator=DummyValidator())
         logger.debug(f"User prompt: {prompt_result}")
-        if prompt_result in defaults:
-            defaults[prompt_result]()
+        if prompt_result.strip() in defaults:
+            defaults[prompt_result.strip()]()
         else:
-            completer.run_action(prompt_result)
+            try:
+                completer.run_action(prompt_result)
+            except ValueError as e:
+                logger.error(f"Invalid prompt: {prompt_result}")

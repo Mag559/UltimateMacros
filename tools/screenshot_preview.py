@@ -1,7 +1,7 @@
 from pathlib import Path
 from time import sleep
 
-from preview_window import PreviewWindow
+from .preview_window import PreviewWindow
 from screen_match import Capturer, Section
 
 REFERENCE_IMAGES = Path(__file__).parent.parent / "reference_images"

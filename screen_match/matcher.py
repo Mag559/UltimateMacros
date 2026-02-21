@@ -1,5 +1,6 @@
 from PIL import Image, ImageChops, ImageEnhance
 import numpy as np
+import cv2
 from logging import getLogger
 
 
@@ -71,3 +72,34 @@ class Matcher:
 
         self.logger.info("Match successful")
         return True
+
+
+    @staticmethod
+    def convert_pil_image_to_cv(image: Image.Image):
+        assert image.mode == "RGB"
+        img_array = np.array(image)
+        img_cv = img_array[:, :, ::-1].copy()  # -1 does RGB -> BGR
+        return cv2.cvtColor(img_cv, cv2.COLOR_BGR2GRAY)
+
+
+
+    def find_match(self, screenshot: Image.Image) -> tuple[int, int, float]:
+        """
+        Find the best matching location of reference image in screenshot
+        returns the center of the location and confidence
+        Converts PIL format to cv format every time
+
+        Using OpenCV
+        https://stackoverflow.com/questions/7670112/finding-a-subimage-inside-a-numpy-image/9253805#9253805
+        https://docs.opencv.org/4.x/d4/dc6/tutorial_py_template_matching.html
+        """
+        res = cv2.matchTemplate(
+            Matcher.convert_pil_image_to_cv(screenshot),
+            Matcher.convert_pil_image_to_cv(self.reference_image),
+            cv2.TM_CCOEFF_NORMED
+        )
+        min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
+        self.logger.debug(f"Template image found at {max_loc} with value {max_val}")
+        return (int(max_loc[0] + self.reference_image.width / 2),
+                int(max_loc[1] + self.reference_image.height / 2),
+                max_val)

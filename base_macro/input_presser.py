@@ -1,7 +1,11 @@
 from time import sleep
 
-from pynput.keyboard import Controller, Key as PyKey
-py_keyboard_controller = Controller()
+from pynput.keyboard import Controller as KeyboardController, Key as PyKey
+from pynput.mouse import Controller as MouseController, Button as PyButton
+
+
+py_keyboard_controller = KeyboardController()
+py_mouse_controller = MouseController()
 
 TYPING_WAIT_TIME = 0.03
 
@@ -47,3 +51,16 @@ class InputPresser:
         for s in string:
             py_keyboard_controller.tap(s)
             sleep(typing_delay)
+
+
+    @staticmethod
+    def left_click(count: int = 1):
+        py_mouse_controller.click(PyButton.left, count=count)
+
+
+    @staticmethod
+    def move_mouse(to: tuple[int, int]):
+        py_mouse_controller.move(
+            to[0] - py_mouse_controller.position[0],
+            to[1] - py_mouse_controller.position[1]
+        )

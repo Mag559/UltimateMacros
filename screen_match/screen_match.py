@@ -18,7 +18,7 @@ class ScreenMatch:
         self.logger = getLogger(__name__)
 
 
-    def check_match(self):
+    def check_match(self) -> bool:
         return self.matcher.match(self.capturer.capture_screenshot())
 
     def wait_for_match(self, timeout: float=10.0, interval: float=0.2) -> bool:
@@ -38,6 +38,36 @@ class ScreenMatch:
         self.logger.warning("Screen matching timeout out")
         self.capturer.capture_screenshot().save("match_failed.png")
         return False
+
+
+    def find_match(self, confidence_required: float=0.8) -> tuple[int, int] | bool:
+        pos_x, pos_y, confidence = self.matcher.find_match(self.capturer.capture_screenshot())
+        if confidence >= confidence_required:
+            return pos_x, pos_y
+        return False
+
+
+    def wait_for_find_match(self, timeout: float=10.0, interval: float=0.2,
+                            confidence_required: float=0.8) -> tuple[int, int] | bool:
+        """
+        Call find match periodically
+        Parameters:
+            interval: float how many seconds to wait between checks
+            timeout: float how many seconds to wait before giving up
+            confidence_required: float minimal confidence in the match for it to be accepted
+        Returns:
+            True if a match happens before timeout, False otherwise
+        """
+        for i in range(round(timeout / interval)):
+            match_found = self.find_match(confidence_required)
+            if match_found:
+                return match_found
+            self.logger.debug(f"{i}th find match failed")
+            sleep(interval)
+        self.logger.warning("Screen find matching timeout out")
+        self.capturer.capture_screenshot().save("match_failed.png")
+        return False
+
 
 
     def set_reference_image(self, reference_image: Image.Image) -> 'ScreenMatch':
