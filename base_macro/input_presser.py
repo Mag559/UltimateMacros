@@ -17,6 +17,10 @@ def delay(func):
 
 
 class InputPresser:
+    """
+    Convenient wrapper for pynput keyboard and mouse input
+    includes delays for certain methods
+    """
     @staticmethod
     def paste():
         # py_keyboard_controller.release('c')
