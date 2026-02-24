@@ -47,7 +47,7 @@ class InputCollector(Emitter):
         # Collect events until released
         """
         Start keyboard and mouse event collection
-        Does not stop further code execution, see wait_for_end for that
+        Does not stop further code execution, see join for that
         """
         self.keyboard_listener = py_keyboard.Listener(
             on_press=self.on_press,
@@ -104,12 +104,13 @@ class InputCollector(Emitter):
                 if self.left_alt_held:
                     self.emit_event(ImportantEvents.SHORTCUT1)
             case "'\\x03'":
+                print(key)
                 self.emit_event(ImportantEvents.COPY)
             case "'\\x16'":
                 self.emit_event(ImportantEvents.PASTE)
             case "'\\x18'":
                 self.emit_event(ImportantEvents.CUT)
-            case "'\x13'":
+            case "'\\x13'":
                 self.emit_event(ImportantEvents.SAVE)
             case "Key.num_lock":
                 self.emit_event(ImportantEvents.TOGGLE)
