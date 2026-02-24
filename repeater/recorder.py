@@ -1,3 +1,5 @@
+import re
+from logging import getLogger
 from time import time
 
 from pynput import keyboard as py_keyboard, mouse as py_mouse
@@ -15,6 +17,8 @@ class Recorder:
         self.stop_flag : bool = False
         self.event_queue: Queue = Queue()
         self.last_event_time: float = 0
+
+        self.logger = getLogger(__name__)
 
 
     def record(self):
@@ -35,6 +39,10 @@ class Recorder:
 
         while True:
             event = self.event_queue.get()
+            self.logger.debug(f"handling event: {event}")
+            if self.stop_flag:
+                self.logger.debug(f"stop flag raised, ending the generator method")
+                return
             # assert event is str
             timestamp, _, instruction = event.partition(" ")
             if self.last_event_time == 0:
@@ -46,6 +54,11 @@ class Recorder:
 
     @staticmethod
     def key_to_string(key):
+        if re.search("^'\\\\x\\d\\d'$", str(key)):
+            code = int(str(key)[-3:-1], 16)
+            print(key, " into ", chr(64 + code))
+            return chr(64 + code)
+
         if isinstance(key, py_keyboard.Key):
             return key.name
         elif isinstance(key, py_keyboard.KeyCode):
@@ -72,3 +85,5 @@ class Recorder:
     def stop(self):
         self.keyboard_listener.stop()
         self.mouse_listener.stop()
+        self.stop_flag = True
+        self.event_queue.put("")

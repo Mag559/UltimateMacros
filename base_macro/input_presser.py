@@ -23,8 +23,11 @@ class InputPresser:
     """
     @staticmethod
     def paste():
-        # py_keyboard_controller.release('c')
         InputPresser.tap_with_ctrl('v')
+
+    @staticmethod
+    def copy():
+        InputPresser.tap_with_ctrl('c')
 
     @staticmethod
     @delay

@@ -104,7 +104,6 @@ class InputCollector(Emitter):
                 if self.left_alt_held:
                     self.emit_event(ImportantEvents.SHORTCUT1)
             case "'\\x03'":
-                print(key)
                 self.emit_event(ImportantEvents.COPY)
             case "'\\x16'":
                 self.emit_event(ImportantEvents.PASTE)
