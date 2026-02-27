@@ -71,7 +71,6 @@ class FirefoxHandler:
             self.logger.error("CAS failed to load")
             self.on_fail()
 
-        sleep(0.2)
         InputPresser.tap(PyKey.down)
         InputPresser.enter(1)
         InputPresser.enter(1)

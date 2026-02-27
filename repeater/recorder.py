@@ -48,7 +48,7 @@ class Recorder:
             if self.last_event_time == 0:
                 self.last_event_time = float(timestamp)
 
-            event = f"{(float(timestamp) - self.last_event_time):.3f} {instruction}"
+            event = f"{(float(timestamp) - self.last_event_time):.5f} {instruction}"
             self.last_event_time = float(timestamp)
             yield event
 
@@ -56,7 +56,6 @@ class Recorder:
     def key_to_string(key):
         if re.search("^'\\\\x\\d\\d'$", str(key)):
             code = int(str(key)[-3:-1], 16)
-            print(key, " into ", chr(64 + code))
             return chr(64 + code)
 
         if isinstance(key, py_keyboard.Key):
