@@ -13,8 +13,8 @@ ctypes.windll.shcore.SetProcessDpiAwareness(PROCESS_PER_MONITOR_DPI_AWARE)
 
 if __name__ == '__main__':
     logging.basicConfig(filename='myapp.log', level=logging.DEBUG)
-    RecorderMacro(Path(__file__).parent / 'test.ins')
+    # RecorderMacro(Path(__file__).parent / 'order_test.ins')
 
     # print("Recording done")
-    # sleep(0.1)
-    # build_file_interpreter(Path('test.ins'))
+    sleep(0.1)
+    build_file_interpreter(Path('order_test.ins'))

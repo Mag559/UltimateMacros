@@ -58,6 +58,9 @@ class Interpreter:
             return KeyCode.from_char(s)  # regular character
 
     def interpret(self, line: str):
+        if line.startswith("---"):
+            return
+
         items = line.split(" ")
         try:
             sleep(float(items[0]))
