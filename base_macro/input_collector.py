@@ -1,6 +1,7 @@
 from time import sleep, time
 from pynput import keyboard as py_keyboard, mouse as py_mouse
 from enum import Enum
+from logging import getLogger
 
 from .signal_interfaces import Emitter
 
@@ -31,6 +32,7 @@ class InputCollector(Emitter):
     Does detect inputs produced by InputPresser
     """
     def __init__(self, debug_mode=False):
+        self.logger = getLogger(__name__)
         super().__init__()
         self.ctrl_held = False
         self.left_alt_held = False
@@ -55,9 +57,10 @@ class InputCollector(Emitter):
         )
 
         self.mouse_listener = py_mouse.Listener(
-                on_click=self.on_click
+            on_click=self.on_click
         )
 
+        self.logger.debug("listener threads started")
         self.keyboard_listener.start()
         self.mouse_listener.start()
 
@@ -185,6 +188,7 @@ class InputCollector(Emitter):
     def stop(self):
         self.keyboard_listener.stop()
         self.mouse_listener.stop()
+        self.logger.debug("listener threads stopped")
 
 
 

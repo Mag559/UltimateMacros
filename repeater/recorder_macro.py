@@ -53,7 +53,7 @@ class RecorderMacro(BaseMacro):
         if not self.pause and self.pause_toggle:
             file.write("---")
 
-        if instruction.find("num_lock") != -1 and instruction.find("release") != -1:
+        if instruction.find("num_lock") == -1 and instruction.find("release") != -1:
             file.write(instruction.rsplit(" ", 1)[1])
 
         if self.pause and self.pause_toggle:

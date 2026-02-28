@@ -1,4 +1,5 @@
 from threading import Timer
+from logging import getLogger
 
 from .input_collector import InputCollector, ImportantEvents
 from .helper_classes import TerminationDetector
@@ -22,6 +23,7 @@ class BaseMacro(Observer[ImportantEvents]):
             timeout (float): Number of seconds of inactivity before the macro automatically terminates.
             debug_mode (bool): If True, enable debug output during termination.
         """
+        self.logger = getLogger(__name__)
         self.timeout = timeout
         if collector is None:
             collector = InputCollector(debug_mode=debug_mode)
@@ -38,6 +40,8 @@ class BaseMacro(Observer[ImportantEvents]):
 
         # wait for it to finish before ending constructor
         self.input_collector.join()
+
+        self.logger.debug("Base Macro constructor completed")
 
     def update(self, event_code: ImportantEvents):
         """
@@ -67,6 +71,7 @@ class BaseMacro(Observer[ImportantEvents]):
         
         If debug_mode is True, prints "Shutting down". Stops the input collector's listener so no further input events are received.
         """
+        self.logger.debug("Shutting down base macro")
         if self.debug_mode:
             print("Shutting down")
         self.input_collector.stop()
