@@ -1,3 +1,11 @@
+## Project guidelines
+- use logging from the `logging` library via `getLogger(__name__)`
+- class constructors should initialize classes,
+which should only start working and block further code execution after calling the `start` method
+- end of `start` method execution should mean all threads started by that class
+have been joined
+
+
 ## Macro instructions format
 `[delay] <instruction> arguments`
 

@@ -9,9 +9,11 @@ from .recorder import Recorder
 class RecorderMacro(BaseMacro):
     """
     Macro version of the recorder
-    Filters out SHORTCUT1
+    Filters out SHORTCUT1 and TOGGLE
     """
-    def __init__(self, file_path: Path, debug_mode: bool = False):
+    def __init__(self, file_path: Path):
+        super().__init__()
+
         self.recorder = Recorder()
         self.file_path = file_path
 
@@ -22,8 +24,13 @@ class RecorderMacro(BaseMacro):
         self.pause_toggle: bool = False
 
         self.record_thread = Thread(target=self.record)
+
+
+    def start(self):
         self.record_thread.start()
-        super().__init__(debug_mode=debug_mode)
+
+        super().start()
+
         self.record_thread.join()
 
 
@@ -36,12 +43,10 @@ class RecorderMacro(BaseMacro):
 
     def record(self):
         with open(self.file_path, 'w') as file:
-            for instruction in self.recorder.record():
+            for instruction in self.recorder.start():
                 # make sure the update function runs first
                 # only slows down the consumer thread on the recorder, so inputs should still be timestamped correctly
                 sleep(0.1)
-                if self.debug_mode:
-                    print(instruction)
 
                 if self.pause or self.pause_toggle:
                     self.pause_mode(instruction, file)
@@ -49,7 +54,10 @@ class RecorderMacro(BaseMacro):
 
                 self.write_to_file_mode(instruction, file)
 
+
     def pause_mode(self, instruction: str, file):
+        self.logger.debug(f"Processing instruction: {instruction} in pause mode")
+
         if not self.pause and self.pause_toggle:
             file.write("---")
 
@@ -65,6 +73,8 @@ class RecorderMacro(BaseMacro):
 
 
     def write_to_file_mode(self, instruction: str, file):
+        self.logger.debug(f"Processing instruction: {instruction} in write mode")
+
         if re.search(r"num_lock", instruction):
             return
 

@@ -31,13 +31,11 @@ class InputCollector(Emitter):
 
     Does detect inputs produced by InputPresser
     """
-    def __init__(self, debug_mode=False):
+    def __init__(self):
         self.logger = getLogger(__name__)
         super().__init__()
         self.ctrl_held = False
         self.left_alt_held = False
-
-        self.debug_mode = debug_mode
 
         self.keyboard_listener: py_keyboard.Listener | None = None
         self.mouse_listener: py_mouse.Listener | None = None
@@ -64,8 +62,6 @@ class InputCollector(Emitter):
         self.keyboard_listener.start()
         self.mouse_listener.start()
 
-
-    def join(self):
         self.keyboard_listener.join()
         self.mouse_listener.join()
 
@@ -86,22 +82,15 @@ class InputCollector(Emitter):
             False if the collector has been marked for termination and the listener should stop, None otherwise.
         """
         try:
-            if self.debug_mode:
-                print(f"Key pressed: {key}, as string: {str(key)}, as char: {key.char}")
+            self.logger.debug(f"Key pressed: {key}, as string: {str(key)}, as char: {key.char}")
         except AttributeError:
-            print(f"Key pressed: {key}, as string: {str(key)}")
+            self.logger.debug(f"Key pressed: {key}, as string: {str(key)}")
         match str(key):
             case "Key.ctrl_l":
-                if self.debug_mode:
-                    print("ctrl_held")
                 self.ctrl_held = True
             case "Key.ctrl_r":
-                if self.debug_mode:
-                    print("ctrl_held")
                 self.ctrl_held = True
             case "Key.alt_l":
-                if self.debug_mode:
-                    print("left_alt_held")
                 self.left_alt_held = True
             case "'`'":
                 if self.left_alt_held:
@@ -134,10 +123,9 @@ class InputCollector(Emitter):
             False if the collector has been marked for termination and the listener should stop, None otherwise.
         """
         try:
-            if self.debug_mode:
-                print(f"Key released: {key}, as string: {str(key)}, as char: {key.char}")
+            self.logger.debug(f"Key released: {key}, as string: {str(key)}, as char: {key.char}")
         except AttributeError:
-            print(f"Key released: {key}, as string: {str(key)}")
+            self.logger.debug(f"Key released: {key}, as string: {str(key)}")
 
         match key:
             case py_key.ctrl:
@@ -148,8 +136,7 @@ class InputCollector(Emitter):
 
 
     def on_click(self, _x, _y, button, pressed):
-        if self.debug_mode:
-            print('{0} {1}'.format(
+        self.logger.debug('{0} {1}'.format(
                 'Pressed' if pressed else 'Released',
                 button))
 
@@ -174,13 +161,12 @@ class InputCollector(Emitter):
         """
         Emit the given ImportantEvents value to subscribed listeners.
         
-        Delays for 0.1 seconds before calling the emitter to allow input handling to settle. When debug_mode is enabled, prints the event to stdout.
+        Delays for 0.15 seconds before calling the emitter to allow input handling to settle.
         
         Parameters:
             event (ImportantEvents): The event to emit to listeners.
         """
-        if self.debug_mode:
-            print(f"event: {event}")
+        self.logger.debug(f"Emitting event: {event}")
         sleep(0.15)
         self.emit(event)
 

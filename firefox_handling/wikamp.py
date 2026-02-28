@@ -2,7 +2,6 @@ from collections.abc import Callable
 from logging import getLogger
 from os import system
 from pathlib import Path
-from time import sleep
 from pynput.keyboard import Key as PyKey
 import pyperclip
 

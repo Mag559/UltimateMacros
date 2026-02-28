@@ -101,8 +101,3 @@ class PreviewWindow(tk.Tk):
     def get_text(self):
         """Return the bottom string input."""
         return self.text_var.get()
-
-
-
-if __name__ == "__main__":
-    PreviewWindow(Image.new("RGB", (400, 100), "white")).mainloop()

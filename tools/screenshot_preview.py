@@ -1,15 +1,14 @@
-from pathlib import Path
 from time import sleep
 
 from .preview_window import PreviewWindow
-from screen_match import Capturer, Section
-
-REFERENCE_IMAGES = Path(__file__).parent.parent / "reference_images"
+from screen_match import Capturer, Section, REFERENCE_IMAGES
 
 class ScreenshotPreview:
     def __init__(self):
         self.capturer = Capturer(Section(100, 100, 100, 100), 0)
         self.window = PreviewWindow(self.capturer.capture_screenshot(), self.save)
+
+    def start(self):
         self.schedule_next_update()
         self.window.mainloop()
 
@@ -28,7 +27,6 @@ class ScreenshotPreview:
         """
         Converts left, top, width, height to a Section object.
         """
-
         return Section(*self.window.get_all_numbers())
 
 
@@ -41,8 +39,3 @@ class ScreenshotPreview:
         with open(REFERENCE_IMAGES / f"{name}.txt", "w") as f:
             f.write(",".join([str(x) for x in self.window.get_all_numbers()]))
         self.window.destroy()
-
-
-
-if __name__ == "__main__":
-    ScreenshotPreview()

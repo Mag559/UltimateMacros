@@ -14,6 +14,7 @@ class Section:
 class Capturer:
     """
     Captures a specified part of the screen
+    and returns it a PIL Image object.
     """
     def __init__(self, section: Section, monitor_number: int = 0):
         """
@@ -25,8 +26,9 @@ class Capturer:
         self.logger = getLogger(__name__)
         try:
             self.capturer = mss()
-        except Exception:
-            raise RuntimeError("Screen capturing by mss failed")
+        except Exception as e:
+            self.logger.exception("Screen capturing by mss failed")
+            raise RuntimeError(e)
 
         self.section = section
         self.set_monitor(monitor_number)

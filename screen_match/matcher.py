@@ -6,7 +6,8 @@ from logging import getLogger
 
 class Matcher:
     """
-    Component of ScreenMatch, responsible for comparing two pixel matrices
+    Class responsible for comparing two images and deciding if they match
+    and finding a template image in a larger one
     """
     def __init__(self, reference_image: Image.Image, total_diff_allowed: float = 5, individual_diff_allowed: int = 10,
                  mismatched_pixels_allowed: float = 0.1, brightness_diff_allowed: float = 10.0):
@@ -25,6 +26,7 @@ class Matcher:
         self.mismatched_pixels_allowed = mismatched_pixels_allowed
 
         self.logger = getLogger(__name__)
+
 
     @staticmethod
     def average_brightness(img: Image.Image) -> float:
@@ -82,12 +84,10 @@ class Matcher:
         return cv2.cvtColor(img_array, cv2.COLOR_BGR2GRAY)
 
 
-
-    def find_match(self, screenshot: Image.Image) -> tuple[int, int, float]:
+    def find_match(self, screenshot: Image.Image, cached_reference_image = None) -> tuple[int, int, float]:
         """
         Find the best matching location of reference image in screenshot
         returns the center of the location and confidence
-        Converts PIL format to cv format every time
 
         Using OpenCV
         https://stackoverflow.com/questions/7670112/finding-a-subimage-inside-a-numpy-image/9253805#9253805
@@ -95,9 +95,10 @@ class Matcher:
         """
         res = cv2.matchTemplate(
             Matcher.convert_pil_image_to_cv(screenshot),
-            Matcher.convert_pil_image_to_cv(self.reference_image),
+            cached_reference_image if cached_reference_image else Matcher.convert_pil_image_to_cv(self.reference_image),
             cv2.TM_CCOEFF_NORMED
         )
+
         min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
         self.logger.debug(f"Template image found at {max_loc} with value {max_val}")
         return (int(max_loc[0] + self.reference_image.width / 2),

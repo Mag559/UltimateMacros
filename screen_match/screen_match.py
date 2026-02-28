@@ -21,6 +21,7 @@ class ScreenMatch:
     def check_match(self) -> bool:
         return self.matcher.match(self.capturer.capture_screenshot())
 
+
     def wait_for_match(self, timeout: float=10.0, interval: float=0.2) -> bool:
         """
         Call check match periodically
@@ -40,8 +41,8 @@ class ScreenMatch:
         return False
 
 
-    def find_match(self, confidence_required: float=0.8) -> tuple[int, int] | bool:
-        pos_x, pos_y, confidence = self.matcher.find_match(self.capturer.capture_screenshot())
+    def find_match(self, confidence_required: float=0.8, cached_reference = None) -> tuple[int, int] | bool:
+        pos_x, pos_y, confidence = self.matcher.find_match(self.capturer.capture_screenshot(), cached_reference)
         if confidence >= confidence_required:
             return pos_x, pos_y
         return False
@@ -58,8 +59,10 @@ class ScreenMatch:
         Returns:
             True if a match happens before timeout, False otherwise
         """
+        cached_reference = Matcher.convert_pil_image_to_cv(self.matcher.reference_image)
+
         for i in range(round(timeout / interval)):
-            match_found = self.find_match(confidence_required)
+            match_found = self.find_match(confidence_required, cached_reference)
             if match_found:
                 return match_found
             self.logger.debug(f"{i}th find match failed")
@@ -67,7 +70,6 @@ class ScreenMatch:
         self.logger.warning("Screen find matching timeout out")
         self.capturer.capture_screenshot().save("match_failed.png")
         return False
-
 
 
     def set_reference_image(self, reference_image: Image.Image) -> 'ScreenMatch':

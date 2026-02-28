@@ -21,9 +21,11 @@ class Recorder:
         self.logger = getLogger(__name__)
 
 
-    def record(self):
+    def start(self):
         """
         Start keyboard and mouse event collection
+
+        Acts as a generator method, returning recorded instructions
         """
         self.keyboard_listener = py_keyboard.Listener(
             on_press=self._on_press,
@@ -37,12 +39,15 @@ class Recorder:
         self.keyboard_listener.start()
         self.mouse_listener.start()
 
+        self.logger.debug(f"Start recording")
+
         while True:
             event = self.event_queue.get()
-            self.logger.debug(f"handling event: {event}")
+            self.logger.debug(f"Handling event: {event}")
             if self.stop_flag:
-                self.logger.debug(f"stop flag raised, ending the generator method")
+                self.logger.debug(f"Stop flag raised, ending the generator method")
                 return
+
             # assert event is str
             timestamp, _, instruction = event.partition(" ")
             if self.last_event_time == 0:
@@ -50,7 +55,9 @@ class Recorder:
 
             event = f"{(float(timestamp) - self.last_event_time):.5f} {instruction}"
             self.last_event_time = float(timestamp)
+            self.logger.debug(f"Event processed into: {event}")
             yield event
+
 
     @staticmethod
     def key_to_string(key):
@@ -63,6 +70,7 @@ class Recorder:
         elif isinstance(key, py_keyboard.KeyCode):
             return key.char
         return None
+
 
     def _on_press(self, key):
         self.event_queue.put(f"{time()} press {Recorder.key_to_string(key)}")
@@ -80,8 +88,8 @@ class Recorder:
         return None
 
 
-
     def stop(self):
+        self.logger.debug(f"Stop recording")
         self.keyboard_listener.stop()
         self.mouse_listener.stop()
         self.stop_flag = True

@@ -23,6 +23,7 @@ class QuestionCopier(BaseMacro):
     After all the answers, SHORTCUT2
     """
     def __init__(self, file: Path, completely_remove_newlines: bool = False):
+        super().__init__()
         self.completely_remove_newlines = completely_remove_newlines
         self.questions_file = open(file, "a", encoding="utf-8")
         self.state: State = State.READING_QUESTION
@@ -31,7 +32,6 @@ class QuestionCopier(BaseMacro):
         self.answers: list[str] = []
         self.are_answers_correct: list[bool] = []
 
-        super().__init__()
 
     def update(self, event_code: ImportantEvents):
         super().update(event_code)

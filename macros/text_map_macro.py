@@ -12,9 +12,9 @@ class TextMapMacro(BaseMacro):
     the copied text is processed by the `text_map` function
     and pasted in place of the original text.
     """
-    def __init__(self, text_map: Callable[[str], str], debug_mode: bool=False):
+    def __init__(self, text_map: Callable[[str], str]):
+        super().__init__()
         self.text_map = text_map
-        super().__init__(debug_mode=debug_mode)
 
     def update(self, event_code: ImportantEvents):
         super().update(event_code)

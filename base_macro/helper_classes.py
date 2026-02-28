@@ -4,7 +4,9 @@ class TerminationDetector:
     """
     Helper class that tracks events happening in quick succession
 
-    Intended use for all macros is calling the should_terminate method whenever alt + ` is pressed
+    Intended use:
+    call the should_terminate method whenever SHORTCUT1 is pressed
+
     This class will note down the time it happened
     If it happens x-1 more times during the window period should_terminate returns true,
     signaling the program should terminate
@@ -14,8 +16,8 @@ class TerminationDetector:
         Initialize a TerminationDetector that tracks recent event timestamps to decide rapid succession termination.
         
         Parameters:
-        	event_count (int): Number of recent events to track; determines the fixed size of the internal timestamp history.
-        	time_window (float): Time window in seconds; if the oldest and newest tracked timestamps are within this span, termination is signaled.
+        	event_count (int): how many events need to happen in the time window to result in termination
+        	time_window (float): how wide should the time window be, in seconds
         """
         self.event_count = event_count
         self.time_window = time_window
@@ -23,12 +25,11 @@ class TerminationDetector:
 
     def should_terminate(self) -> bool:
         """
-        Determine whether recent events occurred within the detector's configured time window.
-        
-        Updates the internal event timestamp history with the current time and checks whether the time difference between the newest and oldest recorded timestamps is less than the detector's time_window.
-        
+        Registers an event happened at this time
+
         Returns:
-            True if the recorded events all occurred within the configured time window, False otherwise.
+            True if `event_count` such events happened in the time window and termination should take place
+            False otherwise
         """
         self.event_times.pop(0)
         self.event_times.append(time())

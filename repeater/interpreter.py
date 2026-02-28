@@ -6,13 +6,11 @@ from time import sleep
 from pynput.keyboard import Controller as KeyboardController, Key as PyKey, KeyCode
 from pynput.mouse import Controller as MouseController, Button as PyButton
 
-from screen_match import ScreenMatch
+from screen_match import ScreenMatch, REFERENCE_IMAGES
 
 py_keyboard_controller = KeyboardController()
 py_mouse_controller = MouseController()
 
-
-REFERENCE_IMAGES = Path(__file__).parent.parent / "reference_images"
 
 class InterpreterMode(Enum):
     END_ON_FAIL = 0
@@ -32,23 +30,31 @@ def _read_file(file_path: Path):
 
 class Interpreter:
     """
-    Keeps the file open for the whole duration
+    Execute instructions given by the instruction generator
+    in the format specified in the readme
     """
-    def __init__(self, line_generator: Generator, mode: InterpreterMode=InterpreterMode.END_ON_FAIL):
+    def __init__(self, instruction_generator: Generator, mode: InterpreterMode=InterpreterMode.END_ON_FAIL):
         self.logger = getLogger(__name__)
         self.screen_match: ScreenMatch | None = None
+        self.instruction_generator = instruction_generator
+        self.mode = mode
 
-        for line in line_generator:
+
+    def start(self):
+        for line in self.instruction_generator:
             line = line.rstrip('\n')
             try:
                 self.logger.debug(f"interpreting: {line}")
                 self.interpret(line)
             except KeyboardController.InvalidKeyException:
-                if mode == InterpreterMode.END_ON_FAIL:
+                if self.mode == InterpreterMode.END_ON_FAIL:
                     self.logger.exception(f"Ending interpreter session after failing to interpret: {line}")
                     return
                 else:
                     self.logger.exception(f"Skipping instruction after failing to interpret: {line}")
+
+        self.logger.debug(f"Finished interpreting")
+
 
     @staticmethod
     def string_to_key(s: str):
@@ -56,6 +62,7 @@ class Interpreter:
             return PyKey[s]  # special key
         except KeyError:
             return KeyCode.from_char(s)  # regular character
+
 
     def interpret(self, line: str):
         if line.startswith("---"):

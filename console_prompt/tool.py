@@ -11,4 +11,4 @@ def _tool():
 
 @tool_group.action("screenshot_preview")
 def _screenshot_preview():
-    ScreenshotPreview()
+    ScreenshotPreview().start()
