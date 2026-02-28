@@ -78,8 +78,8 @@ class Matcher:
     def convert_pil_image_to_cv(image: Image.Image):
         assert image.mode == "RGB"
         img_array = np.array(image)
-        img_cv = img_array[:, :, ::-1].copy()  # -1 does RGB -> BGR
-        return cv2.cvtColor(img_cv, cv2.COLOR_BGR2GRAY)
+        # img_cv = img_array[:, :, ::-1].copy()  # -1 does RGB -> BGR
+        return cv2.cvtColor(img_array, cv2.COLOR_BGR2GRAY)
 
 
 
