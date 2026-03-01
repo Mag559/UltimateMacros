@@ -63,6 +63,7 @@ class BaseMacro(Observer[ImportantEvents]):
         Stop the macro and cease input collection.
         """
         self.logger.debug("Shutting down base macro")
+        self.exit_timer.cancel()
         self.input_collector.stop()
 
 

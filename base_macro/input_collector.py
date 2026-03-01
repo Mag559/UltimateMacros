@@ -52,10 +52,12 @@ class InputCollector(Emitter):
         self.keyboard_listener = py_keyboard.Listener(
             on_press=self.on_press,
             on_release=self.on_release,
+            name="InputCollector keyboard Listener"
         )
 
         self.mouse_listener = py_mouse.Listener(
-            on_click=self.on_click
+            on_click=self.on_click,
+            name="InputCollector mouse Listener"
         )
 
         self.logger.debug("listener threads started")

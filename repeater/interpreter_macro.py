@@ -19,7 +19,7 @@ class InterpreterMacro(BaseMacro):
         self.pause: bool = False
         self.stop_flag: bool = False
         self.interpreter: Interpreter = Interpreter(self.read_instructions())
-        self.interpreter_thread: Thread = Thread(target=self.interpreter.start)
+        self.interpreter_thread: Thread = Thread(target=self.interpreter.start, name="InterpreterMacro interpreter")
 
 
     def update(self, event_code: ImportantEvents):
