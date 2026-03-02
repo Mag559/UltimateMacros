@@ -1,20 +1,28 @@
-import logging
-from pathlib import Path
-from time import sleep, time
+import asyncio
+from prompt_toolkit.application import Application
+from prompt_toolkit.layout import Layout, Window
+from prompt_toolkit.layout.controls import FormattedTextControl
 
-from base_macro import BaseMacro
-from repeater import Recorder, build_file_interpreter, RecorderMacro
-import ctypes
+frames = ["|", "/", "-", "\\"]
+index = 0
 
+def get_text():
+    return f"Loading... {frames[index]}"
 
-PROCESS_PER_MONITOR_DPI_AWARE = 2
+control = FormattedTextControl(get_text)
+window = Window(content=control)
 
-ctypes.windll.shcore.SetProcessDpiAwareness(PROCESS_PER_MONITOR_DPI_AWARE)
+app = Application(layout=Layout(window), full_screen=False)
 
-if __name__ == '__main__':
-    logging.basicConfig(filename='myapp.log', level=logging.DEBUG)
-    # RecorderMacro(Path(__file__).parent / 'test.ins')
+async def animate():
+    global index
+    while True:
+        await asyncio.sleep(0.1)
+        index = (index + 1) % len(frames)
+        app.invalidate()
 
-    # print("Recording done")
-    # sleep(0.1)
-    # build_file_interpreter(Path('test.ins'))
+async def main():
+    asyncio.create_task(animate())
+    await app.run_async()
+
+asyncio.run(main())
