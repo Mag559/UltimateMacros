@@ -15,6 +15,6 @@ if __name__ == '__main__':
     logging.basicConfig(filename='myapp.log', level=logging.DEBUG)
     # RecorderMacro(Path(__file__).parent / 'test.ins')
 
-    print("Recording done")
-    sleep(0.1)
-    build_file_interpreter(Path('test.ins'))
+    # print("Recording done")
+    # sleep(0.1)
+    # build_file_interpreter(Path('test.ins'))
