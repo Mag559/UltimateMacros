@@ -8,8 +8,8 @@ from .interpreter import Interpreter
 
 class InterpreterMacro(BaseMacro):
     """
-    Macro version of the recorder
-    Filters out SHORTCUT1
+    Macro version of the interpreter
+    TOGGLE to pause execution
     """
     def __init__(self, file_path: Path):
         super().__init__()

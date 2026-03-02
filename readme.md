@@ -6,6 +6,12 @@ which should only start working and block further code execution after calling t
 have been joined
 
 
+## SHORTCUTS
+- `SHORTCUT1` - left alt + `` ` ``
+- `SHORTCUT2` - left alt + windows
+- `TOGGLE` - num_lock
+
+
 ## Macro instructions format
 `[delay] <instruction> arguments`
 
