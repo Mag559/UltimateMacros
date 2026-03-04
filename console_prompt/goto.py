@@ -2,8 +2,16 @@ from .console_base import completer, default
 from firefox_handling.wikamp import FirefoxHandler
 
 WIKAMP_SUBJECT_WEBSITES = {
-    "posk": "https://ftims.edu.p.lodz.pl/course/view.php?id=3012",
-    "kompo": "https://ftims.edu.p.lodz.pl/course/view.php?id=3012",
+    "tips": "https://ftims.edu.p.lodz.pl/course/view.php?id=2206",
+    "wspolbiegi": "https://ftims.edu.p.lodz.pl/course/view.php?id=2332",
+    "wbudy": "https://ftims.edu.p.lodz.pl/course/view.php?id=3094",
+    "grafika": "https://ftims.edu.p.lodz.pl/course/view.php?id=8",
+    "kryptografia": "https://ftims.edu.p.lodz.pl/course/view.php?id=1801",
+    "numerki": "https://ftims.edu.p.lodz.pl/course/view.php?id=34"
+}
+
+WIKAMP_ATTENDANCE_WEBSITES = {
+    "grafika": "https://ftims.edu.p.lodz.pl/mod/attendance/view.php?id=115194"
 }
 
 goto_group = completer.group("goto")
@@ -15,16 +23,28 @@ def _goto():
 
 
 @goto_group.action("wikamp")
-@completer.param(["posk", "kompo"])
-@completer.param(None)
+@completer.param(list(WIKAMP_SUBJECT_WEBSITES.keys()))
+@completer.param(None, cast=str)
 def _goto_wikamp(subject: str = "", attendance_code: str = ""):
     fh = FirefoxHandler(lambda: quit(1))
     fh.open_wikamp()
     if subject == "":
         return
     fh.open_website(WIKAMP_SUBJECT_WEBSITES[subject])
-    if attendance_code != "":
-        print("Attendance marking hasn't been implemented yet, sorry")
+
+    if attendance_code == "":
+        return
+
+    if subject not in WIKAMP_ATTENDANCE_WEBSITES.keys():
+        print("Attendance has not been configured for this subject")
+
+    fh.open_website(WIKAMP_ATTENDANCE_WEBSITES[subject])
+    # TODO scroll down to see all dates,
+    # scan for screenshot of yellow text to mark attendance
+    # paste in the code
+    # tab and enter to select present
+    # tab and enter to mark
+
 
 
 @goto_group.action("youtube")
