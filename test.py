@@ -1,28 +1,45 @@
+from prompt_toolkit import PromptSession
+from prompt_toolkit.completion import DummyCompleter
+
+from prompt_toolkit.validation import DummyValidator
+
+
 import asyncio
-from prompt_toolkit.application import Application
-from prompt_toolkit.layout import Layout, Window
-from prompt_toolkit.layout.controls import FormattedTextControl
+from itertools import cycle
+from prompt_toolkit.patch_stdout import patch_stdout
 
-frames = ["|", "/", "-", "\\"]
-index = 0
+frames = cycle(["|", "/", "-", "\\"])
 
-def get_text():
-    return f"Loading... {frames[index]}"
+def main() -> None:
+    session = PromptSession()
 
-control = FormattedTextControl(get_text)
-window = Window(content=control)
+    spinner = {"frame": next(frames)}
 
-app = Application(layout=Layout(window), full_screen=False)
+    def get_prompt():
+        return f"{spinner['frame']} "
 
-async def animate():
-    global index
-    while True:
-        await asyncio.sleep(0.1)
-        index = (index + 1) % len(frames)
-        app.invalidate()
+    async def spin():
+        while True:
+            await asyncio.sleep(0.1)
+            spinner["frame"] = next(frames)
+            session.app.invalidate()
 
-async def main():
-    asyncio.create_task(animate())
-    await app.run_async()
+    async def run():
+        asyncio.create_task(spin())
 
-asyncio.run(main())
+        while True:
+            prompt_result = await session.prompt_async(
+                get_prompt,
+                completer=DummyCompleter(),
+                validator=DummyValidator(),
+            )
+
+
+            print(f"do {prompt_result}")
+            break
+
+    with patch_stdout():
+        asyncio.run(run())
+
+if __name__ == "__main__":
+    main()
