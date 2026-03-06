@@ -55,48 +55,101 @@ points = {
     'center_upper': center_upper
 }
 
+# print(points)
 import numpy as np
 
-def point_in_polygon_vectorized(x, y, vertices):
-    """
-    x, y: 2D arrays
-    vertices: list of (x, y)
-    returns: boolean mask of points inside polygon
-    """
-    vertices = np.array(vertices)
-    x1 = vertices[:, 0]
-    y1 = vertices[:, 1]
-    x2 = np.roll(x1, -1)
-    y2 = np.roll(y1, -1)
 
-    inside = np.zeros_like(x, dtype=bool)
-
-    for i in range(len(vertices)):
-        cond = ((y1[i] > y) != (y2[i] > y)) & (
-            x < (x2[i] - x1[i]) * (y - y1[i]) / (y2[i] - y1[i] + 1e-12) + x1[i]
-        )
-        inside ^= cond
-
-    return inside
+axis_points = [-upper1[1], -right_middle[1], -left_middle[1], -left2[1]]
 
 
-def draw_polygon_numpy(size=30, *vertice_sets):
+def get_point_in_3axis(point_x, point_y) -> tuple:
+    x_axis_a = np.tan(150. / 180 * np.pi)
+    z_axis_a = np.tan(30. / 180 * np.pi)
+
+    x_axis_x = (point_y * x_axis_a + point_x) / (x_axis_a * x_axis_a + 1)
+    x_axis_y = x_axis_a * x_axis_x
+    x = np.sqrt(x_axis_x * x_axis_x + x_axis_y * x_axis_y)
+    if x_axis_x > 0:
+        x *= -1
+
+    z_axis_x = (point_y * z_axis_a + point_x) / (z_axis_a * z_axis_a + 1)
+    z_axis_y = z_axis_a * z_axis_x
+    z = np.sqrt(z_axis_x * z_axis_x + z_axis_y * z_axis_y)
+    if z_axis_x < 0:
+        z *= -1
+
+    return x, -point_y, z
+
+
+def get_colour(xi, yi, zi) -> str:
+    black = "."
+    gray = "*"
+    white = "#"
+    match xi, yi, zi:
+        case 0, 2, 2:
+            return black
+        case 2, 0, 2:
+            return white
+        case 2, 2, 0:
+            return gray
+
+        case _, _, 2:
+            return white
+        case 2, _, _:
+            return gray
+        case _, 2, _:
+            return black
+
+        case 1, 0, 1:
+            return gray
+        case 0, 1, 1:
+            return white
+        case 1, 1, 0:
+            return black
+
+        case 1, _, _:
+            return black
+        case _, _, 1:
+            return gray
+
+        case _, 1, _:
+            return white
+
+        case _:
+            return ' '
+
+
+def draw_polygon_numpy(size=10):
     # Create coordinate grid
-    xs = np.linspace(-1, 1, 2 * size)
+    xs = np.linspace(-1, 1, size * 2)
     ys = np.linspace(1, -1, size)
-    X, Y = np.meshgrid(xs, ys)
+    # X, Y = np.meshgrid(xs, ys)
 
-    canvas = np.full((size, 2 * size), " ", dtype="<U1")
+    # canvas = np.full((size, 2 * size), " ", dtype="<U1")
+    drawing = ""
+    for y in ys:
+        for x in xs:
+            x2, y2, z2 = get_point_in_3axis(x, y)
+            integer_cords = [0, 0, 0]
+            for axis_coord, integer_coord in zip((x2, y2, z2), range(3)):
+                if axis_coord < axis_points[0]:
+                    break
 
-    for char, vertices in zip(["*", ".", "#"], vertice_sets):
-        mask = point_in_polygon_vectorized(X, Y, vertices)
-        canvas[mask] = char
+                for i, point in enumerate(axis_points[:-1]):
+                    if point <= axis_coord <= axis_points[i + 1]:
+                        integer_cords[integer_coord] = i
 
-    print("\n".join("".join(row) for row in canvas))
+                if axis_coord > axis_points[-1]:
+                    break
 
-for s in range(10, 30):
-    draw_polygon_numpy(s,
-                       [left1, left2, upper_middle, center_right, right_middle, upper1],
-                       [upper1, right_middle, center_left, left_middle, right1, upper2],
-                       [right2, left2, upper_middle, center_upper, left_middle, right1]
-                       )
+            else:
+                drawing += get_colour(*integer_cords)
+                continue
+            drawing += ' '
+
+        drawing += "\n"
+
+    print(drawing)
+
+# for s in range(10, 30):
+draw_polygon_numpy(30)
