@@ -5,23 +5,23 @@ from prompt_toolkit.validation import DummyValidator
 
 
 import asyncio
-from itertools import cycle
 from prompt_toolkit.patch_stdout import patch_stdout
 
-frames = cycle(["|", "/", "-", "\\"])
+from render2 import draw_polygon_numpy
+
 
 def main() -> None:
     session = PromptSession()
 
-    spinner = {"frame": next(frames)}
+    angle = [0.001]
 
     def get_prompt():
-        return f"{spinner['frame']} "
+        return draw_polygon_numpy(20, angle[0])
 
     async def spin():
         while True:
-            await asyncio.sleep(0.1)
-            spinner["frame"] = next(frames)
+            await asyncio.sleep(0.01)
+            angle[0] += 0.1
             session.app.invalidate()
 
     async def run():

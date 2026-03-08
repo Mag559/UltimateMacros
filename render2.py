@@ -3,82 +3,64 @@ import time
 import numpy as np
 
 
-# Parameters
-a = 0.2
-mirror_Y_axis = np.array([[-1.0, 0.0],
-                          [ 0.0, 1.0]])
-
-upper1 = np.array([np.sin(-a), np.cos(a)])
-
-upper2 = upper1 @ mirror_Y_axis
-
-# transposed rotation matrix
-ph = 2.0/3.0 * np.pi
-rotation120 = np.array([[np.cos(ph), np.sin(ph)],
-              [-np.sin(ph),  np.cos(ph)]])
-
-# left / right points
-left2 = upper1 @ rotation120
-left1 = upper2 @ rotation120
-
-right1 = left1 @ mirror_Y_axis
-right2 = left2 @ mirror_Y_axis
-
-# weighted middles
-weight = 0.67
-upper_middle = (1 - weight) * left2 + weight * upper2
-left_middle  = (1 - weight) * right1 + weight * left1
-right_middle = (1 - weight) * upper1 + weight * right2
-
-# centers
-center_right = np.array([
-    (right_middle[1] - upper_middle[1]) / np.tan(ph) + upper_middle[0],
-    right_middle[1]
-])
-
-center_upper  = center_right @ rotation120
-center_left = center_upper  @ rotation120
-
-# Optional: print results
-points = {
-    'upper1': upper1,
-    'upper2': upper2,
-    'left1': left1,
-    'left2': left2,
-    'right1': right1,
-    'right2': right2,
-    'upper_middle': upper_middle,
-    'left_middle': left_middle,
-    'right_middle': right_middle,
-    'center_right': center_right,
-    'center_left': center_left,
-    'center_upper': center_upper
-}
-
-# print(points)
-import numpy as np
+start = time.time()
 
 
-axis_points = [-upper1[1], -right_middle[1], -left_middle[1], -left2[1]]
+def find_axis_breakpoints_squared():
+    # Parameters
+    a = 0.2
+    mirror_y_axis = np.array([[-1.0, 0.0],
+                              [ 0.0, 1.0]])
+
+    upper1 = np.array([np.sin(-a), np.cos(a)])
+
+    upper2 = upper1 @ mirror_y_axis
+
+    # transposed rotation matrix
+    ph = 2.0/3.0 * np.pi
+    rotation120 = np.array([[np.cos(ph), np.sin(ph)],
+                  [-np.sin(ph),  np.cos(ph)]])
+
+    # left / right points
+    left2 = upper1 @ rotation120
+    left1 = upper2 @ rotation120
+
+    right1 = left1 @ mirror_y_axis
+    right2 = left2 @ mirror_y_axis
+
+    # weighted middles
+    weight = 0.67
+    left_middle  = (1 - weight) * right1 + weight * left1
+    right_middle = (1 - weight) * upper1 + weight * right2
 
 
-def get_point_in_3axis(point_x, point_y) -> tuple:
-    x_axis_a = np.tan(150. / 180 * np.pi)
-    z_axis_a = np.tan(30. / 180 * np.pi)
+    axis_points = np.array([-upper1[1], -right_middle[1], -left_middle[1], -left2[1]])
+    for i in range(len(axis_points)):
+        axis_points[i] = axis_points[i] ** 2 * np.sign(axis_points[i])
 
-    x_axis_x = (point_y * x_axis_a + point_x) / (x_axis_a * x_axis_a + 1)
-    x_axis_y = x_axis_a * x_axis_x
-    x = np.sqrt(x_axis_x * x_axis_x + x_axis_y * x_axis_y)
-    if x_axis_x > 0:
+    return axis_points
+
+
+axis_points = find_axis_breakpoints_squared()
+
+
+def get_point_on_axis(point_x, point_y, axis_angle) -> float:
+    slope = np.tan(axis_angle)
+
+    axis_x = (point_y * slope + point_x) / (slope * slope + 1)
+    axis_y = slope * axis_x
+    x = axis_x * axis_x + axis_y * axis_y
+
+    if (np.atan2(axis_y, axis_x) - axis_angle) % (np.pi * 2) > 0.1:
         x *= -1
+    return x
 
-    z_axis_x = (point_y * z_axis_a + point_x) / (z_axis_a * z_axis_a + 1)
-    z_axis_y = z_axis_a * z_axis_x
-    z = np.sqrt(z_axis_x * z_axis_x + z_axis_y * z_axis_y)
-    if z_axis_x < 0:
-        z *= -1
 
-    return x, -point_y, z
+def get_point_in_3axis_squared(point_x, point_y, rotation: float = 0) -> tuple:
+    # -1 * point_y * point_y * np.sign(point_y),(
+    return (get_point_on_axis(point_x, point_y, 5 * np.pi / 6 + rotation),
+            get_point_on_axis(point_x, point_y, -np.pi / 2 + rotation),
+            get_point_on_axis(point_x, point_y, np.pi / 6 + rotation))
 
 
 def get_colour(xi, yi, zi) -> str:
@@ -119,7 +101,7 @@ def get_colour(xi, yi, zi) -> str:
             return ' '
 
 
-def draw_polygon_numpy(size=10):
+def draw_polygon_numpy(size, rotation) -> str:
     # Create coordinate grid
     xs = np.linspace(-1, 1, size * 2)
     ys = np.linspace(1, -1, size)
@@ -129,7 +111,7 @@ def draw_polygon_numpy(size=10):
     drawing = ""
     for y in ys:
         for x in xs:
-            x2, y2, z2 = get_point_in_3axis(x, y)
+            x2, y2, z2 = get_point_in_3axis_squared(x, y, rotation)
             integer_cords = [0, 0, 0]
             for axis_coord, integer_coord in zip((x2, y2, z2), range(3)):
                 if axis_coord < axis_points[0]:
@@ -149,7 +131,14 @@ def draw_polygon_numpy(size=10):
 
         drawing += "\n"
 
-    print(drawing)
+    return drawing
 
-# for s in range(10, 30):
-draw_polygon_numpy(30)
+
+# for rotation in np.linspace(0, 2 * np.pi, 50):
+#     draw_polygon_numpy(30)
+#     time.sleep(0.1)
+#
+# # rotation = 0
+# draw_polygon_numpy(30)
+#
+# print(time.time() - start)
