@@ -40,18 +40,6 @@ def find_axis_breakpoints():
 axis_points = find_axis_breakpoints()
 
 
-def get_point_on_axis(point_x, point_y, axis_angle) -> float:
-    p = point_x * np.cos(axis_angle) + point_y * np.sin(axis_angle)
-    return p
-
-
-def get_point_in_3axis(point_x, point_y, rotation: float = 0) -> tuple:
-    return (get_point_on_axis(point_x, point_y, 5 * np.pi / 6 + rotation),
-            get_point_on_axis(point_x, point_y, -np.pi / 2 + rotation),
-            get_point_on_axis(point_x, point_y, np.pi / 6 + rotation))
-
-
-
 colour_map = np.full((6,6,6), ' ', dtype='<U1')
 colour_map[2, 4, 4] = '.'
 colour_map[4, 2, 4] = '#'
@@ -78,19 +66,30 @@ def draw_polygon_numpy(size, rotation) -> str:
     # Create coordinate grid
     xs = np.linspace(-1, 1, size * 2)
     ys = np.linspace(1, -1, size)
-    # X, Y = np.meshgrid(xs, ys)
+    X, Y = np.meshgrid(xs, ys)
 
-    # canvas = np.full((size, 2 * size), " ", dtype="<U1")
-    drawing = ""
-    for y in ys:
-        for x in xs:
-            x2, y2, z2 = get_point_in_3axis(x, y, rotation)
-            bins = np.digitize(np.array([x2, y2, z2]), axis_points)
-            drawing += colour_map[bins[0], bins[1], bins[2]]
+    pts = np.stack([X, Y], axis=-1)
 
-        drawing += "\n"
+    axes = np.array([
+        5 * np.pi / 6,
+        -np.pi / 2,
+        np.pi / 6
+    ]) + rotation
 
-    return drawing
+    dirs = np.stack([np.cos(axes), np.sin(axes)], axis=1)
+
+    proj = pts @ dirs.T
+
+    bins = np.digitize(proj, axis_points)
+
+    canvas = np.full((size, 2 * size), ' ', dtype='<U1')
+
+    for i in range(size):
+        for j in range(2 * size):
+            canvas[i, j] = colour_map[bins[i, j][0], bins[i, j][1], bins[i, j][2]]
+
+    return "\n".join("".join(r) for r in canvas)
+
 
 
 # for rotation in np.linspace(0, 2 * np.pi, 50):
