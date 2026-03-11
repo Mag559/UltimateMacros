@@ -7,20 +7,29 @@ from prompt_toolkit.validation import DummyValidator
 import asyncio
 from prompt_toolkit.patch_stdout import patch_stdout
 
-from render2 import draw_polygon_numpy
+from render2 import PenroseDrawer
+from time import time
 
 
 def main() -> None:
     session = PromptSession()
-
+    drawer = PenroseDrawer(20)
+    reference_time = [time()]
+    fps = ["???"]
+    frames = [0]
     angle = [0.001]
 
     def get_prompt():
-        return draw_polygon_numpy(20, angle[0])
+        frames[0] += 1
+        if (time() - reference_time[0]) > 1:
+            fps[0] = str(frames[0])
+            reference_time[0] = time()
+            frames[0] = 0
+        return drawer.draw(angle) + fps[0]
 
     async def spin():
         while True:
-            await asyncio.sleep(0.01)
+            await asyncio.sleep(0.06)
             angle[0] += 0.1
             session.app.invalidate()
 
