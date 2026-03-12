@@ -2,6 +2,8 @@ from collections.abc import Callable
 from logging import getLogger
 from os import system
 from pathlib import Path
+from time import sleep
+
 from pynput.keyboard import Key as PyKey
 import pyperclip
 
@@ -78,3 +80,25 @@ class FirefoxHandler:
         if not self.screen_match.wait_for_match():
             self.logger.error("wikamp failed to load")
             self.on_fail()
+
+
+    def wait_for_firefox_loading_wheel(self):
+        sleep(0.3) # it takes a moment to change from loaded to loading
+        self.screen_match.load_reference_image(REFERENCE_IMAGES / "firefox_loading_website.png")
+        if not self.screen_match.wait_for_match():
+            self.logger.error("website loading failed")
+            self.on_fail()
+
+
+    def press_register_attendance(self):
+        self.screen_match.load_reference_image(REFERENCE_IMAGES / "wikamp_attendance_button.png")
+        self.screen_match.set_compared_section(Section(0, 0, 1920, 1080))
+
+        possible_match = self.screen_match.find_match(0.90)
+        if not possible_match:
+            self.logger.error("No register attendance button found")
+            self.on_fail()
+
+        InputPresser.move_mouse((95 + possible_match[0], 20 + possible_match[1]))
+        InputPresser.left_click()
+        self.logger.debug("Clicking register attendance")

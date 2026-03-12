@@ -1,3 +1,6 @@
+from time import sleep
+
+from base_macro import InputPresser
 from .console_base import completer, default
 from firefox_handling.wikamp import FirefoxHandler
 
@@ -38,9 +41,14 @@ def _goto_wikamp(subject: str = "", attendance_code: str = ""):
     if subject not in WIKAMP_ATTENDANCE_WEBSITES.keys():
         print("Attendance has not been configured for this subject")
 
+    fh.wait_for_firefox_loading_wheel()
     fh.open_website(WIKAMP_ATTENDANCE_WEBSITES[subject])
-    # TODO scroll down to see all dates,
-    # scan for screenshot of yellow text to mark attendance
+    fh.wait_for_firefox_loading_wheel()
+    InputPresser.move_mouse((1000, 800)) # move slightly up for the cursor to hover over the website
+
+    sleep(2.5)
+    InputPresser.scroll(-50)
+    # either scan for enter code rectangle or spam tab 40+ times, which might be unreliable accross subjects
     # paste in the code
     # tab and enter to select present
     # tab and enter to mark

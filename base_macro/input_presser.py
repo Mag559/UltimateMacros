@@ -71,3 +71,8 @@ class InputPresser:
             to[0] - py_mouse_controller.position[0],
             to[1] - py_mouse_controller.position[1]
         )
+
+
+    @staticmethod
+    def scroll(by: int):
+        py_mouse_controller.scroll(0, by)
