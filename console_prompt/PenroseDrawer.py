@@ -12,6 +12,7 @@ class PenroseDrawer:
 
         self.pts = np.stack(np.meshgrid(xs, ys), axis=-1)
         self.indent = ' ' * 39
+        self.next_line = '\n' + self.indent
 
 
     def draw(self, rotation) -> str:
@@ -29,7 +30,7 @@ class PenroseDrawer:
 
         canvas = self.colour_map[bins[..., 0], bins[..., 1], bins[..., 2]]
 
-        return self.indent + f"\n{self.indent}".join("".join(r) for r in canvas)
+        return self.indent + self.next_line.join("".join(r) for r in canvas)
 
 
     def fill_colour_map(self):
