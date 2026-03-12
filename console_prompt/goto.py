@@ -46,12 +46,18 @@ def _goto_wikamp(subject: str = "", attendance_code: str = ""):
     fh.wait_for_firefox_loading_wheel()
     InputPresser.move_mouse((1000, 800)) # move slightly up for the cursor to hover over the website
 
-    sleep(2.5)
-    InputPresser.scroll(-50)
-    # either scan for enter code rectangle or spam tab 40+ times, which might be unreliable accross subjects
-    # paste in the code
-    # tab and enter to select present
-    # tab and enter to mark
+    sleep(1.5)
+    InputPresser.scroll(-5)
+
+    fh.press_register_attendance()
+
+    InputPresser.move_mouse((687, 595))
+    InputPresser.left_click()
+
+    InputPresser.input_string(attendance_code)
+    InputPresser.tab()
+    InputPresser.tap(' ')
+    InputPresser.enter()
 
 
 
