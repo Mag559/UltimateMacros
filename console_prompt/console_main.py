@@ -1,3 +1,5 @@
+from threading import Timer
+
 from prompt_toolkit import PromptSession
 from prompt_toolkit.patch_stdout import patch_stdout
 from prompt_toolkit.validation import DummyValidator
@@ -31,66 +33,46 @@ def get_color_style(current_time: float) -> str:
     return f"bg:#{r:02x}{g:02x}{b:02x}"
 
 
+class Main:
+    def __init__(self):
+        self.logger = getLogger(__name__)
 
-def main() -> None:
-    kb = KeyBindings()
+        self.kb = KeyBindings()
+        self.focused = True
 
-    focused = [True]
+        self.session = PromptSession(style=Style.from_dict({
+            "bottom-toolbar": f"bg:#eeeeee fg:#090909",
+        }))
 
-    @kb.add('escape', '[', 'I')
-    def _(_event):
-        focused[0] = True
-
-    # Przechwytywanie utraty focusu przez okno (Focus Out: \x1b[O)
-    @kb.add('escape', '[', 'O')
-    def _(_event):
-        focused[0] = False
-
-    # Wyjście z aplikacji (Ctrl+C)
-    @kb.add('c-c')
-    def _(event):
-        event.app.exit()
-
-    def get_toolbar():
-        return [toolbar_state[0]]
-
-    session = PromptSession(style=Style.from_dict({
-        "bottom-toolbar": f"bg:#eeeeee fg:#090909",
-    }))
-    logger = getLogger(__name__)
+        self.toolbar_state = ("bg:#eeeeee", "")
 
 
+        self.exit_timer: Timer | None = None
 
-    toolbar_state = [("bg:#eeeeee", "")]
+        self.restart_timeout()
 
 
-    async def spin():
-        angle: float = 0
-        drawer = PenroseDrawer(20)
-        while True:
-            await asyncio.sleep(0.05)
-            if not focused[0]:
-                await asyncio.sleep(0.5)
-                continue
-            angle += 0.07
-            toolbar_state[0] = (get_color_style(time()), drawer.draw(angle))
+    def get_toolbar(self):
+        return [self.toolbar_state]
 
-            session.app.invalidate()
 
-    async def run():
-        asyncio.create_task(spin())
+    async def run(self):
+        spiny_task = asyncio.create_task(self.spin())
 
         while True:
-            prompt_result = await session.prompt_async(
+            prompt_result = await self.session.prompt_async(
                 "> ",
-                key_bindings=kb,
+                key_bindings=self.kb,
                 completer=completer,
                 validator=DummyValidator(),
-                bottom_toolbar=get_toolbar,
+                bottom_toolbar=self.get_toolbar,
 
             )
-
-            logger.info(f"User prompt: {prompt_result}")
+            if prompt_result is None:
+                self.logger.info("Prompt result is None, exiting")
+                break
+            self.logger.info(f"User prompt: {prompt_result}")
+            self.restart_timeout()
 
             if prompt_result.strip() in defaults:
                 defaults[prompt_result.strip()]()
@@ -98,7 +80,55 @@ def main() -> None:
                 try:
                     completer.run_action(prompt_result)
                 except ValueError:
-                    logger.error(f"Invalid prompt: {prompt_result}")
+                    self.logger.error(f"Invalid prompt: {prompt_result}")
 
-    with patch_stdout():
-        asyncio.run(run())
+        spiny_task.cancel()
+
+
+    def start(self):
+        with patch_stdout():
+            asyncio.run(self.run())
+
+
+    def create_key_bindings(self):
+        @self.kb.add('escape', '[', 'I')
+        def _(_event):
+            self.focused = True
+
+        # Przechwytywanie utraty focusu przez okno (Focus Out: \x1b[O)
+        @self.kb.add('escape', '[', 'O')
+        def _(_event):
+            self.focused = False
+
+        # Wyjście z aplikacji (Ctrl+C)
+        @self.kb.add('c-c')
+        def _(event):
+            event.app.exit()
+
+
+    def restart_timeout(self):
+        if self.exit_timer:
+            self.exit_timer.cancel()
+        self.exit_timer = Timer(100, self.terminate)
+        self.exit_timer.start()
+
+
+    def terminate(self):
+        self.session.app.exit()
+
+    async def spin(self):
+        angle: float = 0
+        drawer = PenroseDrawer(20)
+        while True:
+            await asyncio.sleep(0.05)
+            if not self.focused:
+                await asyncio.sleep(0.5)
+                continue
+            angle += 0.07
+            self.toolbar_state = (get_color_style(time()), drawer.draw(angle))
+
+            self.session.app.invalidate()
+
+
+def main() -> None:
+    Main().start()
