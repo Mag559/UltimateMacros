@@ -1,39 +1,49 @@
+from enum import Enum
+
 import re
 from threading import Thread
 from pathlib import Path
 from time import sleep
 
-from base_macro import BaseMacro, ImportantEvents
+from src.base_macro import BaseMacro, ImportantEvents
+from .interpreter import Interpreter
 from .recorder import Recorder
 
-class RecorderMacro(BaseMacro):
+class RepeaterState(Enum):
+    IDLE = 0
+    RECORDING = 1
+    EXECUTING = 3
+
+# TODO does not work yet
+class RepeaterMacro(BaseMacro):
     """
-    Macro version of the recorder
-    Filters out SHORTCUT1 and TOGGLE.
-    TOGGLE - to pause recording instructions,
-    instead comments are made in the file
+    Macro mix of recorder and interpreter
+    TOGGLE to pause recording or executing instructions
+    SHORTCUT1 to start recording or end recording
+    SHORTCUT2 to start execution of last instruction set or end it prematurely
+
+    Pressing SHORTCUT2 while recording ends it
     """
-    def __init__(self, file_path: Path):
+
+    def __init__(self, file_path: Path | None = None):
         super().__init__()
 
         self.recorder = Recorder()
-        self.file_path = file_path
+        self.record_thread = Thread(target=self.record, name="RepeaterMacro record")
+
+        self.interpreter: Interpreter = Interpreter(self.read_instructions())
+        self.interpreter_thread: Thread = Thread(target=self.interpreter.start, name="RepeaterMacro interpreter")
+
+        self.file_path: Path | None = file_path
 
         self.events_buffer: list = []
         self.possible_shortcut = False
 
+        self.state: RepeaterState = RepeaterState.IDLE
         self.pause: bool = False
         self.pause_toggle: bool = False
 
-        self.record_thread = Thread(target=self.record)
-
-
-    def start(self):
-        self.record_thread.start()
-
-        super().start()
-
-        self.record_thread.join()
+        self.stop_flag: bool = False
 
 
     def update(self, event_code: ImportantEvents):
@@ -56,7 +66,6 @@ class RecorderMacro(BaseMacro):
 
                 self.write_to_file_mode(instruction, file)
 
-
     def pause_mode(self, instruction: str, file):
         self.logger.debug(f"Processing instruction: {instruction} in pause mode")
 
@@ -72,7 +81,6 @@ class RecorderMacro(BaseMacro):
         if self.pause_toggle:
             self.pause_toggle = False
             self.pause = not self.pause
-
 
     def write_to_file_mode(self, instruction: str, file):
         self.logger.debug(f"Processing instruction: {instruction} in write mode")
@@ -106,7 +114,47 @@ class RecorderMacro(BaseMacro):
                 file.write(event + "\n")
             self.events_buffer.clear()
 
-
     def terminate(self):
         self.recorder.stop()
         super().terminate()
+
+
+
+
+def update(self, event_code: ImportantEvents):
+    super().update(event_code)
+
+    if event_code == ImportantEvents.TOGGLE:
+        self.pause = not self.pause
+
+
+def start(self):
+    self.int_logger.debug(f"Interpreting started")
+    self.interpreter_thread.start()
+    super().start()
+    self.interpreter_thread.join()
+    self.int_logger.debug(f"Interpreting ended")
+
+
+def read_instructions(self):
+    with open(self.file_path, "r") as file:
+        for line in file:
+
+            while self.pause:
+                sleep(0.1)
+
+            if self.stop_flag:
+                self.int_logger.debug(f"Stopped reading instructions from {self.file_path}")
+                return
+            yield line
+
+    self.int_logger.debug(f"Read all instructions from {self.file_path}")
+
+    self.terminate()
+
+
+def terminate(self):
+    self.int_logger.debug(f"Raising stop flag")
+    self.stop_flag = True
+    self.pause = False
+    super().terminate()

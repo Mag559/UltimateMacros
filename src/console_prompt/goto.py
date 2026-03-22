@@ -1,8 +1,8 @@
 from time import sleep
 
-from base_macro import InputPresser
+from src.base_macro import InputPresser
 from .console_base import completer, default
-from firefox_handling.wikamp import FirefoxHandler
+from src.firefox_handling.wikamp import FirefoxHandler
 
 WIKAMP_SUBJECT_WEBSITES = {
     "tips": "https://ftims.edu.p.lodz.pl/course/view.php?id=2206",

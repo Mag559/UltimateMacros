@@ -1,6 +1,6 @@
 import logging
 import ctypes
-from console_prompt import main
+from src import main
 from sys import stdout
 
 

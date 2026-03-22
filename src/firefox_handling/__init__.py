@@ -1,0 +1,1 @@
+from .wikamp import FirefoxHandler

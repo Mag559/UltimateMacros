@@ -1,4 +1,8 @@
 from threading import Timer
+import asyncio
+from logging import getLogger
+from math import sin, pi
+from time import time
 
 from prompt_toolkit import PromptSession
 from prompt_toolkit.patch_stdout import patch_stdout
@@ -6,21 +10,15 @@ from prompt_toolkit.validation import DummyValidator
 from prompt_toolkit.key_binding import KeyBindings
 from prompt_toolkit.styles import Style
 
-from logging import getLogger
-import asyncio
-
 
 from .console_base import defaults, completer
+from src.console_prompt.PenroseDrawer import PenroseDrawer
+
 from .goto import goto_group
-from .miscellaneous import _exit
 from .macro import macro_group
+from .miscellaneous import _exit
 from .tool import tool_group
 
-
-from console_prompt.PenroseDrawer import PenroseDrawer
-
-from time import time
-from math import sin, pi
 
 PI_066 = pi * 0.66
 PI_132 = pi * 1.32
@@ -49,8 +47,6 @@ class Main:
 
         self.exit_timer: Timer | None = None
 
-        self.restart_timeout()
-
 
     def get_toolbar(self):
         return [self.toolbar_state]
@@ -60,6 +56,7 @@ class Main:
         spiny_task = asyncio.create_task(self.spin())
 
         while True:
+            self.restart_timeout()
             prompt_result = await self.session.prompt_async(
                 "> ",
                 key_bindings=self.kb,
@@ -68,11 +65,12 @@ class Main:
                 bottom_toolbar=self.get_toolbar,
 
             )
+            self.exit_timer.cancel()
+
             if prompt_result is None:
                 self.logger.info("Prompt result is None, exiting")
                 break
             self.logger.info(f"User prompt: {prompt_result}")
-            self.restart_timeout()
 
             if prompt_result.strip() in defaults:
                 defaults[prompt_result.strip()]()

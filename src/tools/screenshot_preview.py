@@ -1,7 +1,7 @@
 from time import sleep
 
 from .preview_window import PreviewWindow
-from screen_match import Capturer, Section, REFERENCE_IMAGES
+from src.screen_match import Capturer, Section, REFERENCE_IMAGES
 
 class ScreenshotPreview:
     def __init__(self):

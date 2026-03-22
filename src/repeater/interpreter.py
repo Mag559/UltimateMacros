@@ -6,7 +6,7 @@ from time import sleep
 from pynput.keyboard import Controller as KeyboardController, Key as PyKey, KeyCode
 from pynput.mouse import Controller as MouseController, Button as PyButton
 
-from screen_match import ScreenMatch, REFERENCE_IMAGES
+from src.screen_match import ScreenMatch, REFERENCE_IMAGES
 
 py_keyboard_controller = KeyboardController()
 py_mouse_controller = MouseController()

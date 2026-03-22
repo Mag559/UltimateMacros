@@ -1,7 +1,7 @@
 from prompt_toolkit.completion import PathCompleter
 
-from macros import ClipboardMacro
-from repeater import RecorderMacro, InterpreterMacro, MACRO_FILES
+from src.macros import ClipboardMacro
+from src.repeater import RecorderMacro, InterpreterMacro, MACRO_FILES
 from .console_base import completer, default
 
 

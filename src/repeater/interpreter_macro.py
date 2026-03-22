@@ -3,7 +3,7 @@ from threading import Thread
 from time import sleep
 from logging import getLogger
 
-from base_macro import BaseMacro, ImportantEvents
+from src.base_macro import BaseMacro, ImportantEvents
 from .interpreter import Interpreter
 
 class InterpreterMacro(BaseMacro):

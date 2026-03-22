@@ -1,4 +1,4 @@
-from tools import ScreenshotPreview
+from src.tools import ScreenshotPreview
 from .console_base import completer, default
 
 tool_group = completer.group("tool")

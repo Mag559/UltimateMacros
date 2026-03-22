@@ -1,17 +1,15 @@
 from collections.abc import Callable
 from logging import getLogger
 from os import system
-from pathlib import Path
 from time import sleep
 
 from pynput.keyboard import Key as PyKey
 import pyperclip
 
-from base_macro import InputPresser
-from screen_match import ScreenMatch, Section
+from src.base_macro import InputPresser
+from src.screen_match import ScreenMatch, Section, REFERENCE_IMAGES
 
 CAS = "https://login.p.lodz.pl/login?service=https%3A%2F%2Fedu.p.lodz.pl%2Flogin%2Findex.php%3FauthCAS%3DCAS"
-REFERENCE_IMAGES = Path(__file__).parent.parent / "reference_images"
 
 
 class FirefoxHandler:
