@@ -47,7 +47,7 @@ def _goto_wikamp(subject: str = "", attendance_code: str = ""):
     InputPresser.move_mouse((1000, 800)) # move slightly up for the cursor to hover over the website
 
     sleep(1.5)
-    InputPresser.scroll(-5)
+    InputPresser.scroll(-1)
 
     fh.press_register_attendance()
 

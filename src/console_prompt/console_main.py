@@ -13,6 +13,7 @@ from prompt_toolkit.styles import Style
 
 from .console_base import defaults, completer
 from src.console_prompt.PenroseDrawer import PenroseDrawer
+from .console_toolbar import ConsoleToolbar
 
 from .goto import goto_group
 from .macro import macro_group
@@ -36,20 +37,27 @@ class Main:
         self.logger = getLogger(__name__)
 
         self.kb = KeyBindings()
+        self.create_key_bindings()
         self.focused = True
 
-        self.session = PromptSession(style=Style.from_dict({
-            "bottom-toolbar": f"bg:#eeeeee fg:#090909",
-        }))
+        self.session = PromptSession(
+            style=Style.from_dict({
+                "bottom-toolbar": f"bg:#eeeeee fg:#090909",
+            }),
+            key_bindings=self.kb,
+            bottom_toolbar=self.get_toolbar
+        )
 
-        self.toolbar_state = ("bg:#eeeeee", "")
+        self.toolbar: ConsoleToolbar = ConsoleToolbar(14)
 
 
         self.exit_timer: Timer | None = None
+        self.time_backlog: float = 0.0
+        self.paused_time: float = -1.0
 
 
     def get_toolbar(self):
-        return [self.toolbar_state]
+        return self.toolbar.get()
 
 
     async def run(self):
@@ -59,11 +67,8 @@ class Main:
             self.restart_timeout()
             prompt_result = await self.session.prompt_async(
                 "> ",
-                key_bindings=self.kb,
                 completer=completer,
-                validator=DummyValidator(),
-                bottom_toolbar=self.get_toolbar,
-
+                validator=DummyValidator()
             )
             self.exit_timer.cancel()
 
@@ -89,14 +94,17 @@ class Main:
 
 
     def create_key_bindings(self):
+        # Przechwytywanie uzyskania focusu przez okno (Focus In: \x1b[I)
         @self.kb.add('escape', '[', 'I')
         def _(_event):
             self.focused = True
+            # accounting for the paused time is further deferred to when the spin task exits slow sleep loop
 
         # Przechwytywanie utraty focusu przez okno (Focus Out: \x1b[O)
         @self.kb.add('escape', '[', 'O')
         def _(_event):
             self.focused = False
+            self.paused_time = time()
 
         # Wyjście z aplikacji (Ctrl+C)
         @self.kb.add('c-c')
@@ -116,16 +124,40 @@ class Main:
 
     async def spin(self):
         angle: float = 0
-        drawer = PenroseDrawer(20)
+        drawer = PenroseDrawer(10)
         while True:
             await asyncio.sleep(0.05)
             if not self.focused:
-                await asyncio.sleep(0.5)
-                continue
+                await self.sleep_through_pause()
             angle += 0.07
-            self.toolbar_state = (get_color_style(time()), drawer.draw(angle))
+            penrose_drawing = drawer.draw(angle) + "\n"
+            empty = "\n".join(' ' * 20 for _ in range(10)) + "\n"
+            self.toolbar.update(0, penrose_drawing * 5, get_color_style(time() - self.time_backlog))
+            self.toolbar.update(1, penrose_drawing + empty * 3 + penrose_drawing, get_color_style(time() - self.time_backlog - 2 * pi * 1 / 14))
+            self.toolbar.update(2, empty + penrose_drawing * 3 + empty, get_color_style(time() - self.time_backlog - 2 * pi * 2 / 14))
+            self.toolbar.update(3, empty * 5, get_color_style(time() - self.time_backlog - 2 * pi * 3 / 14))
+            self.toolbar.update(4, penrose_drawing * 4 + empty, get_color_style(time() - self.time_backlog - 2 * pi * 4 / 14))
+            self.toolbar.update(5, empty * 4 + penrose_drawing, get_color_style(time() - self.time_backlog - 2 * pi * 5 / 14))
+            self.toolbar.update(6, penrose_drawing * 4 + empty, get_color_style(time() - self.time_backlog - 2 * pi * 6 / 14))
+            self.toolbar.update(7, empty * 5, get_color_style(time() - self.time_backlog - 2 * pi * 7 / 14))
+            self.toolbar.update(8, empty + penrose_drawing * 3 + empty, get_color_style(time() - self.time_backlog - 2 * pi * 8 / 14))
+            self.toolbar.update(9, penrose_drawing + empty * 3 + penrose_drawing, get_color_style(time() - self.time_backlog - 2 * pi * 9 / 14))
+            self.toolbar.update(10, empty * 5, get_color_style(time() - self.time_backlog - 2 * pi * 10 / 14))
+            self.toolbar.update(11, penrose_drawing * 5, get_color_style(time() - self.time_backlog - 2 * pi * 11 / 14))
+            self.toolbar.update(12, empty * 2 + penrose_drawing * 2 + empty, get_color_style(time() - self.time_backlog - 2 * pi * 12 / 14))
+            self.toolbar.update(13, empty + penrose_drawing + empty * 2 + penrose_drawing, get_color_style(time() - self.time_backlog - 2 * pi * 13 / 14))
 
             self.session.app.invalidate()
+
+
+    async def sleep_through_pause(self):
+        while not self.focused:
+            await asyncio.sleep(0.5)
+
+        if self.paused_time < 0:
+            return
+
+        self.time_backlog += time() - self.paused_time
 
 
 def main() -> None:
