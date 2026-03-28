@@ -32,6 +32,14 @@ def get_color_style(current_time: float) -> str:
     return f"bg:#{r:02x}{g:02x}{b:02x}"
 
 
+def get_color_style_weighted(brightness: float) -> str:
+    r = min(255, int(255 * brightness))
+    g = min(255, int(255 * brightness))
+    b = min(255, int(255 * brightness))
+
+    return f"bg:#{r:02x}{g:02x}{b:02x}"
+
+
 class Main:
     def __init__(self):
         self.logger = getLogger(__name__)
@@ -48,7 +56,7 @@ class Main:
             bottom_toolbar=self.get_toolbar
         )
 
-        self.toolbar: ConsoleToolbar = ConsoleToolbar(14)
+        self.toolbar: ConsoleToolbar = ConsoleToolbar(20, 20)
 
 
         self.exit_timer: Timer | None = None
@@ -125,27 +133,32 @@ class Main:
     async def spin(self):
         angle: float = 0
         drawer = PenroseDrawer(10)
+        big_drawer = PenroseDrawer(20)
         while True:
             await asyncio.sleep(0.05)
             if not self.focused:
                 await self.sleep_through_pause()
             angle += 0.07
             penrose_drawing = drawer.draw(angle) + "\n"
-            empty = "\n".join(' ' * 20 for _ in range(10)) + "\n"
-            self.toolbar.update(0, penrose_drawing * 5, get_color_style(time() - self.time_backlog))
-            self.toolbar.update(1, penrose_drawing + empty * 3 + penrose_drawing, get_color_style(time() - self.time_backlog - 2 * pi * 1 / 14))
-            self.toolbar.update(2, empty + penrose_drawing * 3 + empty, get_color_style(time() - self.time_backlog - 2 * pi * 2 / 14))
-            self.toolbar.update(3, empty * 5, get_color_style(time() - self.time_backlog - 2 * pi * 3 / 14))
-            self.toolbar.update(4, penrose_drawing * 4 + empty, get_color_style(time() - self.time_backlog - 2 * pi * 4 / 14))
-            self.toolbar.update(5, empty * 4 + penrose_drawing, get_color_style(time() - self.time_backlog - 2 * pi * 5 / 14))
-            self.toolbar.update(6, penrose_drawing * 4 + empty, get_color_style(time() - self.time_backlog - 2 * pi * 6 / 14))
-            self.toolbar.update(7, empty * 5, get_color_style(time() - self.time_backlog - 2 * pi * 7 / 14))
-            self.toolbar.update(8, empty + penrose_drawing * 3 + empty, get_color_style(time() - self.time_backlog - 2 * pi * 8 / 14))
-            self.toolbar.update(9, penrose_drawing + empty * 3 + penrose_drawing, get_color_style(time() - self.time_backlog - 2 * pi * 9 / 14))
-            self.toolbar.update(10, empty * 5, get_color_style(time() - self.time_backlog - 2 * pi * 10 / 14))
-            self.toolbar.update(11, penrose_drawing * 5, get_color_style(time() - self.time_backlog - 2 * pi * 11 / 14))
-            self.toolbar.update(12, empty * 2 + penrose_drawing * 2 + empty, get_color_style(time() - self.time_backlog - 2 * pi * 12 / 14))
-            self.toolbar.update(13, empty + penrose_drawing + empty * 2 + penrose_drawing, get_color_style(time() - self.time_backlog - 2 * pi * 13 / 14))
+            big_drawing = big_drawer.draw(angle)
+            for x in range(20):
+                for y in range(20):
+                    brightness: float = 0
+                    match big_drawing[2 * x + y * 41]:
+                        case '#':
+                            brightness = 1.5
+                        case '*':
+                            brightness = 0.6
+                        case '.':
+                            brightness = 0.2
+                        case _:
+                            brightness = 0.01
+                    self.toolbar.update(
+                        x, y,
+                        penrose_drawing,
+                        get_color_style_weighted(brightness)
+                    )
+
 
             self.session.app.invalidate()
 

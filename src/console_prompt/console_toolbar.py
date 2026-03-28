@@ -1,20 +1,24 @@
 class ConsoleToolbar:
-    def __init__(self, blocks: int):
+    def __init__(self, blocks_x: int, blocks_y: int):
         self.toolbar_state = [("bg:#eeeeee", "")]
 
-        self.toolbar_blocks = [("", "") for _ in range(blocks)]
+        self.toolbar_blocks = [[("", "") for _ in range(blocks_x)] for _ in range(blocks_y)]
         self.needs_updating: bool = False
+        self.blocks_x = blocks_x
+        self.blocks_y = blocks_y
 
 
     def get(self):
         if self.needs_updating:
-            self.toolbar_state = horizontally_join(*self.toolbar_blocks, height=50)
+            self.toolbar_state = []
+            for y in range(self.blocks_y):
+                self.toolbar_state.extend(horizontally_join(*(self.toolbar_blocks[y]), height=10))
             self.needs_updating = False
 
         return self.toolbar_state
 
-    def update(self, block_id: int, text: str, style: str = ""):
-        self.toolbar_blocks[block_id] = (style, text)
+    def update(self, block_x: int, block_y: int, text: str, style: str = ""):
+        self.toolbar_blocks[block_y][block_x] = (style, text)
         self.needs_updating = True
 
 
