@@ -15,10 +15,10 @@ from .console_base import defaults, completer
 from src.console_prompt.PenroseDrawer import PenroseDrawer
 from .console_toolbar import ConsoleToolbar
 
-from .goto import goto_group
-from .macro import macro_group
-from .miscellaneous import _exit
-from .tool import tool_group
+from .goto import setup_goto
+from .macro import setup_macro
+from .miscellaneous import setup_misc
+from .tool import setup_tool
 
 
 PI_066 = pi * 0.66
@@ -62,6 +62,11 @@ class Main:
         self.exit_timer: Timer | None = None
         self.time_backlog: float = 0.0
         self.paused_time: float = -1.0
+
+        setup_goto()
+        setup_macro()
+        setup_misc()
+        setup_tool()
 
 
     def get_toolbar(self):
