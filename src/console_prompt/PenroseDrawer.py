@@ -2,19 +2,21 @@ import numpy as np
 
 
 class PenroseDrawer:
-    def __init__(self, size):
-        self.axis_breakpoints = PenroseDrawer.find_axis_breakpoints()
-        self.colour_map = np.full((6, 6, 6), ' ', dtype='<U1')
+    def __init__(self, size: int):
+        self.axis_breakpoints: np.ndarray = PenroseDrawer.find_axis_breakpoints()
+        self.colour_map: np.ndarray = np.full((6, 6, 6), ' ', dtype='<U1')
         self.fill_colour_map()
+
         # Create coordinate grid
-        xs = np.linspace(-1, 1, size * 2)
-        ys = np.linspace(1, -1, size)
+        self.width: int = 2 * size
+        self.height: int = size
+        xs = np.linspace(-1, 1, self.width)
+        ys = np.linspace(1, -1, self.height)
 
         self.pts = np.stack(np.meshgrid(xs, ys), axis=-1)
-        self.next_line = '\n'
 
 
-    def draw(self, rotation) -> str:
+    def draw(self, rotation: float) -> np.ndarray:
         axes = np.array([
             5 * np.pi / 6,
             -np.pi / 2,
@@ -27,9 +29,8 @@ class PenroseDrawer:
 
         bins = np.digitize(proj, self.axis_breakpoints)
 
-        canvas = self.colour_map[bins[..., 0], bins[..., 1], bins[..., 2]]
 
-        return self.next_line.join("".join(r) for r in canvas)
+        return self.colour_map[bins[..., 0], bins[..., 1], bins[..., 2]]
 
 
     def fill_colour_map(self):

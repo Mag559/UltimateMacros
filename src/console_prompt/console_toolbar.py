@@ -1,26 +1,44 @@
+import numpy as np
+
 class ConsoleToolbar:
-    def __init__(self, blocks_x: int, blocks_y: int):
+    def __init__(self, canvas_width: int, canvas_heigh: int):
         self.toolbar_state = [("bg:#eeeeee", "")]
 
-        self.toolbar_blocks = [[("", "") for _ in range(blocks_x)] for _ in range(blocks_y)]
         self.needs_updating: bool = False
-        self.blocks_x = blocks_x
-        self.blocks_y = blocks_y
+        self.canvas_width = canvas_width
+        self.canvas_height = canvas_heigh
+
+        self.canvas = np.full((canvas_heigh, canvas_width), ' ', dtype="<U1")
+
+        self.style = "bg:#eeeeee"
 
 
     def get(self):
         if self.needs_updating:
-            self.toolbar_state = []
-            for y in range(self.blocks_y):
-                self.toolbar_state.extend(horizontally_join(*(self.toolbar_blocks[y]), height=10))
+            text = '\n'.join("".join(r) for r in self.canvas)
+            self.toolbar_state = [(self.style, text)]
             self.needs_updating = False
 
         return self.toolbar_state
 
-    def update(self, block_x: int, block_y: int, text: str, style: str = ""):
-        self.toolbar_blocks[block_y][block_x] = (style, text)
+
+    def wipe(self, x: int, y: int, width: int, height: int):
+        self.canvas[y:y + height, x:x + width] = ' '
         self.needs_updating = True
 
+
+    def update(self, drawing: np.ndarray, x: int, y: int) -> None:
+        self.canvas[y:y + drawing.shape[0], x:x + drawing.shape[1]] = drawing
+
+        self.needs_updating = True
+
+    # def update(self, block_x: int, block_y: int, text: str, style: str = ""):
+    #     self.toolbar_blocks[block_y][block_x] = (style, text)
+    #     self.needs_updating = True
+
+    def set_style(self, style: str):
+        self.style = style
+        self.needs_updating = True
 
 
 def horizontally_join(*blocks, height:int = 20):

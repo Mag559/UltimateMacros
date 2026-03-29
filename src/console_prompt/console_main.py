@@ -32,14 +32,6 @@ def get_color_style(current_time: float) -> str:
     return f"bg:#{r:02x}{g:02x}{b:02x}"
 
 
-def get_color_style_weighted(brightness: float) -> str:
-    r = min(255, int(255 * brightness))
-    g = min(255, int(255 * brightness))
-    b = min(255, int(255 * brightness))
-
-    return f"bg:#{r:02x}{g:02x}{b:02x}"
-
-
 class Main:
     def __init__(self):
         self.logger = getLogger(__name__)
@@ -56,7 +48,7 @@ class Main:
             bottom_toolbar=self.get_toolbar
         )
 
-        self.toolbar: ConsoleToolbar = ConsoleToolbar(20, 20)
+        self.toolbar: ConsoleToolbar = ConsoleToolbar(125, 20)
 
 
         self.exit_timer: Timer | None = None
@@ -137,32 +129,17 @@ class Main:
 
     async def spin(self):
         angle: float = 0
-        drawer = PenroseDrawer(10)
-        big_drawer = PenroseDrawer(20)
+        drawer = PenroseDrawer(20)
         while True:
             await asyncio.sleep(0.05)
             if not self.focused:
                 await self.sleep_through_pause()
             angle += 0.07
-            penrose_drawing = drawer.draw(angle) + "\n"
-            big_drawing = big_drawer.draw(angle)
-            for x in range(20):
-                for y in range(20):
-                    brightness: float = 0
-                    match big_drawing[2 * x + y * 41]:
-                        case '#':
-                            brightness = 1.5
-                        case '*':
-                            brightness = 0.6
-                        case '.':
-                            brightness = 0.2
-                        case _:
-                            brightness = 0.01
-                    self.toolbar.update(
-                        x, y,
-                        penrose_drawing,
-                        get_color_style_weighted(brightness)
-                    )
+            penrose_drawing = drawer.draw(angle)
+            # self.toolbar.wipe(42, 0, 40, 20)
+            # self.toolbar.set_style(get_color_style(time() - self.time_backlog))
+            # self.toolbar.set_style()
+            self.toolbar.update(penrose_drawing, 42, 0)
 
 
             self.session.app.invalidate()
