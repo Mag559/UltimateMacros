@@ -1,7 +1,7 @@
+from logging import getLogger
 from time import time
 
 import numpy as np
-
 PI_066 = np.pi * 0.66
 PI_132 = np.pi * 1.32
 
@@ -15,6 +15,7 @@ def get_color_style(current_time: float) -> str:
 
 class ConsoleToolbar:
     def __init__(self, canvas_width: int, canvas_heigh: int):
+        self.logger = getLogger(__name__)
         self.toolbar_state = [("bg:#eeeeee", "")]
 
         self.needs_updating: bool = False
@@ -23,20 +24,38 @@ class ConsoleToolbar:
 
         self.canvas = np.full((canvas_heigh, canvas_width), ' ', dtype="<U1")
 
-        self.style = "bg:#eeeeee"
+        self.styles = ["bg:#eeeeee"]
+        self.style_canvas = np.full((canvas_heigh, canvas_width), 0, dtype="uint8")
 
 
     def get(self):
         if self.needs_updating:
             self.toolbar_state = []
-            for y, row in enumerate(self.canvas):
-                self.toolbar_state.append(
-                    (
-                        get_color_style(
-                        time() - 2 * np.pi * y / self.canvas_height),
-                        "".join(row) + '\n'
-                    )
-                )
+
+            for style_row, char_row in zip(self.style_canvas, self.canvas):
+                # znajdź miejsca, gdzie zmienia się wartość
+                changes = np.where(np.diff(style_row) != 0)[0] + 1
+
+                # podziel indeksy na grupy
+                indices = np.split(np.arange(len(style_row)), changes)
+
+                # dla każdej grupy zrób join znaków
+                row_groups = [(self.styles[style_row[idx[0]]], "".join(char_row[idx])) for idx in indices]
+
+                self.toolbar_state.extend(row_groups)
+                self.toolbar_state.append(('', '\n'))
+
+
+
+
+            # for y, row in enumerate(self.canvas):
+            #     self.toolbar_state.append(
+            #         (
+            #             get_color_style(
+            #             time() - 2 * np.pi * y / self.canvas_height),
+            #             "".join(row) + '\n'
+            #         )
+            #     )
 
             # text = '\n'.join("".join(r) for r in self.canvas)
             # self.toolbar_state = [(self.style, text)]
@@ -45,57 +64,30 @@ class ConsoleToolbar:
         return self.toolbar_state
 
 
-    def wipe(self, x: int, y: int, width: int, height: int):
+    def wipe_canvas(self, x: int, y: int, width: int, height: int):
         self.canvas[y:y + height, x:x + width] = ' '
         self.needs_updating = True
 
 
-    def update(self, drawing: np.ndarray, x: int, y: int) -> None:
+    def draw_on_canvas(self, drawing: np.ndarray, x: int, y: int) -> None:
         self.canvas[y:y + drawing.shape[0], x:x + drawing.shape[1]] = drawing
-
-        self.needs_updating = True
-
-    # def update(self, block_x: int, block_y: int, text: str, style: str = ""):
-    #     self.toolbar_blocks[block_y][block_x] = (style, text)
-    #     self.needs_updating = True
-
-    def set_style(self, style: str):
-        self.style = style
         self.needs_updating = True
 
 
-def horizontally_join(*blocks, height:int = 20):
-    """
-    Requires blocks to have consistent width in every line.
-    Blocks can end early, however they must have at least one line, to gauge their width
-    every block in blocks: ("text style", text)
-    result: [("text style", text), ...]
-    """
-    result = []
-    styles = [style for style, text in blocks]
-    lines = [[line for line in text.split("\n")] for style, text in blocks]
-    widths = [len(block_lines[0]) * ' ' for block_lines in lines]
+    def add_new_style(self, style: str) -> int:
+        self.styles.append(style)
+        return len(self.styles) - 1
 
-    empty_block_ids = []
-    for row in range(height):
-        for block_i in range(len(blocks)):
-            if len(lines[block_i]) <= row:
-                # there isn't a line for this row in this block
-                # mark it as empty
-                empty_block_ids.append(block_i)
 
-            if block_i in empty_block_ids:
-                # if it's empty add the appropriate space count with default style
-                result.append(("", widths[block_i]))
-                continue
+    def update_style(self, new_style: str, style_idx: int):
+        if not 0 <= style_idx < len(self.styles):
+            raise ValueError(f"Style {style_idx} out of range")
+        self.styles[style_idx] = new_style
+        self.needs_updating = True
 
-            # if len(empty_block_ids) == len(blocks) - 1:
-            #     # if there's only one of the blocks left, there is no point sending it in separately styled chunks
-            #     result.append(
-            #         (styles[block_i],
-            #          ),
-            #     )
-            result.append((styles[block_i], lines[block_i][row]))
-        result.append(("", '\n'))
 
-    return result
+    def draw_style_canvas(self, from_x: int, from_y: int, to_x: int, to_y: int, style_idx: int) -> None:
+        if not 0 <= style_idx < len(self.styles):
+            raise ValueError(f"Style {style_idx} out of range")
+        self.style_canvas[from_y:to_y, from_x:to_x] = style_idx
+        self.needs_updating = True
