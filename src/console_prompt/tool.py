@@ -1,10 +1,10 @@
 from src.tools import ScreenshotPreview
-from .console_base import completer, default
+from .console_base import ConsoleBase
 
-def setup_tool() -> None:
-    tool_group = completer.group("tool")
+def setup_tool(console_base: ConsoleBase) -> None:
+    tool_group = console_base.completer.group("tool")
 
-    @default
+    @console_base.default
     def _tool():
         print("Incomplete command.\nDescription:")
         print("Command for running tools.")

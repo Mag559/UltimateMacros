@@ -2,11 +2,13 @@ from pathlib import Path
 
 from prompt_toolkit.completion import PathCompleter
 
-from .console_base import completer
+from .console_base import ConsoleBase
 CURRENT_SEMESTER_DIR = Path("C:\\Users\\macie\\OneDrive\\Pulpit\\Pol\\4sem")
 
 
-def setup_misc() -> None:
+def setup_misc(console_base: ConsoleBase) -> None:
+    completer = console_base.completer
+
     @completer.action("exit")
     @completer.action("quit")
     @completer.action("q")

@@ -11,7 +11,7 @@ from prompt_toolkit.key_binding import KeyBindings
 from prompt_toolkit.styles import Style
 
 
-from .console_base import defaults, completer
+from .console_base import ConsoleBase
 from src.console_prompt.PenroseDrawer import PenroseDrawer
 from .console_toolbar import ConsoleToolbar
 
@@ -50,15 +50,16 @@ class Main:
 
         self.toolbar: ConsoleToolbar = ConsoleToolbar(125, 20)
 
-
         self.exit_timer: Timer | None = None
         self.time_backlog: float = 0.0
         self.paused_time: float = -1.0
 
-        setup_goto()
-        setup_macro()
-        setup_misc()
-        setup_tool()
+        self.console_base: ConsoleBase = ConsoleBase()
+
+        setup_goto(self.console_base)
+        setup_macro(self.console_base)
+        setup_misc(self.console_base)
+        setup_tool(self.console_base)
 
 
     def get_toolbar(self):
@@ -72,7 +73,7 @@ class Main:
             self.restart_timeout()
             prompt_result = await self.session.prompt_async(
                 "> ",
-                completer=completer,
+                completer=self.console_base.completer,
                 validator=DummyValidator()
             )
             self.exit_timer.cancel()
@@ -82,13 +83,10 @@ class Main:
                 break
             self.logger.info(f"User prompt: {prompt_result}")
 
-            if prompt_result.strip() in defaults:
-                defaults[prompt_result.strip()]()
-            else:
-                try:
-                    completer.run_action(prompt_result)
-                except ValueError:
-                    self.logger.error(f"Invalid prompt: {prompt_result}")
+            try:
+                self.console_base.handle_prompt(prompt_result)
+            except ValueError:
+                self.logger.error(f"Invalid prompt: {prompt_result}")
 
         spiny_task.cancel()
 
@@ -137,7 +135,7 @@ class Main:
             angle += 0.07
             penrose_drawing = drawer.draw(angle)
             # self.toolbar.wipe(42, 0, 40, 20)
-            # self.toolbar.set_style(get_color_style(time() - self.time_backlog))
+            self.toolbar.set_style(get_color_style(time() - self.time_backlog))
             # self.toolbar.set_style()
             self.toolbar.update(penrose_drawing, 42, 0)
 

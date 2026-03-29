@@ -1,7 +1,7 @@
 from time import sleep
 
+from .console_base import ConsoleBase
 from src.base_macro import InputPresser
-from .console_base import completer, default
 from src.firefox_handling.wikamp import FirefoxHandler
 
 WIKAMP_SUBJECT_WEBSITES = {
@@ -17,18 +17,18 @@ WIKAMP_ATTENDANCE_WEBSITES = {
     "grafika": "https://ftims.edu.p.lodz.pl/mod/attendance/view.php?id=115194"
 }
 
-def setup_goto() -> None:
-    goto_group = completer.group("goto")
+def setup_goto(console_base: ConsoleBase) -> None:
+    goto_group = console_base.completer.group("goto")
 
-    @default
+    @console_base.default
     def _goto():
         print("Incomplete command.\nDescription:")
         print("Command for opening websites in firefox")
 
 
     @goto_group.action("wikamp")
-    @completer.param(list(WIKAMP_SUBJECT_WEBSITES.keys()))
-    @completer.param(None, cast=str)
+    @console_base.completer.param(list(WIKAMP_SUBJECT_WEBSITES.keys()))
+    @console_base.completer.param(None, cast=str)
     def _goto_wikamp(subject: str = "", attendance_code: str = ""):
         fh = FirefoxHandler(lambda: quit(1))
         fh.open_wikamp()
