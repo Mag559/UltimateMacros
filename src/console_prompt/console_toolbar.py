@@ -1,4 +1,17 @@
+from time import time
+
 import numpy as np
+
+PI_066 = np.pi * 0.66
+PI_132 = np.pi * 1.32
+
+def get_color_style(current_time: float) -> str:
+    r = int((np.sin(current_time) + 1.0) * 127.5)
+    g = int((np.sin(current_time + PI_066) + 1.0) * 127.5)
+    b = int((np.sin(current_time + PI_132) + 1.0) * 127.5)
+
+    return f"bg:#{r:02x}{g:02x}{b:02x}"
+
 
 class ConsoleToolbar:
     def __init__(self, canvas_width: int, canvas_heigh: int):
@@ -15,8 +28,18 @@ class ConsoleToolbar:
 
     def get(self):
         if self.needs_updating:
-            text = '\n'.join("".join(r) for r in self.canvas)
-            self.toolbar_state = [(self.style, text)]
+            self.toolbar_state = []
+            for y, row in enumerate(self.canvas):
+                self.toolbar_state.append(
+                    (
+                        get_color_style(
+                        time() - 2 * np.pi * y / self.canvas_height),
+                        "".join(row) + '\n'
+                    )
+                )
+
+            # text = '\n'.join("".join(r) for r in self.canvas)
+            # self.toolbar_state = [(self.style, text)]
             self.needs_updating = False
 
         return self.toolbar_state
