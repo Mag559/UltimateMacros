@@ -1,9 +1,16 @@
+from collections.abc import Callable
+
 from action_completer import ActionCompleter
 
+from .console_toolbar import ConsoleToolbar
+
+
 class ConsoleBase:
-    def __init__(self):
+    def __init__(self, console_toolbar: ConsoleToolbar, focus_release: Callable[[], None]):
         self.completer = ActionCompleter()
         self.defaults = {}
+        self.toolbar = console_toolbar
+        self.focus_release = focus_release
 
     def default(self, func):
         """

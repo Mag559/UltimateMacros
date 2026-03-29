@@ -1,25 +1,21 @@
-from threading import Timer
 import asyncio
 from logging import getLogger
 from math import sin, pi
+from threading import Timer
 from time import time
 
 from prompt_toolkit import PromptSession
-from prompt_toolkit.patch_stdout import patch_stdout
-from prompt_toolkit.validation import DummyValidator
 from prompt_toolkit.key_binding import KeyBindings
+from prompt_toolkit.patch_stdout import patch_stdout
 from prompt_toolkit.styles import Style
 
-
-from .console_base import ConsoleBase
 from src.console_prompt.PenroseDrawer import PenroseDrawer
+from .console_base import ConsoleBase
 from .console_toolbar import ConsoleToolbar
-
 from .goto import setup_goto
 from .macro import setup_macro
 from .miscellaneous import setup_misc
 from .tool import setup_tool
-
 
 PI_066 = pi * 0.66
 PI_132 = pi * 1.32
@@ -40,26 +36,28 @@ class Main:
         self.create_key_bindings()
         self.focused = True
 
-        self.session = PromptSession(
-            style=Style.from_dict({
-                "bottom-toolbar": f"bg:#eeeeee fg:#090909",
-            }),
-            key_bindings=self.kb,
-            bottom_toolbar=self.get_toolbar
-        )
-
         self.toolbar: ConsoleToolbar = ConsoleToolbar(125, 20)
 
         self.exit_timer: Timer | None = None
         self.time_backlog: float = 0.0
         self.paused_time: float = -1.0
 
-        self.console_base: ConsoleBase = ConsoleBase()
+        self.console_base: ConsoleBase = ConsoleBase(self.toolbar, self.lose_focus)
 
         setup_goto(self.console_base)
         setup_macro(self.console_base)
         setup_misc(self.console_base)
         setup_tool(self.console_base)
+
+        self.session = PromptSession(
+            style=Style.from_dict({
+                "bottom-toolbar": f"bg:#eeeeee fg:#090909",
+            }),
+            key_bindings=self.kb,
+            bottom_toolbar=self.get_toolbar,
+            validate_while_typing=False,
+            completer=self.console_base.completer
+        )
 
 
     def get_toolbar(self):
@@ -71,11 +69,7 @@ class Main:
 
         while True:
             self.restart_timeout()
-            prompt_result = await self.session.prompt_async(
-                "> ",
-                completer=self.console_base.completer,
-                validator=DummyValidator()
-            )
+            prompt_result = await self.session.prompt_async("> ")
             self.exit_timer.cancel()
 
             if prompt_result is None:
@@ -114,6 +108,10 @@ class Main:
         def _(event):
             event.app.exit()
 
+        @self.kb.add("`")
+        def _(_event):
+            return
+
 
     def restart_timeout(self):
         if self.exit_timer:
@@ -151,6 +149,10 @@ class Main:
             return
 
         self.time_backlog += time() - self.paused_time
+
+
+    def lose_focus(self):
+        self.focused = False
 
 
 def main() -> None:

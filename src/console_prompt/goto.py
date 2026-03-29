@@ -30,6 +30,7 @@ def setup_goto(console_base: ConsoleBase) -> None:
     @console_base.completer.param(list(WIKAMP_SUBJECT_WEBSITES.keys()))
     @console_base.completer.param(None, cast=str)
     def _goto_wikamp(subject: str = "", attendance_code: str = ""):
+        console_base.focus_release()
         fh = FirefoxHandler(lambda: quit(1))
         fh.open_wikamp()
         if subject == "":
@@ -64,5 +65,6 @@ def setup_goto(console_base: ConsoleBase) -> None:
 
     @goto_group.action("youtube")
     def _goto_youtube():
+        console_base.focus_release()
         fh = FirefoxHandler(lambda: quit(1))
         fh.open_website("https://www.youtube.com/")
