@@ -3,6 +3,7 @@ from pathlib import Path
 from PIL import Image
 from logging import getLogger
 
+from src.profiles import ProfileReader
 from .capturer import Capturer, Section
 from .matcher import Matcher
 
@@ -22,7 +23,11 @@ class ScreenMatch:
         return self.matcher.match(self.capturer.capture_screenshot())
 
 
-    def wait_for_match(self, timeout: float=10.0, interval: float=0.2) -> bool:
+    def wait_for_match(
+            self,
+            timeout: float = ProfileReader.profile().match_wait_timeout,
+            interval: float = ProfileReader.profile().match_wait_check_interval
+    ) -> bool:
         """
         Call check match periodically
         Parameters:
@@ -41,15 +46,23 @@ class ScreenMatch:
         return False
 
 
-    def find_match(self, confidence_required: float=0.8, cached_reference = None) -> tuple[int, int] | bool:
+    def find_match(
+            self,
+            confidence_required: float = ProfileReader.profile().match_confidence,
+            cached_reference = None
+    ) -> tuple[int, int] | bool:
         pos_x, pos_y, confidence = self.matcher.find_match(self.capturer.capture_screenshot(), cached_reference)
         if confidence >= confidence_required:
             return pos_x, pos_y
         return False
 
 
-    def wait_for_find_match(self, timeout: float=10.0, interval: float=0.2,
-                            confidence_required: float=0.8) -> tuple[int, int] | bool:
+    def wait_for_find_match(
+            self,
+            timeout: float = ProfileReader.profile().match_wait_timeout,
+            interval: float = ProfileReader.profile().match_wait_check_interval,
+            confidence_required: float = ProfileReader.profile().match_confidence
+    ) -> tuple[int, int] | bool:
         """
         Call find match periodically
         Parameters:

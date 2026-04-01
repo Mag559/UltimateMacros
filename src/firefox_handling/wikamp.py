@@ -98,8 +98,6 @@ class FirefoxHandler:
 
     def press_register_attendance(self):
         self.screen_match.load_reference_image(REFERENCE_IMAGES / "wikamp_attendance_button.png")
-        reference_img_section = self.screen_match.capturer.section
-
         self.screen_match.set_compared_section(Section(*ProfileReader.profile().match_whole_screen))
 
         possible_match = self.screen_match.find_match(
@@ -110,9 +108,6 @@ class FirefoxHandler:
             self.logger.error("No register attendance button found")
             self.on_fail()
 
-        InputPresser.move_mouse(
-            (reference_img_section.width // 2 + possible_match[0],
-             reference_img_section.height // 2 + possible_match[1])
-        )
+        InputPresser.move_mouse((possible_match[0],possible_match[1])        )
         InputPresser.left_click()
         self.logger.debug("Clicking register attendance")

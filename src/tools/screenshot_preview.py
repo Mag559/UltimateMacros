@@ -1,11 +1,12 @@
 from time import sleep
 
 from .preview_window import PreviewWindow
+from src.profiles import ProfileReader
 from src.screen_match import Capturer, Section, REFERENCE_IMAGES
 
 class ScreenshotPreview:
     def __init__(self):
-        self.capturer = Capturer(Section(100, 100, 100, 100), 0)
+        self.capturer = Capturer(Section(100, 100, 100, 100))
         self.window = PreviewWindow(self.capturer.capture_screenshot(), self.save)
 
     def start(self):
@@ -31,7 +32,7 @@ class ScreenshotPreview:
 
 
     def save(self, name):
-        sleep(1)
+        sleep(ProfileReader.profile().screenshot_delay_before_save)
         self.capturer.capture_screenshot().save(
             REFERENCE_IMAGES / f"{name}.png",
             "PNG"

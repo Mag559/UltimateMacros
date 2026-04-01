@@ -3,6 +3,9 @@ from logging import getLogger
 from PIL import Image
 from mss import mss
 
+from src.profiles import ProfileReader
+
+
 @dataclass
 class Section:
     left: int
@@ -16,7 +19,7 @@ class Capturer:
     Captures a specified part of the screen
     and returns it a PIL Image object.
     """
-    def __init__(self, section: Section, monitor_number: int = 0):
+    def __init__(self, section: Section, monitor_number: int = ProfileReader.profile().match_monitor_number):
         """
         :section: Section left, top, width, height
         :monitor_number: int

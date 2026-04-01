@@ -3,14 +3,22 @@ import numpy as np
 import cv2
 from logging import getLogger
 
+from src.profiles import ProfileReader
+
 
 class Matcher:
     """
     Class responsible for comparing two images and deciding if they match
     and finding a template image in a larger one
     """
-    def __init__(self, reference_image: Image.Image, total_diff_allowed: float = 5, individual_diff_allowed: int = 10,
-                 mismatched_pixels_allowed: float = 0.1, brightness_diff_allowed: float = 10.0):
+    def __init__(
+            self,
+            reference_image: Image.Image,
+            total_diff_allowed: float = ProfileReader.profile().match_total_diff_allowed,
+            individual_diff_allowed: int = ProfileReader.profile().match_individual_diff_allowed,
+            mismatched_pixels_allowed: float = ProfileReader.profile().match_mismatched_pixels_allowed,
+            brightness_diff_allowed: float = ProfileReader.profile().match_brightness_diff_allowed
+    ):
         """
 
         :param reference_image

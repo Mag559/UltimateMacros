@@ -7,6 +7,7 @@ from PIL import Image, ImageTk
 
 
 # ChatGPT generated
+# not feeling like even touching this
 class PreviewWindow(tk.Tk):
     def __init__(self, image: Image.Image, on_text_submitted: Callable[[str], None]):
         super().__init__()

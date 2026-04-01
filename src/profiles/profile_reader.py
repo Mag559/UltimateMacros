@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from pathlib import Path
 import json
 
-PROFILES = Path(__file__).parents[2] / "profiles"
+PROFILES = Path(__file__).parents[2] / "profile_files"
 COOKIES = PROFILES / "cookies.txt"
 
 
@@ -108,6 +108,8 @@ class Profile:
     input_delay_between_tabs: float = 0.03
 
     ################### matching images related ###################
+    match_monitor_number: int = 0
+
     match_taskbar_section: list[int] = (570, 1020, 1000, 60)
     match_whole_screen: list[int] = (0, 0, 1920, 1080)
 
@@ -116,6 +118,19 @@ class Profile:
 
     match_firefox_loading_wheel_delay: float = 0.3
 
-    ################### console related ###################
+    match_total_diff_allowed: float = 5.0
+    match_individual_diff_allowed: int = 10
+    match_mismatched_pixels_allowed: float = 0.1
+    match_brightness_diff_allowed: float = 10.0
+
+    match_wait_timeout: float = 10.0
+    match_wait_check_interval: float = 0.2
+
+    match_confidence: float = 0.8
+
+
+    ################### tool related ###################
+    screenshot_delay_before_save: float = 1.0
+
 
     ################### console related ###################
