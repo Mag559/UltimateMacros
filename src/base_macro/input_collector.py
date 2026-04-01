@@ -3,12 +3,11 @@ from pynput import keyboard as py_keyboard, mouse as py_mouse
 from enum import Enum
 from logging import getLogger
 
+from src.profiles import ProfileReader
 from .signal_interfaces import Emitter
 
 
 py_key = py_keyboard.Key
-
-DOUBLE_CLICK_TIME = 0.2
 
 
 class ImportantEvents(Enum):
@@ -146,7 +145,7 @@ class InputCollector(Emitter):
             return None
 
         if button == py_mouse.Button.left:
-            if time() - self.last_left_click < DOUBLE_CLICK_TIME:
+            if time() - self.last_left_click < ProfileReader.profile().input_double_click_time:
                 self.emit_event(ImportantEvents.DOUBLE_CLICK)
                 self.last_left_click = 0
             else:
@@ -169,7 +168,7 @@ class InputCollector(Emitter):
             event (ImportantEvents): The event to emit to listeners.
         """
         self.logger.debug(f"Emitting event: {event}")
-        sleep(0.15)
+        sleep(ProfileReader.profile().input_event_emission_delay)
         self.emit(event)
 
 

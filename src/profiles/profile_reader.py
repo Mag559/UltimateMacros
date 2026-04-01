@@ -36,7 +36,7 @@ class ProfileReader:
 
     def _load_profile(self, profile_name: str):
         self.profile = Profile()
-        
+
         with open(PROFILES / (profile_name + ".json"), 'r') as f:
             self.profile.override_defaults(json.load(f))
 
@@ -50,9 +50,6 @@ class ProfileReader:
 @dataclass
 class Profile:
     _under_construction: bool = True
-    a: str = '1'
-    b: int = 1
-    c: float = 1.0
 
     def override_defaults(self, overrides: dict):
         for name, attr in overrides.items():
@@ -61,5 +58,35 @@ class Profile:
 
     def __setattr__(self, name, value):
         if not self._under_construction:
-            return
+            raise AttributeError("Modifying the profile is forbidden")
         super().__setattr__(name, value)
+
+
+    console_timeout: float = 100
+
+
+    console_toolbar_width: int = 125
+    console_toolbar_height: int = 20
+
+    console_prompt: str = "> "
+
+    console_prompt_style: str = "bg:#0c0c0c fg:#cccccc"
+    console_toolbar_style: str = "bg:#0c0c0c fg:#eeeeee noreverse"
+
+    console_penrose_spf: float = 0.05
+    console_penrose_sleeping_spf: float = 0.5
+
+    console_penrose_starting_angle: float = 0
+    console_penrose_size: int = 20
+    console_penrose_rotation_speed: float = 1.2
+
+    macro_timeout: float = 300
+    macro_termination_event_count: int = 3
+    macro_termination_event_window: float = 1
+
+    input_double_click_time: float = 0.2
+    input_event_emission_delay: float = 0.15
+
+    input_typing_wait_time: float = 0.03
+    input_delay_before_enter: float = 0.5
+    input_delay_between_tabs: float = 0.03

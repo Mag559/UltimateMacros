@@ -1,6 +1,7 @@
 from threading import Timer
 from logging import getLogger
 
+from src.profiles import ProfileReader
 from .input_collector import InputCollector, ImportantEvents
 from .helper_classes import TerminationDetector
 from .signal_interfaces import Observer
@@ -12,7 +13,7 @@ class BaseMacro(Observer[ImportantEvents]):
     Utilizes a dependency injection for the input collector
     Sets a timer that closes the script after 5 min without any captured events
     """
-    def __init__(self, collector:InputCollector=None, timeout: float = 300):
+    def __init__(self, collector:InputCollector=None, timeout: float = ProfileReader.profile().macro_timeout):
         self.logger = getLogger(__name__)
         self.timeout = timeout
         if collector is None:

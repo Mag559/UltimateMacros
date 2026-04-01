@@ -9,6 +9,7 @@ from prompt_toolkit.key_binding import KeyBindings
 from prompt_toolkit.patch_stdout import patch_stdout
 from prompt_toolkit.styles import Style
 
+from src.profiles import ProfileReader
 from src.console_prompt.PenroseDrawer import PenroseDrawer
 from .console_base import ConsoleBase
 from .console_toolbar import ConsoleToolbar
@@ -25,7 +26,7 @@ def get_color_style(current_time: float) -> str:
     g = int((sin(current_time + PI_066) + 1.0) * 127.5)
     b = int((sin(current_time + PI_132) + 1.0) * 127.5)
 
-    return f"bg:#{r:02x}{g:02x}{b:02x}"
+    return f"fg:#{r:02x}{g:02x}{b:02x}"
 
 
 class Main:
@@ -36,7 +37,10 @@ class Main:
         self.create_key_bindings()
         self.focused = True
 
-        self.toolbar: ConsoleToolbar = ConsoleToolbar(125, 20)
+        self.toolbar: ConsoleToolbar = ConsoleToolbar(
+            ProfileReader.profile().console_toolbar_width,
+            ProfileReader.profile().console_toolbar_height
+        )
 
         self.exit_timer: Timer | None = None
         self.time_backlog: float = 0.0
@@ -51,7 +55,8 @@ class Main:
 
         self.session = PromptSession(
             style=Style.from_dict({
-                "bottom-toolbar": f"bg:#eeeeee fg:#090909",
+                '': ProfileReader.profile().console_prompt_style,
+                "bottom-toolbar": ProfileReader.profile().console_toolbar_style,
             }),
             key_bindings=self.kb,
             bottom_toolbar=self.get_toolbar,
@@ -69,7 +74,9 @@ class Main:
 
         while True:
             self.restart_timeout()
-            prompt_result = await self.session.prompt_async("> ")
+            prompt_result = await self.session.prompt_async(
+                ProfileReader.profile().console_prompt
+            )
             self.exit_timer.cancel()
 
             if prompt_result is None:
@@ -116,26 +123,36 @@ class Main:
     def restart_timeout(self):
         if self.exit_timer:
             self.exit_timer.cancel()
-        self.exit_timer = Timer(100, self.terminate)
+
+        self.exit_timer = Timer(
+            ProfileReader.profile().console_timeout,
+            self.terminate
+        )
         self.exit_timer.start()
 
 
     def terminate(self):
         self.session.app.exit()
 
+
     async def spin(self):
-        angle: float = 0
-        drawer = PenroseDrawer(20)
+        angle: float = ProfileReader.profile().console_penrose_starting_angle
+        drawer = PenroseDrawer(ProfileReader.profile().console_penrose_size)
+
+        #TODO magic numbers
         rgb_styles: list[int] = [self.toolbar.add_new_style('') for _ in range(20)]
+
         for i, style in enumerate(rgb_styles):
             self.toolbar.draw_style_canvas(42, i, 82, i+1, style)
 
 
         while True:
-            await asyncio.sleep(0.05)
+            await asyncio.sleep(ProfileReader.profile().console_penrose_spf)
             if not self.focused:
                 await self.sleep_through_pause()
-            angle += 0.07
+
+            angle += ProfileReader.profile().console_penrose_spf \
+                     * ProfileReader.profile().console_penrose_rotation_speed
             penrose_drawing = drawer.draw(angle)
 
             for i, style in enumerate(rgb_styles):
@@ -147,7 +164,7 @@ class Main:
 
     async def sleep_through_pause(self):
         while not self.focused:
-            await asyncio.sleep(0.5)
+            await asyncio.sleep(ProfileReader.profile().console_penrose_sleeping_spf)
 
         if self.paused_time < 0:
             return
