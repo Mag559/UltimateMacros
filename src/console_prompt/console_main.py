@@ -126,8 +126,9 @@ class Main:
     async def spin(self):
         angle: float = 0
         drawer = PenroseDrawer(20)
-        rgb_style_idx: int = self.toolbar.add_new_style('')
-        self.toolbar.draw_style_canvas(42, 0, 82, 20, rgb_style_idx)
+        rgb_styles: list[int] = [self.toolbar.add_new_style('') for _ in range(20)]
+        for i, style in enumerate(rgb_styles):
+            self.toolbar.draw_style_canvas(42, i, 82, i+1, style)
         while True:
             await asyncio.sleep(0.05)
             if not self.focused:
@@ -135,7 +136,8 @@ class Main:
             angle += 0.07
             penrose_drawing = drawer.draw(angle)
 
-            self.toolbar.update_style(get_color_style(time() - self.time_backlog), rgb_style_idx)
+            for i, style in enumerate(rgb_styles):
+                self.toolbar.update_style(get_color_style(time() - self.time_backlog - pi * i / 10), style)
             self.toolbar.draw_on_canvas(penrose_drawing, 42, 0)
 
             self.session.app.invalidate()
