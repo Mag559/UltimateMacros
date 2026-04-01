@@ -5,6 +5,8 @@ from time import time
 from pynput import keyboard as py_keyboard, mouse as py_mouse
 from queue import Queue
 
+from src.profiles import ProfileReader
+
 
 class Recorder:
     """
@@ -53,7 +55,8 @@ class Recorder:
             if self.last_event_time == 0:
                 self.last_event_time = float(timestamp)
 
-            event = f"{(float(timestamp) - self.last_event_time):.5f} {instruction}"
+            event = f"{(float(timestamp) - self.last_event_time) \
+                :.{ProfileReader.profile().macro_recorder_time_precision}f} {instruction}"
             self.last_event_time = float(timestamp)
             self.logger.debug(f"Event processed into: {event}")
             yield event

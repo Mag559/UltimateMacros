@@ -3,6 +3,7 @@ from threading import Thread
 from time import sleep
 from logging import getLogger
 
+from src.profiles import ProfileReader
 from src.base_macro import BaseMacro, ImportantEvents
 from .interpreter import Interpreter
 
@@ -42,7 +43,7 @@ class InterpreterMacro(BaseMacro):
             for line in file:
 
                 while self.pause:
-                    sleep(0.1)
+                    sleep(ProfileReader.profile().macro_interpreter_sleep_spf)
 
                 if self.stop_flag:
                     self.int_logger.debug(f"Stopped reading instructions from {self.file_path}")

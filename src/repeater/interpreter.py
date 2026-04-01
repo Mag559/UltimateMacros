@@ -6,6 +6,7 @@ from time import sleep
 from pynput.keyboard import Controller as KeyboardController, Key as PyKey, KeyCode
 from pynput.mouse import Controller as MouseController, Button as PyButton
 
+from src.profiles import ProfileReader
 from src.screen_match import ScreenMatch, REFERENCE_IMAGES
 
 py_keyboard_controller = KeyboardController()
@@ -17,8 +18,13 @@ class InterpreterMode(Enum):
     IGNORE_FAIL = 1
 
 
-def build_file_interpreter(file_path: Path, mode: InterpreterMode=InterpreterMode.END_ON_FAIL):
-    Interpreter(_read_file(file_path), mode)
+def build_file_interpreter(
+        file_path: Path,
+        mode: InterpreterMode=InterpreterMode(
+            ProfileReader.profile().macro_interpreter_mode
+        )
+) -> Interpreter:
+    return Interpreter(_read_file(file_path), mode)
 
 
 def _read_file(file_path: Path):
@@ -33,7 +39,13 @@ class Interpreter:
     Execute instructions given by the instruction generator
     in the format specified in the readme
     """
-    def __init__(self, instruction_generator: Generator, mode: InterpreterMode=InterpreterMode.END_ON_FAIL):
+    def __init__(
+            self,
+            instruction_generator: Generator,
+            mode: InterpreterMode=InterpreterMode(
+                ProfileReader.profile().macro_interpreter_mode
+            )
+    ):
         self.logger = getLogger(__name__)
         self.screen_match: ScreenMatch | None = None
         self.instruction_generator = instruction_generator

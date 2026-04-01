@@ -3,6 +3,7 @@ from threading import Thread
 from pathlib import Path
 from time import sleep
 
+from src.profiles import ProfileReader
 from src.base_macro import BaseMacro, ImportantEvents
 from .recorder import Recorder
 
@@ -48,7 +49,7 @@ class RecorderMacro(BaseMacro):
             for instruction in self.recorder.start():
                 # make sure the update function runs first
                 # only slows down the consumer thread on the recorder, so inputs should still be timestamped correctly
-                sleep(0.1)
+                sleep(ProfileReader.profile().macro_recorder_record_thread_delay)
 
                 if self.pause or self.pause_toggle:
                     self.pause_mode(instruction, file)

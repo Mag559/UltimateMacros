@@ -1,6 +1,6 @@
 import pyperclip
 
-from profiles import ProfileReader
+from src.profiles import ProfileReader
 from src.base_macro import BaseMacro, ImportantEvents
 
 

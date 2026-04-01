@@ -92,6 +92,12 @@ class Profile:
 
     macro_clipboard_stack_size: int = 10
 
+    macro_interpreter_mode: int = 0 # END_ON_FAIL, no easy way to serialize enum
+    macro_interpreter_sleep_spf: float = 0.1
+
+    macro_recorder_time_precision: int = 5
+    macro_recorder_record_thread_delay: float = 0.1
+
     ################### receive and generate inputs ###################
 
     input_double_click_time: float = 0.2
