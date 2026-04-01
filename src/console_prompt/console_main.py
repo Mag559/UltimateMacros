@@ -129,6 +129,8 @@ class Main:
         rgb_styles: list[int] = [self.toolbar.add_new_style('') for _ in range(20)]
         for i, style in enumerate(rgb_styles):
             self.toolbar.draw_style_canvas(42, i, 82, i+1, style)
+
+
         while True:
             await asyncio.sleep(0.05)
             if not self.focused:
