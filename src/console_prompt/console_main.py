@@ -128,7 +128,6 @@ class Main:
         drawer = PenroseDrawer(20)
         rgb_style_idx: int = self.toolbar.add_new_style('')
         self.toolbar.draw_style_canvas(42, 0, 82, 20, rgb_style_idx)
-        self.toolbar.update_style('fg:#ffffff', 0)
         while True:
             await asyncio.sleep(0.05)
             if not self.focused:
