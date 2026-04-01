@@ -26,6 +26,7 @@ class TextMapMacro(BaseMacro):
                 InputPresser.paste()
 
 
+#TODO clean this up
 def log(func):
     def wrapper(*args, **kwargs):
         print(f"{args} in")

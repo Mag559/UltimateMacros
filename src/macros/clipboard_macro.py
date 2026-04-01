@@ -1,5 +1,6 @@
 import pyperclip
 
+from profiles import ProfileReader
 from src.base_macro import BaseMacro, ImportantEvents
 
 
@@ -11,7 +12,7 @@ class ClipboardMacro(BaseMacro):
 
     If the start / end of the list serving as the stack is reached, it loops
     """
-    def __init__(self, init_size: int=10):
+    def __init__(self, init_size: int = ProfileReader.profile().macro_clipboard_stack_size):
         """
         Parameters:
             init_size (int): Number of slots in the circular clipboard buffer; each slot is initialized to an empty string.

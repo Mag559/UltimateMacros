@@ -59,9 +59,12 @@ class Profile:
     def __setattr__(self, name, value):
         if not self._under_construction:
             raise AttributeError("Modifying the profile is forbidden")
+
+        if value is list:
+            value = tuple(value)
         super().__setattr__(name, value)
 
-
+    ################### console related ###################
     console_timeout: float = 100
 
 
@@ -73,6 +76,7 @@ class Profile:
     console_prompt_style: str = "bg:#0c0c0c fg:#cccccc"
     console_toolbar_style: str = "bg:#0c0c0c fg:#eeeeee noreverse"
 
+
     console_penrose_spf: float = 0.05
     console_penrose_sleeping_spf: float = 0.5
 
@@ -80,9 +84,15 @@ class Profile:
     console_penrose_size: int = 20
     console_penrose_rotation_speed: float = 1.2
 
+    ################### macro related ###################
+
     macro_timeout: float = 300
     macro_termination_event_count: int = 3
     macro_termination_event_window: float = 1
+
+    macro_clipboard_stack_size: int = 10
+
+    ################### receive and generate inputs ###################
 
     input_double_click_time: float = 0.2
     input_event_emission_delay: float = 0.15
@@ -90,3 +100,16 @@ class Profile:
     input_typing_wait_time: float = 0.03
     input_delay_before_enter: float = 0.5
     input_delay_between_tabs: float = 0.03
+
+    ################### matching images related ###################
+    match_taskbar_section: list[int] = (570, 1020, 1000, 60)
+    match_whole_screen: list[int] = (0, 0, 1920, 1080)
+
+    match_firefox_icon_confidence: float = 0.98
+    match_wikamp_attendance_confidence: float = 0.9
+
+    match_firefox_loading_wheel_delay: float = 0.3
+
+    ################### console related ###################
+
+    ################### console related ###################

@@ -1,12 +1,13 @@
 from logging import getLogger
 import numpy as np
 
+from src.profiles import ProfileReader
 
 
 class ConsoleToolbar:
     def __init__(self, canvas_width: int, canvas_heigh: int):
         self.logger = getLogger(__name__)
-        self.toolbar_state = [("bg:#eeeeee", "")]
+        self.toolbar_state = [(ProfileReader.profile().console_toolbar_style, "")]
 
         self.state_needs_updating: bool = False
         self.style_indices_need_updating: bool = True
@@ -16,7 +17,7 @@ class ConsoleToolbar:
 
         self.canvas = np.full((canvas_heigh, canvas_width), ' ', dtype="<U1")
 
-        self.styles = ["bg:#eeeeee"]
+        self.styles = [ProfileReader.profile().console_toolbar_style]
         self.style_canvas = np.full((canvas_heigh, canvas_width), 0, dtype="uint8")
 
         self.indices: list = [[] for _ in range(canvas_heigh)]
@@ -36,7 +37,7 @@ class ConsoleToolbar:
         self.toolbar_state = []
 
         for row_idx, char_row in enumerate(self.canvas):
-            # dla każdej grupy zrób join znaków
+            # join individual characters in each group
             row_groups = [
                 (
                     self.styles[self.style_canvas[row_idx, idx[0]]],

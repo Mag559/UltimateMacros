@@ -6,6 +6,7 @@ from time import sleep
 from pynput.keyboard import Key as PyKey
 import pyperclip
 
+from src.profiles import ProfileReader
 from src.base_macro import InputPresser
 from src.screen_match import ScreenMatch, Section, REFERENCE_IMAGES
 
@@ -29,15 +30,21 @@ class FirefoxHandler:
 
     def use_firefox_if_open(self):
         self.screen_match.load_reference_image(REFERENCE_IMAGES / "firefox_minimized.png")
-        self.screen_match.set_compared_section(Section(570, 1020, 1000, 60))
+        self.screen_match.set_compared_section(Section(*ProfileReader.profile().match_taskbar_section))
 
-        possible_match = self.screen_match.find_match(0.98)
+        possible_match = self.screen_match.find_match(
+            ProfileReader.profile().match_firefox_icon_confidence
+        )
         if not possible_match:
             self.logger.debug("Firefox isn't open, need to open a new window")
             self.open_firefox()
             return
 
-        InputPresser.move_mouse((570 + possible_match[0], 1020 + possible_match[1]))
+        InputPresser.move_mouse(
+            (ProfileReader.profile().match_taskbar_section[0] + possible_match[0],
+             ProfileReader.profile().match_taskbar_section[1] + possible_match[1]
+             )
+        )
         InputPresser.left_click()
         self.logger.debug("Firefox already open, hijacking the window")
         InputPresser.tap_with_ctrl('t')
@@ -81,7 +88,8 @@ class FirefoxHandler:
 
 
     def wait_for_firefox_loading_wheel(self):
-        sleep(0.3) # it takes a moment to change from loaded to loading
+        # it takes a moment to change from loaded to loading
+        sleep(ProfileReader.profile().match_firefox_loading_wheel_delay)
         self.screen_match.load_reference_image(REFERENCE_IMAGES / "firefox_loading_website.png")
         if not self.screen_match.wait_for_match():
             self.logger.error("website loading failed")
@@ -90,13 +98,21 @@ class FirefoxHandler:
 
     def press_register_attendance(self):
         self.screen_match.load_reference_image(REFERENCE_IMAGES / "wikamp_attendance_button.png")
-        self.screen_match.set_compared_section(Section(0, 0, 1920, 1080))
+        reference_img_section = self.screen_match.capturer.section
 
-        possible_match = self.screen_match.find_match(0.90)
+        self.screen_match.set_compared_section(Section(*ProfileReader.profile().match_whole_screen))
+
+        possible_match = self.screen_match.find_match(
+            ProfileReader.profile().match_wikamp_attendance_confidence
+        )
+
         if not possible_match:
             self.logger.error("No register attendance button found")
             self.on_fail()
 
-        InputPresser.move_mouse((95 + possible_match[0], 20 + possible_match[1]))
+        InputPresser.move_mouse(
+            (reference_img_section.width // 2 + possible_match[0],
+             reference_img_section.height // 2 + possible_match[1])
+        )
         InputPresser.left_click()
         self.logger.debug("Clicking register attendance")

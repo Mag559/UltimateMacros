@@ -179,7 +179,8 @@ class InputCollector(Emitter):
 
 
 
-# broken
+#TODO fix or delete
+
 # class SelfIgnoringInputCollector(InputCollector):
 #     """
 #     Compared to the normal input collector, ignores self produced events

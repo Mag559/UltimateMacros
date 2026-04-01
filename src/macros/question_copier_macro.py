@@ -14,6 +14,7 @@ class State(Enum):
     READING_ANSWERS = 1
 
 
+# not included in the profiles, bc it's not hooked up to the console
 class QuestionCopier(BaseMacro):
     """
     Select question + copy
