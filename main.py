@@ -1,5 +1,7 @@
 import logging
 import ctypes
+
+from profiles import ProfileReader
 from src import main
 from sys import stdout
 
@@ -11,7 +13,10 @@ ctypes.windll.shcore.SetProcessDpiAwareness(PROCESS_PER_MONITOR_DPI_AWARE)
 
 
 if __name__ == "__main__":
-    logging.basicConfig(filename='myapp.log', level=logging.DEBUG)
+    logging.basicConfig(
+        filename='myapp.log',
+        level=ProfileReader.profile().logging_level
+    )
     # send a signal, that you want to receive an event when console is unfocused
     stdout.write('\x1b[?1004h')
     stdout.flush()

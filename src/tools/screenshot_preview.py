@@ -15,7 +15,11 @@ class ScreenshotPreview:
 
 
     def schedule_next_update(self):
-        self.window.after(100, self.update)
+        # noinspection PyTypeChecker
+        self.window.after(
+            int(ProfileReader.profile().screenshot_preview_spf * 100),
+            self.update
+        )
 
 
     def update(self):

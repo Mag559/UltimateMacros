@@ -1,3 +1,4 @@
+import logging
 from dataclasses import dataclass
 from pathlib import Path
 import json
@@ -63,6 +64,9 @@ class Profile:
         if value is list:
             value = tuple(value)
         super().__setattr__(name, value)
+
+    ################### process related ###################
+    logging_level: int = logging.DEBUG
 
     ################### console related ###################
     console_timeout: float = 100
@@ -131,6 +135,7 @@ class Profile:
 
     ################### tool related ###################
     screenshot_delay_before_save: float = 1.0
+    screenshot_preview_spf: float = 0.1
 
 
     ################### console related ###################
