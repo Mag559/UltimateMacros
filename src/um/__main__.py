@@ -16,9 +16,13 @@ if __name__ == "__main__":
         filename='../../myapp.log',
         level=ProfileReader.profile().logging_level
     )
+
+
     # send a signal, that you want to receive an event when console is unfocused
     stdout.write('\x1b[?1004h')
     stdout.flush()
-    main()
-    stdout.write('\x1b[?1004l')
-    stdout.flush()
+    try:
+        main()
+    except SystemExit as e:
+        stdout.write('\x1b[?1004l')
+        stdout.flush()

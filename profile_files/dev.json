@@ -1,3 +1,4 @@
 {
-  "console_prompt": "# "
+  "console_prompt": "# ",
+  "console_detect_unfocus": true
 }

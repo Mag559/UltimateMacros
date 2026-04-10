@@ -78,6 +78,7 @@ class Profile:
     ################### console related ###################
     console_timeout: float = 100
 
+    console_detect_unfocus: bool = True
 
     console_toolbar_width: int = 125
     console_toolbar_height: int = 20

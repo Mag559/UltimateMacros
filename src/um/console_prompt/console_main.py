@@ -152,7 +152,7 @@ class Main:
 
         while True:
             await asyncio.sleep(ProfileReader.profile().console_penrose_spf)
-            if not self.focused:
+            if not self.focused and ProfileReader.profile().console_detect_unfocus:
                 await self.sleep_through_pause()
 
             angle += ProfileReader.profile().console_penrose_spf \
