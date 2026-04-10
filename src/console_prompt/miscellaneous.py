@@ -1,6 +1,6 @@
+import os
 from pathlib import Path
 
-import numpy as np
 from prompt_toolkit.completion import PathCompleter
 
 from .console_base import ConsoleBase
@@ -40,9 +40,19 @@ def setup_misc(console_base: ConsoleBase) -> None:
                 continue
             printer.print(f"{indent * ' '} {item.name}")
 
-    # @completer.action("notepad")
-    # @completer.param(PathCompleter(False, lambda: [str(MACRO_FILES)], lambda path: path.endswith('.txt')), cast=str)
-    # def _interpreter_macro(file_name: str):
-    #     if not file_name.endswith('.ins'):
-    #         file_name += '.ins'
-    #     InterpreterMacro(MACRO_FILES / file_name).start()
+    @completer.action("notepad")
+    @completer.param(PathCompleter(
+        False,
+        lambda: [str(CURRENT_SEMESTER_DIR)],
+        lambda path: path.endswith('.txt') or (path.find(".") == -1)),
+        cast=str
+    )
+    def _notepad(file_name: str):
+        console_base.focus_release()
+        if not file_name.endswith('.txt'):
+            file_name += '.txt'
+        path_to_open = Path(CURRENT_SEMESTER_DIR / file_name)
+        if not path_to_open.exists() or path_to_open.is_dir():
+            return
+
+        os.startfile(path_to_open)
