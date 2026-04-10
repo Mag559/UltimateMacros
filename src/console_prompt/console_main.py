@@ -5,11 +5,13 @@ from threading import Timer
 from time import time
 
 from prompt_toolkit import PromptSession
+from prompt_toolkit.auto_suggest import AutoSuggestFromHistory
+from prompt_toolkit.history import FileHistory
 from prompt_toolkit.key_binding import KeyBindings
 from prompt_toolkit.patch_stdout import patch_stdout
 from prompt_toolkit.styles import Style
 
-from src.profiles import ProfileReader
+from src.profiles import ProfileReader, PROFILES_PATH
 from src.console_prompt.PenroseDrawer import PenroseDrawer
 from .console_base import ConsoleBase
 from .console_toolbar import ConsoleToolbar
@@ -61,7 +63,9 @@ class Main:
             key_bindings=self.kb,
             bottom_toolbar=self.get_toolbar,
             validate_while_typing=False,
-            completer=self.console_base.completer
+            completer=self.console_base.completer,
+            history=FileHistory(PROFILES_PATH / "history.txt"),
+            auto_suggest=AutoSuggestFromHistory()
         )
 
 
