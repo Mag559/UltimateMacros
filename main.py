@@ -1,7 +1,7 @@
 import logging
 import ctypes
 
-from profiles import ProfileReader
+from src.profiles import ProfileReader
 from src import main
 from sys import stdout
 
