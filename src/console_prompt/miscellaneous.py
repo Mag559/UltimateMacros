@@ -3,6 +3,7 @@ from pathlib import Path
 
 from prompt_toolkit.completion import PathCompleter
 
+from src.profiles import PROFILES_PATH, ProfileReader
 from .console_base import ConsoleBase
 from .numpy_printer import NumpyPrinter
 
@@ -44,9 +45,8 @@ def setup_misc(console_base: ConsoleBase) -> None:
     @completer.param(PathCompleter(
         False,
         lambda: [str(CURRENT_SEMESTER_DIR)],
-        lambda path: path.endswith('.txt') or (path.find(".") == -1)),
-        cast=str
-    )
+        lambda path: path.endswith('.txt') or (path.find(".") == -1)
+    ), cast=str)
     def _notepad(file_name: str):
         console_base.focus_release()
         if not file_name.endswith('.txt'):
@@ -56,3 +56,16 @@ def setup_misc(console_base: ConsoleBase) -> None:
             return
 
         os.startfile(path_to_open)
+
+
+
+    @completer.action("profile")
+    @completer.param(
+        [item.name.rstrip(".json") for item in PROFILES_PATH.iterdir() if item.name.endswith(".json")],
+        cast=str
+    )
+    def _profile(profile: str = ""):
+        if profile == "":
+            ProfileReader.reload_profile()
+        else:
+            ProfileReader.switch_profile(profile)

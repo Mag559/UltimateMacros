@@ -3,8 +3,8 @@ from dataclasses import dataclass
 from pathlib import Path
 import json
 
-PROFILES = Path(__file__).parents[2] / "profile_files"
-COOKIES = PROFILES / "cookies.txt"
+PROFILES_PATH = Path(__file__).parents[2] / "profile_files"
+COOKIES_PATH = PROFILES_PATH / "cookies.txt"
 
 
 class ProfileReader:
@@ -22,11 +22,16 @@ class ProfileReader:
         ProfileReader._instance._load_profile(new_profile_name)
 
 
+    @staticmethod
+    def reload_profile():
+        ProfileReader._instance._load_profile(ProfileReader._instance.current_profile)
+
+
     def __init__(self):
         self.current_profile: str
         self.profile: Profile
 
-        with open(COOKIES, "r") as f:
+        with open(COOKIES_PATH, "r") as f:
             last_profile = f.readline().strip()
             if last_profile:
                 self._load_profile(last_profile)
@@ -37,13 +42,15 @@ class ProfileReader:
 
     def _load_profile(self, profile_name: str):
         self.profile = Profile()
-
-        with open(PROFILES / (profile_name + ".json"), 'r') as f:
-            self.profile.override_defaults(json.load(f))
-
         self.current_profile = profile_name
 
-        with open(COOKIES, 'w') as f:
+        if not profile_name.endswith(".json"):
+            profile_name += ".json"
+
+        with open(PROFILES_PATH / profile_name, 'r') as f:
+            self.profile.override_defaults(json.load(f))
+
+        with open(COOKIES_PATH, 'w') as f:
             f.write(self.current_profile)
 
 
