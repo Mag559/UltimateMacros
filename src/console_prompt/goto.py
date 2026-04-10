@@ -17,6 +17,9 @@ WIKAMP_ATTENDANCE_WEBSITES = {
     "grafika": "https://ftims.edu.p.lodz.pl/mod/attendance/view.php?id=115194"
 }
 
+def _on_firefox_macro_fail():
+    raise SystemExit(1)
+
 def setup_goto(console_base: ConsoleBase) -> None:
     goto_group = console_base.completer.group("goto")
 
@@ -31,7 +34,7 @@ def setup_goto(console_base: ConsoleBase) -> None:
     @console_base.completer.param(None, cast=str)
     def _goto_wikamp(subject: str = "", attendance_code: str = ""):
         console_base.focus_release()
-        fh = FirefoxHandler(lambda: quit(1))
+        fh = FirefoxHandler(_on_firefox_macro_fail)
         fh.open_wikamp()
         if subject == "":
             return
@@ -66,5 +69,5 @@ def setup_goto(console_base: ConsoleBase) -> None:
     @goto_group.action("youtube")
     def _goto_youtube():
         console_base.focus_release()
-        fh = FirefoxHandler(lambda: quit(1))
+        fh = FirefoxHandler(_on_firefox_macro_fail)
         fh.open_website("https://www.youtube.com/")

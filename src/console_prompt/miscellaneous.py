@@ -8,6 +8,7 @@ from .console_base import ConsoleBase
 from .numpy_printer import NumpyPrinter
 
 CURRENT_SEMESTER_DIR = Path("C:\\Users\\macie\\OneDrive\\Pulpit\\Pol\\4sem")
+RESTART_CODE = 10
 
 
 def setup_misc(console_base: ConsoleBase) -> None:
@@ -17,7 +18,7 @@ def setup_misc(console_base: ConsoleBase) -> None:
     @completer.action("quit")
     @completer.action("q")
     def _exit():
-        quit(0)
+        raise SystemExit()
 
 
 
@@ -69,3 +70,8 @@ def setup_misc(console_base: ConsoleBase) -> None:
             ProfileReader.reload_profile()
         else:
             ProfileReader.switch_profile(profile)
+
+
+    @completer.action("restart")
+    def _restart():
+        raise SystemExit(RESTART_CODE)
