@@ -1,7 +1,7 @@
 from prompt_toolkit.completion import PathCompleter
 
 from src.macros import ClipboardMacro
-from src.repeater import RecorderMacro, InterpreterMacro, MACRO_FILES
+from src.repeater import RecorderMacro, InterpreterMacro, RepeaterMacro, MACRO_FILES
 from .console_base import ConsoleBase
 
 
@@ -39,3 +39,7 @@ def setup_macro(console_base: ConsoleBase) -> None:
         if not file_name.endswith('.ins'):
             file_name += '.ins'
         InterpreterMacro(MACRO_FILES / file_name).start()
+
+    @macro_group.action("repeater")
+    def _repeater_macro():
+        RepeaterMacro().start()

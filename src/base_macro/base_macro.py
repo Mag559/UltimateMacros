@@ -53,7 +53,9 @@ class BaseMacro(Observer[ImportantEvents]):
         self.exit_timer.start()
         match event_code:
             case ImportantEvents.SHORTCUT1:
+                self.logger.debug("Shortcut1")
                 if self.terminator.should_terminate():
+                    self.logger.info("Terminating due to repeated shortcut1")
                     self.terminate()
                     return True
         return False
