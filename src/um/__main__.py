@@ -26,3 +26,4 @@ if __name__ == "__main__":
     except SystemExit as e:
         stdout.write('\x1b[?1004l')
         stdout.flush()
+        raise e

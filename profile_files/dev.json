@@ -1,4 +1,5 @@
 {
   "console_prompt": "# ",
-  "console_detect_unfocus": true
+  "console_detect_unfocus": true,
+  "console_penrose_style": 1
 }

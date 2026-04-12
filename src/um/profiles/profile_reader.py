@@ -88,6 +88,8 @@ class Profile:
     console_prompt_style: str = "bg:#0c0c0c fg:#cccccc"
     console_toolbar_style: str = "bg:#0c0c0c fg:#eeeeee noreverse"
 
+    # um.console_prompt.console_drawer.ConsoleDrawerStyle
+    console_penrose_style: int = 0
 
     console_penrose_spf: float = 0.05
     console_penrose_sleeping_spf: float = 0.5
