@@ -3,15 +3,10 @@ from enum import Enum
 from functools import reduce
 from pathlib import Path
 from time import sleep
-
 import pyperclip
 
 from um.base_macro import BaseMacro, ImportantEvents
 
-
-class State(Enum):
-    READING_QUESTION = 0
-    READING_ANSWERS = 1
 
 
 # not included in the profile_files, bc it's not hooked up to the console
@@ -23,11 +18,15 @@ class QuestionCopier(BaseMacro):
 
     After all the answers, SHORTCUT2
     """
+    class State(Enum):
+        READING_QUESTION = 0
+        READING_ANSWERS = 1
+
     def __init__(self, file: Path, completely_remove_newlines: bool = False):
         super().__init__()
         self.completely_remove_newlines = completely_remove_newlines
         self.questions_file = open(file, "a", encoding="utf-8")
-        self.state: State = State.READING_QUESTION
+        self.state: QuestionCopier.State = QuestionCopier.State.READING_QUESTION
 
         self.question: str = ""
         self.answers: list[str] = []
@@ -48,10 +47,10 @@ class QuestionCopier(BaseMacro):
                     else:
                         print(f"Copying failed at question {self.question}")
                 match self.state:
-                    case State.READING_QUESTION:
+                    case QuestionCopier.State.READING_QUESTION:
                         self.question = self.replace_newlines(pyperclip.paste())
-                        self.state = State.READING_ANSWERS
-                    case State.READING_ANSWERS:
+                        self.state = QuestionCopier.State.READING_ANSWERS
+                    case QuestionCopier.State.READING_ANSWERS:
                         answer = self.replace_newlines(pyperclip.paste())
 
                         # remove the accidentally copied `a. `
@@ -60,7 +59,7 @@ class QuestionCopier(BaseMacro):
                         self.are_answers_correct.append(False)
             case ImportantEvents.SHORTCUT2:
                 # save question and answers to the file
-                self.state = State.READING_QUESTION
+                self.state = QuestionCopier.State.READING_QUESTION
                 self.write_question_to_file()
 
                 self.question = ""

@@ -26,18 +26,8 @@ class TextMapMacro(BaseMacro):
                 InputPresser.paste()
 
 
-#TODO clean this up
-def log(func):
-    def wrapper(*args, **kwargs):
-        print(f"{args} in")
-        result = func(*args, **kwargs)
-        print(f"{result} out")
-        return result
-    return wrapper
 
-
-# @log
-def tmap(x: str) -> str:
+def map_text(x: str) -> str:
     try:
         number = float(x) * 0.75
         if int(number) == number:
@@ -48,4 +38,4 @@ def tmap(x: str) -> str:
 
 
 if __name__ == "__main__":
-    TextMapMacro(tmap)
+    TextMapMacro(map_text)

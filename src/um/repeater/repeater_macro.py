@@ -11,13 +11,7 @@ from um.profiles import ProfileReader
 from .interpreter import Interpreter
 from .recorder import Recorder
 
-
 MACRO_FILES = Path(__file__).parents[3] / "macro_files"
-
-class RepeaterState(Enum):
-    IDLE = 0
-    RECORDING = 1
-    INTERPRETING = 3
 
 
 class RepeaterMacro(BaseMacro):
@@ -29,6 +23,11 @@ class RepeaterMacro(BaseMacro):
 
     Pressing SHORTCUT2 while recording ends it
     """
+    class State(Enum):
+        IDLE = 0
+        RECORDING = 1
+        INTERPRETING = 3
+
 
     def __init__(self, dir_path: Path | None = None):
         super().__init__()
@@ -56,14 +55,13 @@ class RepeaterMacro(BaseMacro):
         self.events_buffer: list = []
         self.possible_shortcut = False
 
-        self.state: RepeaterState = RepeaterState.IDLE
+        self.state: RepeaterMacro.State = RepeaterMacro.State.IDLE
         self.pause: bool = False
         self.pause_toggle: bool = False
 
         self.stop_flag: bool = False
 
         self.end_interpreting_flag: bool = False
-
 
     def start(self):
         self.repeater_logger.debug("Repeater starting")
@@ -75,7 +73,6 @@ class RepeaterMacro(BaseMacro):
             self.record_thread.join()
 
         self.repeater_logger.debug("Repeater start method ended")
-
 
     def update(self, event_code: ImportantEvents):
         super().update(event_code)
@@ -89,28 +86,26 @@ class RepeaterMacro(BaseMacro):
 
             case ImportantEvents.SHORTCUT1:
                 pass
-                if self.state == RepeaterState.RECORDING:
+                if self.state == RepeaterMacro.State.RECORDING:
                     self.stop_recording()
-                elif self.state == RepeaterState.IDLE:
+                elif self.state == RepeaterMacro.State.IDLE:
                     self.start_recording()
 
             case ImportantEvents.SHORTCUT2:
-                if self.state == RepeaterState.INTERPRETING:
+                if self.state == RepeaterMacro.State.INTERPRETING:
                     self.stop_interpreting()
-                elif self.state == RepeaterState.IDLE:
+                elif self.state == RepeaterMacro.State.IDLE:
                     self.start_interpreting()
-
 
     def start_recording(self):
         self.file_idx += 1
-        self.state = RepeaterState.RECORDING
+        self.state = RepeaterMacro.State.RECORDING
 
         self.repeater_logger.debug("Repeater recording started")
         self.recorder = Recorder()
         self.record_thread = Thread(target=self.record, name="RepeaterMacro record")
 
         self.record_thread.start()
-
 
     def stop_recording(self):
         if self.recorder is None:
@@ -120,11 +115,10 @@ class RepeaterMacro(BaseMacro):
 
         self.repeater_logger.debug("Repeater recording ended")
 
-        self.state = RepeaterState.IDLE
-
+        self.state = RepeaterMacro.State.IDLE
 
     def start_interpreting(self):
-        self.state = RepeaterState.INTERPRETING
+        self.state = RepeaterMacro.State.INTERPRETING
 
         self.repeater_logger.debug(f"Interpreting started")
 
@@ -132,7 +126,6 @@ class RepeaterMacro(BaseMacro):
         self.interpreter_thread = Thread(target=self.interpreter.start, name="RepeaterMacro interpreter")
 
         self.interpreter_thread.start()
-
 
     def stop_interpreting(self):
         self.end_interpreting_flag = True
@@ -144,7 +137,6 @@ class RepeaterMacro(BaseMacro):
 
         self.repeater_logger.debug(f"Interpreting ended")
 
-
     def terminate(self):
         self.repeater_logger.debug(f"Raising stop flag")
         self.stop_flag = True
@@ -153,10 +145,8 @@ class RepeaterMacro(BaseMacro):
         self.stop_recording()
         super().terminate()
 
-
     def get_current_file(self):
         return self.dir_path / f"{self.file_idx}.ins"
-
 
     def record(self):
         with open(self.get_current_file(), 'w') as file:
@@ -170,7 +160,6 @@ class RepeaterMacro(BaseMacro):
                     continue
 
                 self.write_to_file_mode(instruction, file)
-
 
     def pause_mode(self, instruction: str, file):
         self.repeater_logger.debug(f"Processing instruction: {instruction} in pause mode")
@@ -187,7 +176,6 @@ class RepeaterMacro(BaseMacro):
         if self.pause_toggle:
             self.pause_toggle = False
             self.pause = not self.pause
-
 
     def write_to_file_mode(self, instruction: str, file):
         self.repeater_logger.debug(f"Processing instruction: {instruction} in write mode")
@@ -221,7 +209,6 @@ class RepeaterMacro(BaseMacro):
                 file.write(event + "\n")
             self.events_buffer.clear()
 
-
     def read_instructions(self):
         if self.get_current_file().exists():
             with open(self.get_current_file(), "r") as file:
@@ -246,4 +233,4 @@ class RepeaterMacro(BaseMacro):
             self.repeater_logger.debug(f"File {self.get_current_file()} does not exist")
 
         self.repeater_logger.debug(f"Read all instructions from {self.get_current_file()}")
-        self.state = RepeaterState.IDLE
+        self.state = RepeaterMacro.State.IDLE
