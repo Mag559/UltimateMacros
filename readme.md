@@ -33,5 +33,4 @@ middle - 2,
 right - 3.
 
 - await `<image path>` - (untested) wait until a section of the screen matches a reference image
-
-TODO instruction for the find functionality
+- find `<image path>` - (untested) wait for an image matching the reference image to appear on the screen and click its centre

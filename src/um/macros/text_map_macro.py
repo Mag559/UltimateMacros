@@ -1,5 +1,6 @@
 from collections.abc import Callable
 from time import sleep
+from string import ascii_lowercase, ascii_uppercase
 
 import pyperclip
 
@@ -21,21 +22,42 @@ class TextMapMacro(BaseMacro):
 
         match event_code:
             case ImportantEvents.COPY:
-                pyperclip.copy(self.text_map(pyperclip.paste()))
-                sleep(0.1)
+                x = self.text_map(pyperclip.paste())
+                print(x)
+                pyperclip.copy(x)
+                sleep(0.3)
                 InputPresser.paste()
 
 
 
 def map_text(x: str) -> str:
-    try:
-        number = float(x) * 0.75
-        if int(number) == number:
-            return str(int(number))
-        return str(number)
-    except ValueError:
-        return x
+    # variable_type, _, rest = x.partition(' ')
+    # variable_name, _, rest = rest.partition(' ')
+    #
+    # out: str = ""
+    # for char in variable_name:
+    #     if char in ascii_lowercase:
+    #         out += char.upper()
+    #         continue
+    #     if char in ascii_uppercase:
+    #         out += f'_{char}'
+    #         continue
+    #     out += char
+    #
+    # return f"{variable_type} {out} {rest}"
+
+    out: str = ""
+    for char in x:
+        if char in ascii_lowercase:
+            out += char.upper()
+            continue
+        if char in ascii_uppercase:
+            out += f'_{char}'
+            continue
+        out += char
+
+    return out
 
 
 if __name__ == "__main__":
-    TextMapMacro(map_text)
+    TextMapMacro(map_text).start()

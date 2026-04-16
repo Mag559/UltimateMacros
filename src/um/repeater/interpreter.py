@@ -2,12 +2,16 @@ from collections.abc import Generator
 from enum import Enum
 from logging import getLogger
 from pathlib import Path
+from string import ascii_lowercase, ascii_uppercase
 from time import sleep
+
+import pyperclip
 from pynput.keyboard import Controller as KeyboardController, Key as PyKey, KeyCode
 from pynput.mouse import Controller as MouseController, Button as PyButton
 
+from um.base_macro import InputPresser
 from um.profiles import ProfileReader
-from um.screen_match import ScreenMatch, REFERENCE_IMAGES
+from um.screen_match import ScreenMatch, REFERENCE_IMAGES, Section
 
 py_keyboard_controller = KeyboardController()
 py_mouse_controller = MouseController()
@@ -39,6 +43,13 @@ class Interpreter:
     Execute instructions given by the instruction generator
     in the format specified in the readme
     """
+
+    class MatchImageException(Exception):
+        """
+        Thrown when `await` or `find` matching fails
+        """
+
+
     def __init__(
             self,
             instruction_generator: Generator,
@@ -113,4 +124,50 @@ class Interpreter:
             case "await":
                 if self.screen_match is None:
                     self.screen_match = ScreenMatch()
-                    self.screen_match.load_reference_image(REFERENCE_IMAGES / items[1])
+                self.screen_match.load_reference_image(REFERENCE_IMAGES / items[1])
+
+                if not self.screen_match.wait_for_match():
+                    self.logger.warning(f"Failed to await for image {items[1]}")
+                    raise Interpreter.MatchImageException()
+
+            case "find":
+                if self.screen_match is None:
+                    self.screen_match = ScreenMatch()
+
+                self.screen_match.load_reference_image(REFERENCE_IMAGES / items[1])
+
+                self.screen_match.set_compared_section(Section(*ProfileReader.profile().match_whole_screen))
+
+                result = self.screen_match.wait_for_find_match()
+                if result is False:
+                    self.logger.warning(f"Failed to find image {items[1]}")
+                    raise Interpreter.MatchImageException()
+
+                to_x = int(result[0]) - py_mouse_controller.position[0]
+                to_y = int(result[1]) - py_mouse_controller.position[1]
+
+                py_mouse_controller.move(to_x, to_y)
+                py_mouse_controller.click(PyButton.left)
+            case "special_swap_case":
+                InputPresser.copy()
+                sleep(0.1)
+                x = special_swap_case(pyperclip.paste())
+                # print(x)
+                pyperclip.copy(x)
+                sleep(0.1)
+                InputPresser.paste()
+
+
+
+def special_swap_case(x: str) -> str:
+    out: str = ""
+    for char in x:
+        if char in ascii_lowercase:
+            out += char.upper()
+            continue
+        if char in ascii_uppercase:
+            out += f'_{char}'
+            continue
+        out += char
+
+    return out
