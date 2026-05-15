@@ -75,6 +75,10 @@ class Profile:
     ################### process related ###################
     logging_level: int = logging.DEBUG
 
+    # in bytes
+    logging_min_size_to_clean: int = 20_000
+    logging_uncleaned_size: int = 10_000
+
     ################### console related ###################
     console_timeout: float = 100
 

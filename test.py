@@ -1,13 +1,3 @@
-# import sys
-#
-# from prompt_toolkit import PromptSession
-# from prompt_toolkit.completion import DummyCompleter
-#
-# from prompt_toolkit.validation import DummyValidator
-#
-#
-# import asyncio
-# from prompt_toolkit.patch_stdout import patch_stdout
 #
 # from console_prompt.PenroseDrawer import PenroseDrawer
 # from prompt_toolkit.key_binding import KeyBindings
