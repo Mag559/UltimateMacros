@@ -23,7 +23,8 @@ it can be skipped to have no delay
 - press `<key>` - press a key on the keyboard
 - release `<key>` - release a key on the keyboard
 - tap `<key> <duration>` - press a key, hold it for duration and release it
-
+- type `<string> <delay>` - tap each key corresponding to each letter in the string
+for delay seconds with delay seconds in between
 
 - move `<tox,toy>` - move mouse to absolute coordinates
 - shift `<tox,toy>` - move mouse to relative coordinates

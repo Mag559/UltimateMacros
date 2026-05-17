@@ -108,6 +108,11 @@ class Interpreter:
                 py_keyboard_controller.press(Interpreter.string_to_key(items[1]))
                 sleep(float(items[2]))
                 py_keyboard_controller.release(Interpreter.string_to_key(items[1]))
+            case "type":
+                for char in items[1]:
+                    py_keyboard_controller.press(Interpreter.string_to_key(char))
+                    sleep(float(items[2]))
+                    py_keyboard_controller.release(Interpreter.string_to_key(char))
             case "move":
                 to_x = int(items[1].split(",")[0]) - py_mouse_controller.position[0]
                 to_y = int(items[1].split(",")[1]) - py_mouse_controller.position[1]
