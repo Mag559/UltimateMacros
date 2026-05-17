@@ -3,6 +3,7 @@ from logging import getLogger
 
 from prompt_toolkit import PromptSession
 from prompt_toolkit.auto_suggest import AutoSuggestFromHistory
+from prompt_toolkit.filters import Condition
 from prompt_toolkit.history import FileHistory
 from prompt_toolkit.key_binding import KeyBindings
 from prompt_toolkit.patch_stdout import patch_stdout
@@ -116,6 +117,14 @@ class Main:
         @self.kb.add("`")
         def _(_event):
             return
+
+        @Condition
+        def is_unfocused():
+            return not self.time_keeper.focused
+
+        @self.kb.add('<any>', filter=is_unfocused)
+        def _(event):
+            self.time_keeper.on_focused()
 
 
     def import_actions(self):
