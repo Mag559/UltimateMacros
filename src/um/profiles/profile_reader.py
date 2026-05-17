@@ -88,7 +88,7 @@ class Profile:
     console_toolbar_height: int = 20
 
     console_prompt: str = "> "
-
+    console_last_command_style: str = "fg:#ff0000"
     console_prompt_style: str = "bg:#0c0c0c fg:#cccccc"
     console_toolbar_style: str = "bg:#0c0c0c fg:#eeeeee noreverse"
 

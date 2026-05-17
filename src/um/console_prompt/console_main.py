@@ -23,6 +23,7 @@ from .tool import setup_tool
 class Main:
     def __init__(self):
         self.logger = getLogger(__name__)
+        self.last_command_flag: bool = False
 
         # manages the canvas then drawn as the bottom toolbar
         self.toolbar: ConsoleToolbar = ConsoleToolbar(
@@ -51,6 +52,12 @@ class Main:
         return self.toolbar.get()
 
 
+    def get_prompt(self):
+        if not self.last_command_flag:
+            return ProfileReader.profile().console_prompt
+
+        return [(ProfileReader.profile().console_last_command_style, ProfileReader.profile().console_prompt)]
+
     def start(self):
         with patch_stdout():
             asyncio.run(self.run())
@@ -62,7 +69,7 @@ class Main:
         while True:
             try:
                 prompt_result = await asyncio.wait_for(
-                    self.session.prompt_async(ProfileReader.profile().console_prompt),
+                    self.session.prompt_async(self.get_prompt),
                     timeout=ProfileReader.profile().console_timeout
                 )
             except asyncio.TimeoutError:
@@ -75,6 +82,13 @@ class Main:
                 self.console_base.handle_prompt(prompt_result)
             except ValueError:
                 self.logger.error(f"Invalid prompt: {prompt_result}")
+            except TypeError as e:
+                print(e.__str__())
+                self.logger.error(f"Missing argument in {prompt_result} {e}")
+
+            if self.last_command_flag:
+                self.logger.info(f"Exiting due to last command flag")
+                break
 
         spiny_task.cancel()
 
@@ -94,6 +108,10 @@ class Main:
         @self.kb.add('c-c')
         def _(event):
             event.app.exit()
+
+        @self.kb.add('escape', '`')
+        def _(_event):
+            self.last_command_flag = not self.last_command_flag
 
         @self.kb.add("`")
         def _(_event):

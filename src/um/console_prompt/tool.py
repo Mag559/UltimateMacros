@@ -6,7 +6,6 @@ def setup_tool(console_base: ConsoleBase) -> None:
 
     @console_base.default
     def _tool():
-        print("Incomplete command.\nDescription:")
         print("Command for running tools.")
 
 

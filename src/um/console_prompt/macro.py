@@ -15,7 +15,6 @@ def setup_macro(console_base: ConsoleBase) -> None:
 
     @console_base.default
     def _macro():
-        print("Incomplete command.\nDescription:")
         print("Command for running macros.")
 
 

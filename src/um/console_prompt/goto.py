@@ -25,7 +25,6 @@ def setup_goto(console_base: ConsoleBase) -> None:
 
     @console_base.default
     def _goto():
-        print("Incomplete command.\nDescription:")
         print("Command for opening websites in firefox")
 
 
