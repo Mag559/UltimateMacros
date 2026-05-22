@@ -2,7 +2,7 @@ from threading import Timer
 from logging import getLogger
 
 from um.profiles import ProfileReader
-from .input_collector import InputCollector, ImportantEvents
+from .macro_event_collector import MacroEventCollector, ImportantEvents
 from .helper_classes import TerminationDetector
 from .signal_interfaces import Observer
 
@@ -13,14 +13,14 @@ class BaseMacro(Observer[ImportantEvents]):
     Utilizes a dependency injection for the input collector
     Sets a timer that closes the script after 5 min without any captured events
     """
-    def __init__(self, collector:InputCollector=None, timeout: float = ProfileReader.profile().macro_timeout):
+    def __init__(self, collector:MacroEventCollector=None, timeout: float = ProfileReader.profile().macro_timeout):
         self.logger = getLogger(__name__)
         self.timeout = timeout
         if collector is None:
-            collector = InputCollector()
-        self.input_collector: InputCollector = collector
+            collector = MacroEventCollector()
+        self.event_collector: MacroEventCollector = collector
 
-        self.subscribe(self.input_collector)
+        self.subscribe(self.event_collector)
         self.terminator: TerminationDetector = TerminationDetector()
         self.exit_timer: Timer = Timer(self.timeout, self.terminate)
 
@@ -30,7 +30,7 @@ class BaseMacro(Observer[ImportantEvents]):
         self.exit_timer.start()
 
         # run as long as the input collector does
-        self.input_collector.start()
+        self.event_collector.start()
 
         self.logger.debug("Base Macro finished running")
 
@@ -67,7 +67,7 @@ class BaseMacro(Observer[ImportantEvents]):
         """
         self.logger.debug("Shutting down base macro")
         self.exit_timer.cancel()
-        self.input_collector.stop()
+        self.event_collector.stop()
 
 
 if __name__ == "__main__":
