@@ -9,7 +9,7 @@ class PriorityCallback:
     priority: int
     callback: CALLBACK
     def __call__(self, *args: Any, **kwargs: Any):
-        self.callback(args, kwargs)
+        self.callback(*args, **kwargs)
 
 
 class OrderedEmitter:
@@ -53,4 +53,4 @@ class OrderedEmitter:
 
     def _emit(self, *args: Any, **kwargs: Any) -> None:
         for caller in self._callers:
-            caller(args, kwargs)
+            caller(*args, **kwargs)

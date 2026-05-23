@@ -37,15 +37,16 @@ class MacroEventCollector(OrderedEmitter):
 
 
     def _on_update(self, input_type: InputType, input_object: KeyInput | MouseInput) -> None:
+        self.logger.debug(f"Received {input_type} with input object {input_object}")
         match input_type:
             case InputType.KEY_PRESS:
-                assert input_object is KeyInput
+                assert isinstance(input_object, KeyInput)
                 self._on_key_press(input_object)
             case InputType.KEY_RELEASE:
-                assert input_object is KeyInput
+                assert isinstance(input_object, KeyInput)
                 self._on_key_release(input_object)
             case InputType.MOUSE_PRESS:
-                assert input_object is MouseInput
+                assert isinstance(input_object, MouseInput)
                 self._on_mouse_pressed(input_object)
 
 

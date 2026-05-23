@@ -18,7 +18,7 @@ class InputType(Enum):
 @dataclass
 class KeyInput:
     key: py_keyboard.Key | py_keyboard.KeyCode | None
-    def __str__(self):
+    def log(self):
         try:
             return f"as object {self.key}, as string: {str(self.key)}, as char: {self.key.char}"
         except AttributeError:
@@ -30,7 +30,7 @@ class MouseInput:
     x: int
     y: int
     button: py_mouse.Button
-    def __str__(self):
+    def log(self):
         return f"button {self.button} at ({self.x}, {self.y})"
 
 
@@ -84,7 +84,7 @@ class InputCollector(OrderedEmitter, metaclass=SingletonMeta):
 
     def _on_press(self, key: py_keyboard.Key | py_keyboard.KeyCode | None) -> bool | None:
         key_input: KeyInput = KeyInput(key)
-        self.logger.debug(f"Key pressed: {key_input}")
+        self.logger.debug(f"Key pressed: {key_input.log()}")
 
         self._emit(InputType.KEY_PRESS, key_input)
 
@@ -93,7 +93,7 @@ class InputCollector(OrderedEmitter, metaclass=SingletonMeta):
 
     def _on_release(self, key: py_keyboard.Key | py_keyboard.KeyCode | None) -> bool | None:
         key_input: KeyInput = KeyInput(key)
-        self.logger.debug(f"Key released: {key_input}")
+        self.logger.debug(f"Key released: {key_input.log()}")
 
         self._emit(InputType.KEY_RELEASE, key_input)
 
@@ -102,7 +102,7 @@ class InputCollector(OrderedEmitter, metaclass=SingletonMeta):
 
     def _on_click(self, x, y, button: py_mouse.Button, pressed):
         mouse_input: MouseInput = MouseInput(x, y, button)
-        self.logger.debug(f'{'Pressed' if pressed else 'Released'} {mouse_input}')
+        self.logger.debug(f'{'Pressed' if pressed else 'Released'} {mouse_input.log()}')
 
         self._emit(InputType.MOUSE_PRESS if pressed else InputType.MOUSE_RELEASE, mouse_input)
 
