@@ -22,11 +22,13 @@ class InputPresser:
     includes delays for certain methods
     """
     @staticmethod
-    def paste():
+    def paste(wait_before: float = 0):
+        sleep(wait_before)
         InputPresser.tap_with_ctrl('v')
 
     @staticmethod
-    def copy():
+    def copy(wait_before: float = 0):
+        sleep(wait_before)
         InputPresser.tap_with_ctrl('c')
 
     @staticmethod
@@ -34,7 +36,7 @@ class InputPresser:
     def tap_with_ctrl(key):
         # noinspection PyTypeChecker
         with py_keyboard_controller.pressed(PyKey.ctrl):
-            py_keyboard_controller.tap(key)
+            InputPresser.tap(key)
 
     @staticmethod
     def enter(wait_before: float = ProfileReader.profile().input_delay_before_enter):
@@ -50,15 +52,15 @@ class InputPresser:
     @staticmethod
     def tab(count: int = 1, wait_time: float = ProfileReader.profile().input_delay_between_tabs):
         for _ in range(count):
-            py_keyboard_controller.tap(PyKey.tab)
             sleep(wait_time)
+            py_keyboard_controller.tap(PyKey.tab)
 
 
     @staticmethod
     def input_string(string: str, typing_delay: float= ProfileReader.profile().input_typing_wait_time):
         for s in string:
-            py_keyboard_controller.tap(s)
             sleep(typing_delay)
+            py_keyboard_controller.tap(s)
 
 
     @staticmethod

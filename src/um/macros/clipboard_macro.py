@@ -62,7 +62,3 @@ class ClipboardMacro(BaseMacro):
         """
         self.current_index = (self.current_index - 1) % len(self.copy_entries)
         pyperclip.copy(self.copy_entries[self.current_index])
-
-
-if __name__ == "__main__":
-    ClipboardMacro(100)

@@ -112,6 +112,8 @@ class Profile:
 
     macro_clipboard_stack_size: int = 10
 
+    macro_text_map_paste_delay: float = 0.3
+
     macro_interpreter_mode: int = 0 # END_ON_FAIL, no easy way to serialize enum
     macro_interpreter_sleep_spf: float = 0.1
 

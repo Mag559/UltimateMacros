@@ -108,6 +108,6 @@ class FirefoxHandler:
             self.logger.error("No register attendance button found")
             self.on_fail()
 
-        InputPresser.move_mouse((possible_match[0],possible_match[1])        )
+        InputPresser.move_mouse((possible_match[0],possible_match[1]))
         InputPresser.left_click()
         self.logger.debug("Clicking register attendance")
