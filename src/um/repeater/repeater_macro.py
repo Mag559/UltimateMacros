@@ -74,8 +74,8 @@ class RepeaterMacro(BaseMacro):
 
         self.repeater_logger.debug("Repeater start method ended")
 
-    def update(self, event_code: ImportantEvents):
-        super().update(event_code)
+    def _update(self, event_code: ImportantEvents):
+        super()._update(event_code)
 
         if self.stop_flag:
             return
@@ -137,13 +137,13 @@ class RepeaterMacro(BaseMacro):
 
         self.repeater_logger.debug(f"Interpreting ended")
 
-    def terminate(self):
+    def stop(self):
         self.repeater_logger.debug(f"Raising stop flag")
         self.stop_flag = True
         self.pause = False
 
         self.stop_recording()
-        super().terminate()
+        super().stop()
 
     def get_current_file(self):
         return self.dir_path / f"{self.file_idx}.ins"

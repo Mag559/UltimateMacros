@@ -104,6 +104,8 @@ class Profile:
 
     ################### macro related ###################
 
+    macro_event_collector_priority: int = 10
+
     macro_timeout: float = 300
     macro_termination_event_count: int = 3
     macro_termination_event_window: float = 1

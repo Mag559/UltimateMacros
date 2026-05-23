@@ -33,8 +33,8 @@ class QuestionCopier(BaseMacro):
         self.are_answers_correct: list[bool] = []
 
 
-    def update(self, event_code: ImportantEvents):
-        super().update(event_code)
+    def _update(self, event_code: ImportantEvents):
+        super()._update(event_code)
 
         match event_code:
             case ImportantEvents.COPY:
@@ -139,9 +139,9 @@ class QuestionCopier(BaseMacro):
         return "MULTIPLE_CHOICE"
 
 
-    def terminate(self):
+    def stop(self):
         self.questions_file.close()
-        super().terminate()
+        super().stop()
 
 
 if __name__ == "__main__":

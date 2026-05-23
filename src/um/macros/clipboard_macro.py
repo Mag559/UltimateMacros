@@ -22,7 +22,7 @@ class ClipboardMacro(BaseMacro):
         self.current_index: int = -1
 
 
-    def update(self, event_code: ImportantEvents):
+    def _update(self, event_code: ImportantEvents):
         """
         Handle clipboard-related events by storing or retrieving entries based on the provided event code.
         
@@ -32,7 +32,7 @@ class ClipboardMacro(BaseMacro):
         Parameters:
             event_code (ImportantEvents): The clipboard event to handle (COPY, CUT, or PASTE).
         """
-        super().update(event_code)
+        super()._update(event_code)
         self.logger.debug(f"Entries before event processing: {self.copy_entries}")
         match event_code:
             case ImportantEvents.COPY:

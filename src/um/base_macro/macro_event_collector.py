@@ -1,13 +1,11 @@
-from time import sleep, time
-from pynput import keyboard as py_keyboard, mouse as py_mouse
+from time import time
 from enum import Enum
 from logging import getLogger
 
 from um.profiles import ProfileReader
-from .signal_interfaces import Emitter
-
-
-py_key = py_keyboard.Key
+from .input_collector import InputCollector, KeyInput, MouseInput, InputType
+from um.helper_classes import OrderedEmitter, CALLBACK
+from pynput import keyboard as py_keyboard, mouse as py_mouse
 
 
 class ImportantEvents(Enum):
@@ -23,12 +21,9 @@ class ImportantEvents(Enum):
     SAVE = 10
 
 
-class MacroEventCollector(Emitter):
+class MacroEventCollector(OrderedEmitter):
     """
-    Collects input events listed in ImportantEvents.
-    Upon collecting one, emits a signal
-
-    Does detect inputs produced by InputPresser
+    Filters out important events amongst inputs collected by input collector.
     """
     def __init__(self):
         self.logger = getLogger(__name__)
@@ -36,38 +31,25 @@ class MacroEventCollector(Emitter):
         self.ctrl_held = False
         self.left_alt_held = False
 
-        self.keyboard_listener: py_keyboard.Listener | None = None
-        self.mouse_listener: py_mouse.Listener | None = None
-
         self.last_left_click: float = 0.0
 
-
-    def start(self) -> None:
-        # Collect events until released
-        """
-        Start keyboard and mouse event collection
-        Does stop further code execution
-        """
-        self.keyboard_listener = py_keyboard.Listener(
-            on_press=self.on_press,
-            on_release=self.on_release,
-            name="InputCollector keyboard Listener"
-        )
-
-        self.mouse_listener = py_mouse.Listener(
-            on_click=self.on_click,
-            name="InputCollector mouse Listener"
-        )
-
-        self.logger.debug("listener threads started")
-        self.keyboard_listener.start()
-        self.mouse_listener.start()
-
-        self.keyboard_listener.join()
-        self.mouse_listener.join()
+        InputCollector().add_caller(self._on_update, ProfileReader.profile().macro_event_collector_priority)
 
 
-    def on_press(self, key):
+    def _on_update(self, input_type: InputType, input_object: KeyInput | MouseInput) -> None:
+        match input_type:
+            case InputType.KEY_PRESS:
+                assert input_object is KeyInput
+                self._on_key_press(input_object)
+            case InputType.KEY_RELEASE:
+                assert input_object is KeyInput
+                self._on_key_release(input_object)
+            case InputType.MOUSE_PRESS:
+                assert input_object is MouseInput
+                self._on_mouse_pressed(input_object)
+
+
+    def _on_key_press(self, key_input: KeyInput):
         """
         Handle a keyboard key press, update modifier state, and emit matching ImportantEvents.
         
@@ -77,16 +59,12 @@ class MacroEventCollector(Emitter):
         Ignores non-character keys and returns False to stop the listener if termination was requested.
         
         Parameters:
-            key: The pynput keyboard key object representing the pressed key.
+            key_input: KeyInput object representing the pressed key.
         
         Returns:
             False if the collector has been marked for termination and the listener should stop, None otherwise.
         """
-        try:
-            self.logger.debug(f"Key pressed: {key}, as string: {str(key)}, as char: {key.char}")
-        except AttributeError:
-            self.logger.debug(f"Key pressed: {key}, as string: {str(key)}")
-        match str(key):
+        match str(key_input.key):
             case "Key.ctrl_l":
                 self.ctrl_held = True
             case "Key.ctrl_r":
@@ -113,66 +91,47 @@ class MacroEventCollector(Emitter):
         return None
 
 
-    def on_release(self, key):
+    def _on_key_release(self, key_input: KeyInput):
         """
-        Handle a key release event by updating modifier state and optionally stopping collection.
+        Handle a key release event by updating modifier state
         
         Parameters:
-            key: The released key (e.g., a `pynput.keyboard.Key` or `pynput.keyboard.KeyCode`) whose release is being processed.
+            key_input: KeyInput object representing the pressed key.
         
         Returns:
             False if the collector has been marked for termination and the listener should stop, None otherwise.
         """
-        try:
-            self.logger.debug(f"Key released: {key}, as string: {str(key)}, as char: {key.char}")
-        except AttributeError:
-            self.logger.debug(f"Key released: {key}, as string: {str(key)}")
-
-        match key:
-            case py_key.ctrl:
+        match key_input.key:
+            case py_keyboard.Key.ctrl:
                 self.ctrl_held = False
-            case py_key.alt_l:
+            case py_keyboard.Key.alt_l:
                 self.left_alt_held = False
         return None
 
 
-    def on_click(self, _x, _y, button, pressed):
-        self.logger.debug('{0} {1}'.format(
-                'Pressed' if pressed else 'Released',
-                button))
-
-        if not pressed:
-            return None
-
-        if button == py_mouse.Button.left:
+    def _on_mouse_pressed(self, mouse_input: MouseInput):
+        if mouse_input.button == py_mouse.Button.left:
             if time() - self.last_left_click < ProfileReader.profile().input_double_click_time:
                 self.emit_event(ImportantEvents.DOUBLE_CLICK)
                 self.last_left_click = 0
             else:
                 self.last_left_click = time()
 
-        if button == py_mouse.Button.right:
+        if mouse_input.button == py_mouse.Button.right:
             self.emit_event(ImportantEvents.RIGHT_CLICK)
 
         return None
 
 
-
     def emit_event(self, event: ImportantEvents) -> None:
-        """
-        Emit the given ImportantEvents value to subscribed listeners.
-        
-        Delays for 0.15 seconds before calling the emitter to allow input handling to settle.
-        
-        Parameters:
-            event (ImportantEvents): The event to emit to listeners.
-        """
         self.logger.debug(f"Emitting event: {event}")
-        sleep(ProfileReader.profile().input_event_emission_delay)
-        self.emit(event)
+        self._emit(event)
 
 
-    def stop(self):
-        self.keyboard_listener.stop()
-        self.mouse_listener.stop()
-        self.logger.debug("listener threads stopped")
+    def remove_caller(self, callback: CALLBACK) -> None:
+        """
+        Remove caller, if it's the last one, disconnect from InputCollector Singleton
+        """
+        super().remove_caller(callback)
+        if len(self._callers) == 0:
+            InputCollector().remove_caller(self._on_update)

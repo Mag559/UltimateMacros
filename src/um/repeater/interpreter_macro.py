@@ -23,8 +23,8 @@ class InterpreterMacro(BaseMacro):
         self.interpreter_thread: Thread = Thread(target=self.interpreter.start, name="InterpreterMacro interpreter")
 
 
-    def update(self, event_code: ImportantEvents):
-        super().update(event_code)
+    def _update(self, event_code: ImportantEvents):
+        super()._update(event_code)
 
         if event_code == ImportantEvents.TOGGLE:
             self.pause = not self.pause
@@ -52,11 +52,11 @@ class InterpreterMacro(BaseMacro):
 
         self.int_logger.debug(f"Read all instructions from {self.file_path}")
 
-        self.terminate()
+        self.stop()
 
 
-    def terminate(self):
+    def stop(self):
         self.int_logger.debug(f"Raising stop flag")
         self.stop_flag = True
         self.pause = False
-        super().terminate()
+        super().stop()

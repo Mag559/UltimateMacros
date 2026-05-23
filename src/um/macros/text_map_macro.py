@@ -17,8 +17,8 @@ class TextMapMacro(BaseMacro):
         super().__init__()
         self.text_map = text_map
 
-    def update(self, event_code: ImportantEvents):
-        super().update(event_code)
+    def _update(self, event_code: ImportantEvents):
+        super()._update(event_code)
 
         match event_code:
             case ImportantEvents.COPY:

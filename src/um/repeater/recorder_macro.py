@@ -37,8 +37,8 @@ class RecorderMacro(BaseMacro):
         self.record_thread.join()
 
 
-    def update(self, event_code: ImportantEvents):
-        super().update(event_code)
+    def _update(self, event_code: ImportantEvents):
+        super()._update(event_code)
 
         if event_code == ImportantEvents.TOGGLE:
             self.pause_toggle = True
@@ -108,6 +108,6 @@ class RecorderMacro(BaseMacro):
             self.events_buffer.clear()
 
 
-    def terminate(self):
+    def stop(self):
         self.recorder.stop()
-        super().terminate()
+        super().stop()
