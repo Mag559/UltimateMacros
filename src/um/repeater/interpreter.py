@@ -7,14 +7,12 @@ from time import sleep
 
 import pyperclip
 from pynput.keyboard import Controller as KeyboardController, Key as PyKey, KeyCode
-from pynput.mouse import Controller as MouseController, Button as PyButton
+from pynput.mouse import Button as PyButton
 
 from um.base_macro import InputPresser
 from um.profiles import ProfileReader
 from um.screen_match import ScreenMatch, REFERENCE_IMAGES, Section
 
-py_keyboard_controller = KeyboardController()
-py_mouse_controller = MouseController()
 
 
 class InterpreterMode(Enum):
@@ -52,7 +50,7 @@ class Interpreter:
 
     def __init__(
             self,
-            instruction_generator: Generator,
+            instruction_generator: Generator[str, None, None],
             mode: InterpreterMode=InterpreterMode(
                 ProfileReader.profile().macro_interpreter_mode
             )
@@ -101,31 +99,30 @@ class Interpreter:
         instruction = items[0]
         match instruction:
             case "press":
-                py_keyboard_controller.press(Interpreter.string_to_key(items[1]))
+                InputPresser.press(Interpreter.string_to_key(items[1]), 0)
             case "release":
-                py_keyboard_controller.release(Interpreter.string_to_key(items[1]))
+                InputPresser.release(Interpreter.string_to_key(items[1]), 0)
             case "tap":
-                py_keyboard_controller.press(Interpreter.string_to_key(items[1]))
-                sleep(float(items[2]))
-                py_keyboard_controller.release(Interpreter.string_to_key(items[1]))
+                InputPresser.press(Interpreter.string_to_key(items[1]), 0)
+                InputPresser.release(Interpreter.string_to_key(items[1]), float(items[2]))
             case "type":
                 for char in items[1]:
-                    py_keyboard_controller.press(Interpreter.string_to_key(char))
-                    sleep(float(items[2]))
-                    py_keyboard_controller.release(Interpreter.string_to_key(char))
+                    InputPresser.press(Interpreter.string_to_key(char), 0)
+                    InputPresser.release(Interpreter.string_to_key(char), float(items[2]))
             case "move":
-                to_x = int(items[1].split(",")[0]) - py_mouse_controller.position[0]
-                to_y = int(items[1].split(",")[1]) - py_mouse_controller.position[1]
-                self.logger.debug(f"Moving mouse by: {to_x}, {to_y}")
-                py_mouse_controller.move(to_x, to_y)
+                str_coordinates: list[str] = items[1].split(",")
+                to_x = int(str_coordinates[0])
+                to_y = int(str_coordinates[1])
+                self.logger.debug(f"Moving mouse to: {to_x}, {to_y}")
+                InputPresser.move_mouse((to_x, to_y))
             case "shift":
-                py_mouse_controller.move(
-                    int(items[1].split(",")[0]),
-                    int(items[1].split(",")[1])
-                )
+                str_coordinates: list[str] = items[1].split(",")
+                to_x = int(str_coordinates[0])
+                to_y = int(str_coordinates[1])
+                self.logger.debug(f"Shifting mouse by: {to_x}, {to_y}")
+                InputPresser.shift_mouse((to_x, to_y))
             case "click":
-                py_mouse_controller.press(PyButton[items[1]])
-                py_mouse_controller.release(PyButton[items[1]])
+                InputPresser.click_mouse(PyButton[items[1]])
             case "await":
                 if self.screen_match is None:
                     self.screen_match = ScreenMatch()
@@ -148,12 +145,10 @@ class Interpreter:
                     self.logger.warning(f"Failed to find image {items[1]}")
                     raise Interpreter.MatchImageException()
 
-                to_x = int(result[0]) - py_mouse_controller.position[0]
-                to_y = int(result[1]) - py_mouse_controller.position[1]
-
-                py_mouse_controller.move(to_x, to_y)
-                py_mouse_controller.click(PyButton.left)
+                InputPresser.move_mouse(result)
+                InputPresser.left_click()
             case "special_swap_case":
+                #TODO similar to text map macro
                 InputPresser.copy()
                 sleep(0.1)
                 x = special_swap_case(pyperclip.paste())

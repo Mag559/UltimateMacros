@@ -29,7 +29,7 @@ class RecorderMacro(BaseMacro):
 
     def start(self):
         self.recorder_macro_logger.debug(f"Start recording")
-        self._run()
+        super()._run()
         self._record()
         self.recorder_macro_logger.debug(f"Ended recording")
 

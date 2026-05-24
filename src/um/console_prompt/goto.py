@@ -58,7 +58,7 @@ def setup_goto(console_base: ConsoleBase) -> None:
         InputPresser.move_mouse((687, 595))
         InputPresser.left_click()
 
-        InputPresser.input_string(attendance_code)
+        InputPresser.type(attendance_code)
         InputPresser.tab()
         InputPresser.tap(' ')
         InputPresser.enter()

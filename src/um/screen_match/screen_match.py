@@ -70,7 +70,8 @@ class ScreenMatch:
             timeout: float how many seconds to wait before giving up
             confidence_required: float minimal confidence in the match for it to be accepted
         Returns:
-            True if a match happens before timeout, False otherwise
+            Coordinates of the center of the matched image
+            if a match happens before timeout, False otherwise
         """
         cached_reference = Matcher.convert_pil_image_to_cv(self.matcher.reference_image)
 

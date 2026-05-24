@@ -1,5 +1,4 @@
 from pathlib import Path
-from threading import Thread
 from time import sleep
 from logging import getLogger
 
@@ -18,9 +17,10 @@ class InterpreterMacro(BaseMacro):
         self.file_path = file_path
 
         self.pause: bool = False
+        # could do it with the threading library and pass the interpreter an event to wait on
+        # for use cases where the sleep times are longer
         self.stop_flag: bool = False
         self.interpreter: Interpreter = Interpreter(self.read_instructions())
-        self.interpreter_thread: Thread = Thread(target=self.interpreter.start, name="InterpreterMacro interpreter")
 
 
     def _update(self, event_code: ImportantEvents):
@@ -31,10 +31,9 @@ class InterpreterMacro(BaseMacro):
 
 
     def start(self):
+        super()._run()
         self.int_logger.debug(f"Interpreting started")
-        self.interpreter_thread.start()
-        super().start()
-        self.interpreter_thread.join()
+        self.interpreter.start()
         self.int_logger.debug(f"Interpreting ended")
 
 

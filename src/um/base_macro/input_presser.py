@@ -9,18 +9,13 @@ py_keyboard_controller = KeyboardController()
 py_mouse_controller = MouseController()
 
 
-def delay(func):
-    def wrapper(*args, **kwargs):
-        sleep(ProfileReader.profile().input_typing_wait_time)
-        return func(*args, **kwargs)
-    return wrapper
-
 
 class InputPresser:
     """
     Convenient wrapper for pynput keyboard and mouse input
     includes delays for certain methods
     """
+    #TODO: convert repeating wait before to some annotation or sth
     @staticmethod
     def paste(wait_before: float = 0):
         sleep(wait_before)
@@ -31,21 +26,36 @@ class InputPresser:
         sleep(wait_before)
         InputPresser.tap_with_ctrl('c')
 
+
     @staticmethod
-    @delay
-    def tap_with_ctrl(key):
+    def tap_with_ctrl(key, wait_before: float = ProfileReader.profile().input_typing_wait_time):
+        sleep(wait_before)
         # noinspection PyTypeChecker
         with py_keyboard_controller.pressed(PyKey.ctrl):
             InputPresser.tap(key)
+
 
     @staticmethod
     def enter(wait_before: float = ProfileReader.profile().input_delay_before_enter):
         sleep(wait_before)
         py_keyboard_controller.tap(PyKey.enter)
 
+
     @staticmethod
-    @delay
-    def tap(key):
+    def press(key, wait_before: float = ProfileReader.profile().input_delay_before_enter):
+        sleep(wait_before)
+        py_keyboard_controller.press(key)
+
+
+    @staticmethod
+    def release(key, wait_before: float = ProfileReader.profile().input_delay_before_enter):
+        sleep(wait_before)
+        py_keyboard_controller.release(key)
+
+
+    @staticmethod
+    def tap(key, wait_before: float = ProfileReader.profile().input_typing_wait_time):
+        sleep(wait_before)
         py_keyboard_controller.tap(key)
 
 
@@ -57,7 +67,7 @@ class InputPresser:
 
 
     @staticmethod
-    def input_string(string: str, typing_delay: float= ProfileReader.profile().input_typing_wait_time):
+    def type(string: str, typing_delay: float= ProfileReader.profile().input_typing_wait_time):
         for s in string:
             sleep(typing_delay)
             py_keyboard_controller.tap(s)
@@ -65,7 +75,12 @@ class InputPresser:
 
     @staticmethod
     def left_click(count: int = 1):
-        py_mouse_controller.click(PyButton.left, count=count)
+        InputPresser.click_mouse(PyButton.left, count)
+
+
+    @staticmethod
+    def click_mouse(button: PyButton, count: int = 1):
+        py_mouse_controller.click(button, count=count)
 
 
     @staticmethod
@@ -73,6 +88,14 @@ class InputPresser:
         py_mouse_controller.move(
             to[0] - py_mouse_controller.position[0],
             to[1] - py_mouse_controller.position[1]
+        )
+
+
+    @staticmethod
+    def shift_mouse(by: tuple[int, int]):
+        py_mouse_controller.move(
+            by[0],
+            by[1]
         )
 
 
