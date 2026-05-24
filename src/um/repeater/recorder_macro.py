@@ -1,9 +1,8 @@
 import re
-from threading import Thread
+from logging import getLogger, Logger
 from pathlib import Path
-from time import sleep
 
-from um.profiles import ProfileReader
+
 from um.base_macro import BaseMacro, ImportantEvents
 from .recorder import Recorder
 
@@ -15,6 +14,7 @@ class RecorderMacro(BaseMacro):
     instead comments are made in the file
     """
     def __init__(self, file_path: Path):
+        self.recorder_macro_logger: Logger = getLogger(__name__)
         super().__init__()
 
         self.recorder = Recorder()
@@ -26,15 +26,12 @@ class RecorderMacro(BaseMacro):
         self.pause: bool = False
         self.pause_toggle: bool = False
 
-        self.record_thread = Thread(target=self.record)
-
 
     def start(self):
-        self.record_thread.start()
-
-        super().start()
-
-        self.record_thread.join()
+        self.recorder_macro_logger.debug(f"Start recording")
+        self._run()
+        self._record()
+        self.recorder_macro_logger.debug(f"Ended recording")
 
 
     def _update(self, event_code: ImportantEvents):
@@ -44,21 +41,20 @@ class RecorderMacro(BaseMacro):
             self.pause_toggle = True
 
 
-    def record(self):
+    def _record(self):
         with open(self.file_path, 'w') as file:
             for instruction in self.recorder.start():
+                # update should run first due to priorities in the ordered emitter
                 # make sure the update function runs first
-                # only slows down the consumer thread on the recorder, so inputs should still be timestamped correctly
-                sleep(ProfileReader.profile().macro_recorder_record_thread_delay)
 
                 if self.pause or self.pause_toggle:
-                    self.pause_mode(instruction, file)
+                    self._pause_mode(instruction, file)
                     continue
 
                 self.write_to_file_mode(instruction, file)
 
 
-    def pause_mode(self, instruction: str, file):
+    def _pause_mode(self, instruction: str, file):
         self.logger.debug(f"Processing instruction: {instruction} in pause mode")
 
         if not self.pause and self.pause_toggle:

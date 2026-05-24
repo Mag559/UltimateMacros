@@ -1,10 +1,9 @@
 from dataclasses import dataclass
 from enum import Enum
-from time import sleep
-from pynput import keyboard as py_keyboard, mouse as py_mouse
 from logging import getLogger
 
-from um.profiles import ProfileReader
+from pynput import keyboard as py_keyboard, mouse as py_mouse
+
 from um.helper_classes import OrderedEmitter, SingletonMeta, CALLBACK
 
 

@@ -36,6 +36,16 @@ class BaseMacro:
         self.logger.debug("Base Macro finished running")
 
 
+    def _run(self):
+        """
+        Non-blocking version of start, intended for derived classes,
+        which have no need to artificially block the main thread
+        """
+        self.logger.debug("Base Macro started asynchronously")
+        self._exit_timer.start()
+        self.event_collector.add_caller(self._update)
+
+
     def _update(self, event_code: ImportantEvents):
         """
         Reset the inactivity timeout and handle events that may trigger termination.
