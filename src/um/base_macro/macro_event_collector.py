@@ -25,18 +25,19 @@ class MacroEventCollector(OrderedEmitter):
     """
     Filters out important events amongst inputs collected by input collector.
     """
-    def __init__(self):
+    def __init__(self, collector: OrderedEmitter=InputCollector()):
         self.logger = getLogger(__name__)
         super().__init__()
         self.ctrl_held = False
         self.left_alt_held = False
 
         self.last_left_click: float = 0.0
+        self.collector: OrderedEmitter = collector
 
-        InputCollector().add_caller(self._on_update, ProfileReader.profile().macro_event_collector_priority)
+        self.collector.add_caller(self._update, ProfileReader.profile().macro_event_collector_priority)
 
 
-    def _on_update(self, input_type: InputType, input_object: KeyInput | MouseInput) -> None:
+    def _update(self, input_type: InputType, input_object: KeyInput | MouseInput) -> None:
         self.logger.debug(f"Received {input_type} with input object {input_object}")
         match input_type:
             case InputType.KEY_PRESS:
@@ -47,7 +48,7 @@ class MacroEventCollector(OrderedEmitter):
                 self._on_key_release(input_object)
             case InputType.MOUSE_PRESS:
                 assert isinstance(input_object, MouseInput)
-                self._on_mouse_pressed(input_object)
+                self._on_mouse_press(input_object)
 
 
     def _on_key_press(self, key_input: KeyInput):
@@ -110,7 +111,7 @@ class MacroEventCollector(OrderedEmitter):
         return None
 
 
-    def _on_mouse_pressed(self, mouse_input: MouseInput):
+    def _on_mouse_press(self, mouse_input: MouseInput):
         if mouse_input.button == py_mouse.Button.left:
             if time() - self.last_left_click < ProfileReader.profile().input_double_click_time:
                 self.emit_event(ImportantEvents.DOUBLE_CLICK)
@@ -135,4 +136,4 @@ class MacroEventCollector(OrderedEmitter):
         """
         super().remove_caller(callback)
         if len(self._callers) == 0:
-            InputCollector().remove_caller(self._on_update)
+            self.collector.remove_caller(self._update)

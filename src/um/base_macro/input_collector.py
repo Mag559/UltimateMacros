@@ -110,9 +110,6 @@ class InputCollector(OrderedEmitter, metaclass=SingletonMeta):
 
 
     def _emit(self, input_type: InputType, input_object: KeyInput | MouseInput) -> None:
-        # TODO: Delays for 0.15 seconds before calling the emitter to allow input handling to settle.
-
-        sleep(ProfileReader.profile().input_event_emission_delay)
         super()._emit(input_type, input_object)
 
 

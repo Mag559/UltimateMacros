@@ -105,6 +105,7 @@ class Profile:
     ################### macro related ###################
 
     macro_event_collector_priority: int = 10
+    macro_recorder_priority: int = -20
 
     macro_timeout: float = 300
     macro_termination_event_count: int = 3
@@ -123,7 +124,7 @@ class Profile:
     ################### receive and generate inputs ###################
 
     input_double_click_time: float = 0.2
-    input_event_emission_delay: float = 0.15
+    # input_event_emission_delay: float = 0.15
 
     input_typing_wait_time: float = 0.03
     input_delay_before_enter: float = 0.5
