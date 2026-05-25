@@ -17,14 +17,14 @@ class RecorderMacro(BaseMacro):
         self.recorder_macro_logger: Logger = getLogger(__name__)
         super().__init__()
 
-        self.recorder = Recorder()
-        self.file_path = file_path
+        self._recorder = Recorder()
+        self._file_path = file_path
 
-        self.events_buffer: list = []
-        self.possible_shortcut = False
+        self._events_buffer: list = []
+        self._possible_shortcut = False
 
-        self.pause: bool = False
-        self.pause_toggle: bool = False
+        self._pause: bool = False
+        self._pause_toggle: bool = False
 
 
     def start(self):
@@ -38,40 +38,40 @@ class RecorderMacro(BaseMacro):
         super()._update(event_code)
 
         if event_code == ImportantEvents.TOGGLE:
-            self.pause_toggle = True
+            self._pause_toggle = True
 
 
     def _record(self):
-        with open(self.file_path, 'w') as file:
-            for instruction in self.recorder.start():
+        with open(self._file_path, 'w') as file:
+            for instruction in self._recorder.start():
                 # update should run first due to priorities in the ordered emitter
                 # make sure the update function runs first
 
-                if self.pause or self.pause_toggle:
+                if self._pause or self._pause_toggle:
                     self._pause_mode(instruction, file)
                     continue
 
-                self.write_to_file_mode(instruction, file)
+                self._write_to_file_mode(instruction, file)
 
 
     def _pause_mode(self, instruction: str, file):
         self.logger.debug(f"Processing instruction: {instruction} in pause mode")
 
-        if not self.pause and self.pause_toggle:
+        if not self._pause and self._pause_toggle:
             file.write("---")
 
         if instruction.find("num_lock") == -1 and instruction.find("release") != -1:
             file.write(instruction.rsplit(" ", 1)[1])
 
-        if self.pause and self.pause_toggle:
+        if self._pause and self._pause_toggle:
             file.write("---\n")
 
-        if self.pause_toggle:
-            self.pause_toggle = False
-            self.pause = not self.pause
+        if self._pause_toggle:
+            self._pause_toggle = False
+            self._pause = not self._pause
 
 
-    def write_to_file_mode(self, instruction: str, file):
+    def _write_to_file_mode(self, instruction: str, file):
         self.logger.debug(f"Processing instruction: {instruction} in write mode")
 
         if re.search(r"num_lock", instruction):
@@ -79,31 +79,31 @@ class RecorderMacro(BaseMacro):
 
         # if ` is pressed next it's a shortcut, so have to start buffering
         if re.search(r"press alt_l", instruction):
-            self.possible_shortcut = True
-            self.events_buffer.append(instruction)
+            self._possible_shortcut = True
+            self._events_buffer.append(instruction)
             return
 
         # no possible shortcut rn
-        if not self.possible_shortcut:
+        if not self._possible_shortcut:
             file.write(instruction + "\n")
             return
 
         # it was a shortcut, cut it out
-        if re.search(r"release alt_l", instruction) and len(self.events_buffer) > 0:
-            self.possible_shortcut = False
-            self.events_buffer.clear()
+        if re.search(r"release alt_l", instruction) and len(self._events_buffer) > 0:
+            self._possible_shortcut = False
+            self._events_buffer.clear()
             return
 
-        self.events_buffer.append(instruction)
+        self._events_buffer.append(instruction)
 
         # not the shortcut after all, write the buffered inputs into the file
         if not re.search(r"`", instruction):
-            self.possible_shortcut = False
-            for event in self.events_buffer:
+            self._possible_shortcut = False
+            for event in self._events_buffer:
                 file.write(event + "\n")
-            self.events_buffer.clear()
+            self._events_buffer.clear()
 
 
     def stop(self):
-        self.recorder.stop()
+        self._recorder.stop()
         super().stop()

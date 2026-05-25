@@ -56,7 +56,7 @@ class Interpreter:
             )
     ):
         self.logger = getLogger(__name__)
-        self.screen_match: ScreenMatch | None = None
+        self._screen_match: ScreenMatch | None = None
         self.instruction_generator = instruction_generator
         self.mode = mode
 
@@ -66,7 +66,7 @@ class Interpreter:
             line = line.rstrip('\n')
             try:
                 self.logger.debug(f"interpreting: {line}")
-                self.interpret(line)
+                self._interpret(line)
             except KeyboardController.InvalidKeyException:
                 if self.mode == InterpreterMode.END_ON_FAIL:
                     self.logger.exception(f"Ending interpreter session after failing to interpret: {line}")
@@ -85,7 +85,7 @@ class Interpreter:
             return KeyCode.from_char(s)  # regular character
 
 
-    def interpret(self, line: str):
+    def _interpret(self, line: str):
         if line.startswith("---"):
             return
 
@@ -124,23 +124,23 @@ class Interpreter:
             case "click":
                 InputPresser.click_mouse(PyButton[items[1]])
             case "await":
-                if self.screen_match is None:
-                    self.screen_match = ScreenMatch()
-                self.screen_match.load_reference_image(REFERENCE_IMAGES / items[1])
+                if self._screen_match is None:
+                    self._screen_match = ScreenMatch()
+                self._screen_match.load_reference_image(REFERENCE_IMAGES / items[1])
 
-                if not self.screen_match.wait_for_match():
+                if not self._screen_match.wait_for_match():
                     self.logger.warning(f"Failed to await for image {items[1]}")
                     raise Interpreter.MatchImageException()
 
             case "find":
-                if self.screen_match is None:
-                    self.screen_match = ScreenMatch()
+                if self._screen_match is None:
+                    self._screen_match = ScreenMatch()
 
-                self.screen_match.load_reference_image(REFERENCE_IMAGES / items[1])
+                self._screen_match.load_reference_image(REFERENCE_IMAGES / items[1])
 
-                self.screen_match.set_compared_section(Section(*ProfileReader.profile().match_whole_screen))
+                self._screen_match.set_compared_section(Section(*ProfileReader.profile().match_whole_screen))
 
-                result = self.screen_match.wait_for_find_match()
+                result = self._screen_match.wait_for_find_match()
                 if result is False:
                     self.logger.warning(f"Failed to find image {items[1]}")
                     raise Interpreter.MatchImageException()

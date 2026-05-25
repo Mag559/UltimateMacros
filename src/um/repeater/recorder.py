@@ -19,9 +19,9 @@ class Recorder:
     def __init__(self, collector: OrderedEmitter=InputCollector()):
         self.logger = getLogger(__name__)
 
-        self.stop_flag : bool = False
-        self.event_queue: Queue[str] = Queue()
-        self.last_event_time: float = 0
+        self._stop_flag : bool = False
+        self._event_queue: Queue[str] = Queue()
+        self._last_event_time: float = 0
         self.collector: OrderedEmitter = collector
 
         self.collector.add_caller(self._update, ProfileReader.profile().macro_recorder_priority)
@@ -36,19 +36,19 @@ class Recorder:
         self.logger.debug(f"Start recording")
 
         while True:
-            event: str = self.event_queue.get()
+            event: str = self._event_queue.get()
             self.logger.debug(f"Handling event: {event}")
-            if self.stop_flag:
+            if self._stop_flag:
                 self.logger.debug(f"Stop flag raised, ending the generator method")
                 return
 
             timestamp, _, instruction = event.partition(" ")
-            if self.last_event_time == 0:
-                self.last_event_time = float(timestamp)
+            if self._last_event_time == 0:
+                self._last_event_time = float(timestamp)
 
-            event = f"{(float(timestamp) - self.last_event_time) \
+            event = f"{(float(timestamp) - self._last_event_time) \
                 :.{ProfileReader.profile().macro_recorder_time_precision}f} {instruction}"
-            self.last_event_time = float(timestamp)
+            self._last_event_time = float(timestamp)
             self.logger.debug(f"Event processed into: {event}")
             yield event
 
@@ -81,23 +81,23 @@ class Recorder:
 
 
     def _on_key_press(self, key_input: KeyInput) -> None:
-        self.event_queue.put(f"{time()} press {Recorder.key_to_string(key_input.key)}")
+        self._event_queue.put(f"{time()} press {Recorder.key_to_string(key_input.key)}")
         return None
 
 
     def _on_key_release(self, key_input: KeyInput):
-        self.event_queue.put(f"{time()} release {Recorder.key_to_string(key_input.key)}")
+        self._event_queue.put(f"{time()} release {Recorder.key_to_string(key_input.key)}")
         return None
 
 
     def _on_mouse_press(self, mouse_input: MouseInput):
-        self.event_queue.put(f"{time()} move {mouse_input.x},{mouse_input.y}")
-        self.event_queue.put(f"{time()} click {mouse_input.button.name}")
+        self._event_queue.put(f"{time()} move {mouse_input.x},{mouse_input.y}")
+        self._event_queue.put(f"{time()} click {mouse_input.button.name}")
         return None
 
 
     def stop(self):
         self.logger.debug(f"Stop recording")
         self.collector.remove_caller(self._update)
-        self.stop_flag = True
-        self.event_queue.put("")
+        self._stop_flag = True
+        self._event_queue.put("")

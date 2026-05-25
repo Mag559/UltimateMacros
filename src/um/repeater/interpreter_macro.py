@@ -14,48 +14,48 @@ class InterpreterMacro(BaseMacro):
     def __init__(self, file_path: Path):
         super().__init__()
         self.int_logger = getLogger(__name__)
-        self.file_path = file_path
+        self._file_path = file_path
 
-        self.pause: bool = False
+        self._pause: bool = False
         # could do it with the threading library and pass the interpreter an event to wait on
         # for use cases where the sleep times are longer
-        self.stop_flag: bool = False
-        self.interpreter: Interpreter = Interpreter(self.read_instructions())
+        self._stop_flag: bool = False
+        self._interpreter: Interpreter = Interpreter(self._read_instructions())
 
 
     def _update(self, event_code: ImportantEvents):
         super()._update(event_code)
 
         if event_code == ImportantEvents.TOGGLE:
-            self.pause = not self.pause
+            self._pause = not self._pause
 
 
     def start(self):
         super()._run()
         self.int_logger.debug(f"Interpreting started")
-        self.interpreter.start()
+        self._interpreter.start()
         self.int_logger.debug(f"Interpreting ended")
 
 
-    def read_instructions(self):
-        with open(self.file_path, "r") as file:
+    def _read_instructions(self):
+        with open(self._file_path, "r") as file:
             for line in file:
 
-                while self.pause:
+                while self._pause:
                     sleep(ProfileReader.profile().macro_interpreter_sleep_spf)
 
-                if self.stop_flag:
-                    self.int_logger.debug(f"Stopped reading instructions from {self.file_path}")
+                if self._stop_flag:
+                    self.int_logger.debug(f"Stopped reading instructions from {self._file_path}")
                     return
                 yield line
 
-        self.int_logger.debug(f"Read all instructions from {self.file_path}")
+        self.int_logger.debug(f"Read all instructions from {self._file_path}")
 
         self.stop()
 
 
     def stop(self):
         self.int_logger.debug(f"Raising stop flag")
-        self.stop_flag = True
-        self.pause = False
+        self._stop_flag = True
+        self._pause = False
         super().stop()

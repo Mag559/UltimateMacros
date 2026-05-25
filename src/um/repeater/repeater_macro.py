@@ -33,59 +33,60 @@ class RepeaterMacro(BaseMacro):
         super().__init__()
         self.repeater_logger = getLogger(__name__)
 
-        self.recorder: Recorder | None = None
-        self.record_thread: Thread | None = None
+        self._recorder: Recorder | None = None
+        self._record_thread: Thread | None = None
 
-        self.interpreter: Interpreter | None = None
-        self.interpreter_thread: Thread | None = None
+        self._interpreter: Interpreter | None = None
+        self._interpreter_thread: Thread | None = None
 
         if dir_path is None:
-            self.dir_path: Path = MACRO_FILES / "repeater"
+            self._dir_path: Path = MACRO_FILES / "repeater"
         else:
-            self.dir_path: Path = dir_path
+            self._dir_path: Path = dir_path
 
         # probably unneeded safeguards
-        if not self.dir_path.is_dir():
-            self.dir_path.unlink(missing_ok=True)
+        if not self._dir_path.is_dir():
+            self._dir_path.unlink(missing_ok=True)
 
-        self.dir_path.mkdir(parents=True, exist_ok=True)
+        self._dir_path.mkdir(parents=True, exist_ok=True)
 
-        self.file_idx: int = -1
+        self._file_idx: int = -1
 
-        self.events_buffer: list = []
-        self.possible_shortcut = False
+        self._events_buffer: list = []
+        self._possible_shortcut = False
 
         self.state: RepeaterMacro.State = RepeaterMacro.State.IDLE
-        self.pause: bool = False
-        self.pause_toggle: bool = False
+        self._pause: bool = False
+        self._pause_toggle: bool = False
 
-        self.stop_flag: bool = False
+        self._stop_flag: bool = False
 
-        self.end_interpreting_flag: bool = False
+        self._end_interpreting_flag: bool = False
+
 
     def start(self):
         self.repeater_logger.debug("Repeater starting")
         super().start()
 
-        if self.interpreter_thread is not None:
-            self.interpreter_thread.join()
-        if self.record_thread is not None:
-            self.record_thread.join()
+        if self._interpreter_thread is not None:
+            self._interpreter_thread.join()
+        if self._record_thread is not None:
+            self._record_thread.join()
 
         self.repeater_logger.debug("Repeater start method ended")
+
 
     def _update(self, event_code: ImportantEvents):
         super()._update(event_code)
 
-        if self.stop_flag:
+        if self._stop_flag:
             return
 
         match event_code:
             case ImportantEvents.TOGGLE:
-                self.pause_toggle = True
+                self._pause_toggle = True
 
             case ImportantEvents.SHORTCUT1:
-                pass
                 if self.state == RepeaterMacro.State.RECORDING:
                     self.stop_recording()
                 elif self.state == RepeaterMacro.State.IDLE:
@@ -97,87 +98,94 @@ class RepeaterMacro(BaseMacro):
                 elif self.state == RepeaterMacro.State.IDLE:
                     self.start_interpreting()
 
+
     def start_recording(self):
-        self.file_idx += 1
+        self._file_idx += 1
         self.state = RepeaterMacro.State.RECORDING
 
         self.repeater_logger.debug("Repeater recording started")
-        self.recorder = Recorder()
-        self.record_thread = Thread(target=self.record, name="RepeaterMacro record")
+        self._recorder = Recorder()
+        self._record_thread = Thread(target=self._record, name="RepeaterMacro record")
 
-        self.record_thread.start()
+        self._record_thread.start()
+
 
     def stop_recording(self):
-        if self.recorder is None:
+        if self._recorder is None:
             return
-        self.recorder.stop()
-        self.record_thread.join()
+        self._recorder.stop()
+        self._record_thread.join()
 
         self.repeater_logger.debug("Repeater recording ended")
 
         self.state = RepeaterMacro.State.IDLE
+
 
     def start_interpreting(self):
         self.state = RepeaterMacro.State.INTERPRETING
 
         self.repeater_logger.debug(f"Interpreting started")
 
-        self.interpreter = Interpreter(self.read_instructions())
-        self.interpreter_thread = Thread(target=self.interpreter.start, name="RepeaterMacro interpreter")
+        self._interpreter = Interpreter(self._read_instructions())
+        self._interpreter_thread = Thread(target=self._interpreter.start, name="RepeaterMacro interpreter")
 
-        self.interpreter_thread.start()
+        self._interpreter_thread.start()
+
 
     def stop_interpreting(self):
-        self.end_interpreting_flag = True
+        self._end_interpreting_flag = True
 
-        if self.interpreter_thread is None:
+        if self._interpreter_thread is None:
             return
 
-        self.interpreter_thread.join()
+        self._interpreter_thread.join()
 
         self.repeater_logger.debug(f"Interpreting ended")
 
+
     def stop(self):
         self.repeater_logger.debug(f"Raising stop flag")
-        self.stop_flag = True
-        self.pause = False
+        self._stop_flag = True
+        self._pause = False
 
         self.stop_recording()
         super().stop()
 
-    def get_current_file(self):
-        return self.dir_path / f"{self.file_idx}.ins"
+    def _get_current_file(self):
+        return self._dir_path / f"{self._file_idx}.ins"
 
-    def record(self):
-        with open(self.get_current_file(), 'w') as file:
-            for instruction in self.recorder.start():
+
+    def _record(self):
+        with open(self._get_current_file(), 'w') as file:
+            for instruction in self._recorder.start():
                 # make sure the update function runs first
                 # only slows down the consumer thread on the recorder, so inputs should still be timestamped correctly
                 sleep(ProfileReader.profile().macro_recorder_record_thread_delay)
 
-                if self.pause or self.pause_toggle:
-                    self.pause_mode(instruction, file)
+                if self._pause or self._pause_toggle:
+                    self._pause_mode(instruction, file)
                     continue
 
-                self.write_to_file_mode(instruction, file)
+                self._write_to_file_mode(instruction, file)
 
-    def pause_mode(self, instruction: str, file):
+    def _pause_mode(self, instruction: str, file):
         self.repeater_logger.debug(f"Processing instruction: {instruction} in pause mode")
 
-        if not self.pause and self.pause_toggle:
+        if not self._pause and self._pause_toggle:
             file.write("---")
 
         if instruction.find("num_lock") == -1 and instruction.find("release") != -1:
             file.write(instruction.rsplit(" ", 1)[1])
 
-        if self.pause and self.pause_toggle:
+        if self._pause and self._pause_toggle:
             file.write("---\n")
 
-        if self.pause_toggle:
-            self.pause_toggle = False
-            self.pause = not self.pause
+        if self._pause_toggle:
+            self._pause_toggle = False
+            self._pause = not self._pause
 
-    def write_to_file_mode(self, instruction: str, file):
+
+    def _write_to_file_mode(self, instruction: str, file):
         self.repeater_logger.debug(f"Processing instruction: {instruction} in write mode")
 
         if re.search(r"num_lock", instruction):
@@ -185,52 +193,53 @@ class RepeaterMacro(BaseMacro):
 
         # if ` is pressed next it's a shortcut, so have to start buffering
         if re.search(r"press alt_l", instruction):
-            self.possible_shortcut = True
-            self.events_buffer.append(instruction)
+            self._possible_shortcut = True
+            self._events_buffer.append(instruction)
             return
 
         # no possible shortcut rn
-        if not self.possible_shortcut:
+        if not self._possible_shortcut:
             file.write(instruction + "\n")
             return
 
         # it was a shortcut, cut it out
-        if re.search(r"release alt_l", instruction) and len(self.events_buffer) > 0:
-            self.possible_shortcut = False
-            self.events_buffer.clear()
+        if re.search(r"release alt_l", instruction) and len(self._events_buffer) > 0:
+            self._possible_shortcut = False
+            self._events_buffer.clear()
             return
 
-        self.events_buffer.append(instruction)
+        self._events_buffer.append(instruction)
 
         # not the shortcut after all, write the buffered inputs into the file
         if not re.search(r"`", instruction):
-            self.possible_shortcut = False
-            for event in self.events_buffer:
+            self._possible_shortcut = False
+            for event in self._events_buffer:
                 file.write(event + "\n")
-            self.events_buffer.clear()
+            self._events_buffer.clear()
 
-    def read_instructions(self):
-        if self.get_current_file().exists():
-            with open(self.get_current_file(), "r") as file:
+
+    def _read_instructions(self):
+        if self._get_current_file().exists():
+            with open(self._get_current_file(), "r") as file:
                 for line in file:
 
-                    if self.pause_toggle:
-                        self.pause = True
-                        self.pause_toggle = False
+                    if self._pause_toggle:
+                        self._pause = True
+                        self._pause_toggle = False
 
-                    while self.pause:
+                    while self._pause:
                         sleep(ProfileReader.profile().macro_interpreter_sleep_spf)
-                        if self.pause_toggle:
-                            self.pause = False
-                            self.pause_toggle = False
+                        if self._pause_toggle:
+                            self._pause = False
+                            self._pause_toggle = False
 
-                    if self.stop_flag or self.end_interpreting_flag:
-                        self.repeater_logger.debug(f"Stopped reading instructions from {self.get_current_file()}")
-                        self.end_interpreting_flag = False
+                    if self._stop_flag or self._end_interpreting_flag:
+                        self.repeater_logger.debug(f"Stopped reading instructions from {self._get_current_file()}")
+                        self._end_interpreting_flag = False
                         return
                     yield line
         else:
-            self.repeater_logger.debug(f"File {self.get_current_file()} does not exist")
+            self.repeater_logger.debug(f"File {self._get_current_file()} does not exist")
 
-        self.repeater_logger.debug(f"Read all instructions from {self.get_current_file()}")
+        self.repeater_logger.debug(f"Read all instructions from {self._get_current_file()}")
         self.state = RepeaterMacro.State.IDLE
