@@ -99,7 +99,7 @@ class InputCollector(OrderedEmitter, metaclass=SingletonMeta):
         return None
 
 
-    def _on_click(self, x, y, button: py_mouse.Button, pressed):
+    def _on_click(self, x, y, button: py_mouse.Button, pressed: bool) -> None:
         mouse_input: MouseInput = MouseInput(x, y, button)
         self.logger.debug(f'{'Pressed' if pressed else 'Released'} {mouse_input.log()}')
 

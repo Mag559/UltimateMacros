@@ -1,0 +1,1 @@
+from .mock_input_collector import MockInputCollector

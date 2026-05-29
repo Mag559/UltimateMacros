@@ -122,6 +122,9 @@ class MacroEventCollector(OrderedEmitter):
         if mouse_input.button == py_mouse.Button.right:
             self.emit_event(ImportantEvents.RIGHT_CLICK)
 
+        if mouse_input.button == py_mouse.Button.middle:
+            self.emit_event(ImportantEvents.MIDDLE_CLICK)
+
         return None
 
 
