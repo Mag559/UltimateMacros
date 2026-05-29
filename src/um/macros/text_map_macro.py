@@ -1,6 +1,8 @@
+import re
 from logging import getLogger, Logger
 from collections.abc import Callable
 from string import ascii_lowercase, ascii_uppercase
+from time import sleep
 
 import pyperclip
 
@@ -25,6 +27,7 @@ class TextMapMacro(BaseMacro):
 
         match event_code:
             case ImportantEvents.COPY:
+                sleep(ProfileReader.profile().macro_text_map_copy_delay)
                 inp: str = pyperclip.paste()
                 self.text_map_logger.debug(f"Text map macro input: {inp}")
 
@@ -48,3 +51,9 @@ def camel_case_to_screaming_snake_case(x: str) -> str:
         out += char
 
     return out
+
+
+def surround_with(x: str, left: str, right: str) -> str:
+    x = re.sub(r'(?<!\\)_', r'\\_', x)
+    return left + x + right
+

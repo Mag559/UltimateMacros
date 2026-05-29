@@ -28,12 +28,17 @@ class InputPresser:
 
 
     @staticmethod
-    def tap_with_ctrl(key, wait_before: float = ProfileReader.profile().input_typing_wait_time):
+    def tap_with_ctrl(
+            key,
+            wait_before: float = ProfileReader.profile().input_typing_wait_time,
+            wait_mid: float = ProfileReader.profile().input_typing_wait_time,
+    ):
         sleep(wait_before)
         # noinspection PyTypeChecker
-        with py_keyboard_controller.pressed(PyKey.ctrl):
-            InputPresser.tap(key)
-
+        py_keyboard_controller.press(PyKey.ctrl_l)
+        InputPresser.tap(key, wait_mid)
+        sleep(wait_mid)
+        py_keyboard_controller.release(PyKey.ctrl_l)
 
     @staticmethod
     def enter(wait_before: float = ProfileReader.profile().input_delay_before_enter):

@@ -1,8 +1,9 @@
 from prompt_toolkit.completion import PathCompleter
 
-from um.macros import ClipboardMacro
+from um.macros import ClipboardMacro, TextMapMacro
 from um.repeater import RecorderMacro, InterpreterMacro, RepeaterMacro, MACRO_FILES
 from .console_base import ConsoleBase
+from ..macros.text_map_macro import surround_with
 
 
 def setup_macro(console_base: ConsoleBase) -> None:
@@ -46,3 +47,8 @@ def setup_macro(console_base: ConsoleBase) -> None:
     def _repeater_macro():
         console_base.focus_release()
         RepeaterMacro().start()
+
+    @macro_group.action("textmap")
+    def _text_map_macro():
+        console_base.focus_release()
+        TextMapMacro(lambda x: surround_with(x, "$\\texttt{", "}$")).start()
