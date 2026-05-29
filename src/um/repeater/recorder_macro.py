@@ -45,7 +45,6 @@ class RecorderMacro(BaseMacro):
         with open(self._file_path, 'w') as file:
             for instruction in self._recorder.start():
                 # update should run first due to priorities in the ordered emitter
-                # make sure the update function runs first
 
                 if self._pause or self._pause_toggle:
                     self._pause_mode(instruction, file)

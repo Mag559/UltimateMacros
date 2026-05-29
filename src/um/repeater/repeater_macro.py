@@ -151,6 +151,7 @@ class RepeaterMacro(BaseMacro):
         self.stop_recording()
         super().stop()
 
+
     def _get_current_file(self):
         return self._dir_path / f"{self._file_idx}.ins"
 
@@ -158,15 +159,14 @@ class RepeaterMacro(BaseMacro):
     def _record(self):
         with open(self._get_current_file(), 'w') as file:
             for instruction in self._recorder.start():
-                # make sure the update function runs first
-                # only slows down the consumer thread on the recorder, so inputs should still be timestamped correctly
-                sleep(ProfileReader.profile().macro_recorder_record_thread_delay)
+                # update should run first due to priorities in the ordered emitter
 
                 if self._pause or self._pause_toggle:
                     self._pause_mode(instruction, file)
                     continue
 
                 self._write_to_file_mode(instruction, file)
+
 
     def _pause_mode(self, instruction: str, file):
         self.repeater_logger.debug(f"Processing instruction: {instruction} in pause mode")
