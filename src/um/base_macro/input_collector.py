@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from enum import Enum
 from logging import getLogger
+from queue import Queue, ShutDown
+from threading import Thread
 
 from pynput import keyboard as py_keyboard, mouse as py_mouse
 
@@ -39,6 +41,12 @@ class InputCollector(OrderedEmitter, metaclass=SingletonMeta):
     and notifies observers about them in order of their priority
 
     Does detect inputs produced by InputPresser
+
+    Uses 3 threads:
+    - keyboard listener
+    - mouse listener
+    - event consumer thread responsible for running callbacks with the events
+    (to refrain from blocking the operating system's thread)
     """
     def __init__(self):
         self.logger = getLogger(__name__)
@@ -46,6 +54,13 @@ class InputCollector(OrderedEmitter, metaclass=SingletonMeta):
 
         self.keyboard_listener: py_keyboard.Listener | None = None
         self.mouse_listener: py_mouse.Listener | None = None
+        self._consumer: Thread | None = None
+        self._event_queue: Queue[tuple[InputType, KeyInput | MouseInput]] | None = None
+
+
+    def _create_consumer(self):
+        self._consumer = Thread(target=self._consume_events, name="InputCollector consumer")
+        self._event_queue = Queue()
 
 
     def add_caller(self, callback: CALLBACK, priority: int = 0) -> None:
@@ -56,7 +71,7 @@ class InputCollector(OrderedEmitter, metaclass=SingletonMeta):
 
     def remove_caller(self, callback: CALLBACK) -> None:
         super().remove_caller(callback)
-        if len(self._callers) == 1:
+        if len(self._callers) == 0:
             self._stop()
 
 
@@ -76,9 +91,13 @@ class InputCollector(OrderedEmitter, metaclass=SingletonMeta):
             name="InputCollector mouse Listener"
         )
 
+        self._create_consumer()
+
         self.logger.debug("listener threads started")
         self.keyboard_listener.start()
         self.mouse_listener.start()
+
+        self._consumer.start()
 
 
     def _on_press(self, key: py_keyboard.Key | py_keyboard.KeyCode | None) -> bool | None:
@@ -109,11 +128,20 @@ class InputCollector(OrderedEmitter, metaclass=SingletonMeta):
 
 
     def _emit(self, input_type: InputType, input_object: KeyInput | MouseInput) -> None:
-        super()._emit(input_type, input_object)
+        self._event_queue.put((input_type, input_object))
+
+
+    def _consume_events(self):
+        try:
+            while not self._event_queue.is_shutdown:
+                super()._emit(*self._event_queue.get())
+        except ShutDown:
+            pass
+        self.logger.debug("Consumer thread run out of events to consume")
 
 
     def _stop(self):
         self.keyboard_listener.stop()
         self.mouse_listener.stop()
         self.logger.debug("listener threads stopped")
-
+        self._event_queue.shutdown()
