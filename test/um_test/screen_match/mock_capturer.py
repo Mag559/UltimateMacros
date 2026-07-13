@@ -1,7 +1,8 @@
 from pathlib import Path
 
-from um.screen_match import Capturer, Section
 from PIL import Image
+
+from um.screen_match import Capturer, Section
 
 TEST_RESOURCES_DIR = Path(__file__).resolve().parents[2] / "resources"
 TEST_MONITOR_RESOLUTION = (1920, 1080)
@@ -37,7 +38,7 @@ class MockMss:
 
 class MockCapturer(Capturer):
     def __init__(self, section: Section):
-        super().__init__(section, capturer_override=MockMss())
+        super().__init__(section, monitor_number=0, capturer_override=MockMss())
 
 
     def capture_screenshot(self) -> Image.Image:

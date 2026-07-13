@@ -13,6 +13,14 @@ class Section:
     width: int
     height: int
 
+    @staticmethod
+    def to_string(section: Section):
+        return f"{section.left},{section.top},{section.width},{section.height}"
+
+    @staticmethod
+    def from_string(section: str):
+        return Section(*[int(x) for x in section.strip(' ').split(',')])
+
 
 class Capturer:
     """

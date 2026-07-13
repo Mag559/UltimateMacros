@@ -101,9 +101,7 @@ class ScreenMatch:
 
         with open(section_file, 'r') as f:
             self.set_compared_section(
-                Section(*[
-                    int(x) for x in f.readline().strip('\n').split(',')
-                ])
+                Section.from_string(f.readline().strip('\n'))
             )
         return self
 
