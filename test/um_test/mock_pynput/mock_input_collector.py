@@ -5,14 +5,7 @@ from um.helper_classes import OrderedEmitter
 
 
 
-
 class MockInputCollector(OrderedEmitter):
-    """
-    Collects inputs from keyboard and mouse via pynput package
-    and notifies observers about them in order of their priority
-
-    Does detect inputs produced by InputPresser
-    """
     def __init__(self):
         super().__init__()
 

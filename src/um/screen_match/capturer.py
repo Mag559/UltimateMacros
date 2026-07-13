@@ -19,7 +19,7 @@ class Capturer:
     Captures a specified part of the screen
     and returns it a PIL Image object.
     """
-    def __init__(self, section: Section, monitor_number: int = ProfileReader.profile().match_monitor_number):
+    def __init__(self, section: Section, monitor_number: int = ProfileReader.profile().match_monitor_number, capturer_override = None):
         """
         :section: Section left, top, width, height
         :monitor_number: int
@@ -27,11 +27,14 @@ class Capturer:
         self.monitor = None
         self.monitor_number = monitor_number
         self.logger = getLogger(__name__)
-        try:
-            self.capturer = mss()
-        except Exception as e:
-            self.logger.exception("Screen capturing by mss failed")
-            raise RuntimeError(e)
+        if capturer_override:
+            self.capturer = capturer_override
+        else:
+            try:
+                self.capturer = mss()
+            except Exception as e:
+                self.logger.exception("Screen capturing by mss failed")
+                raise RuntimeError(e)
 
         self.section = section
         self.set_monitor(monitor_number)
