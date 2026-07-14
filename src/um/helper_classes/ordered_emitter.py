@@ -52,5 +52,5 @@ class OrderedEmitter:
 
 
     def _emit(self, *args: Any, **kwargs: Any) -> None:
-        for caller in self._callers:
+        for caller in self._callers.copy():
             caller(*args, **kwargs)
