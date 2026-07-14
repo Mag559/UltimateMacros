@@ -4,4 +4,11 @@ __pycache__/
 
 
 myapp.log
+myapp_meta.log
+test/mytests.log
+
 match_failed.png
+
+profile_files/history.txt
+
+macro_files/*
