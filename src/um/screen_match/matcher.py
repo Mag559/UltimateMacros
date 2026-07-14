@@ -103,7 +103,7 @@ class Matcher:
         """
         res = cv2.matchTemplate(
             Matcher.convert_pil_image_to_cv(screenshot),
-            cached_reference_image if cached_reference_image else Matcher.convert_pil_image_to_cv(self.reference_image),
+            cached_reference_image if cached_reference_image is not None else Matcher.convert_pil_image_to_cv(self.reference_image),
             cv2.TM_CCOEFF_NORMED
         )
 
