@@ -1,2 +1,2 @@
-from .base_macro_test import MyTestCase
+from .base_macro_test import BaseMacroTest
 from .macro_event_collector_test import MacroEventCollectorTest

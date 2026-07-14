@@ -15,7 +15,7 @@ def before_grab(calls: list[int], mock_mss: MockMss, total_calls: int, replaceme
     calls[0] += 1
 
 
-class MatcherTest(unittest.TestCase):
+class ScreenMatchTest(unittest.TestCase):
     def test_wait_for_match(self):
         fake_img = Image.open(TEST_RESOURCES_DIR / "fake_desktop.png")
         screen_match: ScreenMatch = ScreenMatch() \
