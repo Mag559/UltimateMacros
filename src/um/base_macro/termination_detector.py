@@ -14,9 +14,10 @@ class TerminationDetector:
     If it happens x-1 more times during the window period should_terminate returns true,
     signaling the program should terminate
     """
+
     def __init__(self,
-                 event_count:int = ProfileReader.profile().macro_termination_event_count,
-                 time_window:float = ProfileReader.profile().macro_termination_event_window
+                 event_count: int = ProfileReader.profile().macro_termination_event_count,
+                 time_window: float = ProfileReader.profile().macro_termination_event_window
                  ):
         """
         Initialize a TerminationDetector that tracks recent event timestamps to decide rapid succession termination.

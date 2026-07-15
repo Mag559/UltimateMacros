@@ -19,6 +19,7 @@ class InputType(Enum):
 @dataclass
 class KeyInput:
     key: py_keyboard.Key | py_keyboard.KeyCode | None
+
     def log(self):
         try:
             return f"as object {self.key}, as string: {str(self.key)}, as char: {self.key.char}"
@@ -31,6 +32,7 @@ class MouseInput:
     x: int
     y: int
     button: py_mouse.Button
+
     def log(self):
         return f"button {self.button} at ({self.x}, {self.y})"
 
@@ -48,6 +50,7 @@ class InputCollector(OrderedEmitter, metaclass=SingletonMeta):
     - event consumer thread responsible for running callbacks with the events
     (to refrain from blocking the operating system's thread)
     """
+
     def __init__(self):
         self.logger = getLogger(__name__)
         super().__init__()
@@ -57,23 +60,19 @@ class InputCollector(OrderedEmitter, metaclass=SingletonMeta):
         self._consumer: Thread | None = None
         self._event_queue: Queue[tuple[InputType, KeyInput | MouseInput]] | None = None
 
-
     def _create_consumer(self):
         self._consumer = Thread(target=self._consume_events, name="InputCollector consumer")
         self._event_queue = Queue()
-
 
     def add_caller(self, callback: CALLBACK, priority: int = 0) -> None:
         super().add_caller(callback, priority)
         if len(self._callers) == 1:
             self._run()
 
-
     def remove_caller(self, callback: CALLBACK) -> None:
         super().remove_caller(callback)
         if len(self._callers) == 0:
             self._stop()
-
 
     def _run(self) -> None:
         """
@@ -99,7 +98,6 @@ class InputCollector(OrderedEmitter, metaclass=SingletonMeta):
 
         self._consumer.start()
 
-
     def _on_press(self, key: py_keyboard.Key | py_keyboard.KeyCode | None) -> bool | None:
         key_input: KeyInput = KeyInput(key)
         self.logger.debug(f"Key pressed: {key_input.log()}")
@@ -107,7 +105,6 @@ class InputCollector(OrderedEmitter, metaclass=SingletonMeta):
         self._emit(InputType.KEY_PRESS, key_input)
 
         return None
-
 
     def _on_release(self, key: py_keyboard.Key | py_keyboard.KeyCode | None) -> bool | None:
         key_input: KeyInput = KeyInput(key)
@@ -117,7 +114,6 @@ class InputCollector(OrderedEmitter, metaclass=SingletonMeta):
 
         return None
 
-
     def _on_click(self, x, y, button: py_mouse.Button, pressed: bool) -> None:
         mouse_input: MouseInput = MouseInput(x, y, button)
         self.logger.debug(f'{'Pressed' if pressed else 'Released'} {mouse_input.log()}')
@@ -126,10 +122,8 @@ class InputCollector(OrderedEmitter, metaclass=SingletonMeta):
 
         return None
 
-
     def _emit(self, input_type: InputType, input_object: KeyInput | MouseInput) -> None:
         self._event_queue.put((input_type, input_object))
-
 
     def _consume_events(self):
         try:
@@ -138,7 +132,6 @@ class InputCollector(OrderedEmitter, metaclass=SingletonMeta):
         except ShutDown:
             pass
         self.logger.debug("Consumer thread run out of events to consume")
-
 
     def _stop(self):
         self.keyboard_listener.stop()

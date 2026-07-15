@@ -16,16 +16,16 @@ class Recorder:
     Stores inputs received from the collector into a queue
     The main thread (running starts) processes them and yields the event as string
     """
-    def __init__(self, collector: OrderedEmitter=InputCollector()):
+
+    def __init__(self, collector: OrderedEmitter = InputCollector()):
         self.logger = getLogger(__name__)
 
-        self._stop_flag : bool = False
+        self._stop_flag: bool = False
         self._event_queue: Queue[str] = Queue()
         self._last_event_time: float = 0
         self.collector: OrderedEmitter = collector
 
         self.collector.add_caller(self._update, ProfileReader.profile().macro_recorder_priority)
-
 
     def start(self) -> Generator[str, None, None]:
         """
@@ -46,12 +46,11 @@ class Recorder:
             if self._last_event_time == 0:
                 self._last_event_time = float(timestamp)
 
-            event = f"{(float(timestamp) - self._last_event_time) \
-                :.{ProfileReader.profile().macro_recorder_time_precision}f} {instruction}"
+            event = f"{(float(timestamp) - self._last_event_time)
+            :.{ProfileReader.profile().macro_recorder_time_precision}f} {instruction}"
             self._last_event_time = float(timestamp)
             self.logger.debug(f"Event processed into: {event}")
             yield event
-
 
     def _update(self, input_type: InputType, input_object: KeyInput | MouseInput) -> None:
         self.logger.debug(f"Received {input_type} with input object {input_object}")
@@ -66,7 +65,6 @@ class Recorder:
                 assert isinstance(input_object, MouseInput)
                 self._on_mouse_press(input_object)
 
-
     @staticmethod
     def key_to_string(key: py_keyboard.Key | py_keyboard.KeyCode | None):
         if re.search("^'\\\\x\\d\\d'$", str(key)):
@@ -79,22 +77,18 @@ class Recorder:
             return key.char
         return None
 
-
     def _on_key_press(self, key_input: KeyInput) -> None:
         self._event_queue.put(f"{time()} press {Recorder.key_to_string(key_input.key)}")
         return None
-
 
     def _on_key_release(self, key_input: KeyInput):
         self._event_queue.put(f"{time()} release {Recorder.key_to_string(key_input.key)}")
         return None
 
-
     def _on_mouse_press(self, mouse_input: MouseInput):
         self._event_queue.put(f"{time()} move {mouse_input.x},{mouse_input.y}")
         self._event_queue.put(f"{time()} click {mouse_input.button.name}")
         return None
-
 
     def stop(self):
         self.logger.debug(f"Stop recording")

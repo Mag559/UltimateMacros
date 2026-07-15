@@ -19,7 +19,6 @@ class MockMss:
         self.img = Image.open(self.img_path).copy()
         self.before_grab = before_grab
 
-
     def grab(self, monitor: dict[str, int]):
         self.before_grab()
         return self.img.crop(
@@ -30,7 +29,6 @@ class MockMss:
                 monitor["top"] + monitor["height"]
             )
         )
-
 
     @property
     def monitors(self) -> list[dict[str, int]]:
@@ -47,7 +45,6 @@ class MockMss:
 class MockCapturer(Capturer):
     def __init__(self, section: Section, capturer_override):
         super().__init__(section, monitor_number=0, capturer_override=capturer_override)
-
 
     def capture_screenshot(self) -> Image.Image:
         return self.capturer.grab(self.monitor)

@@ -29,11 +29,9 @@ class ScreenMatchTest(unittest.TestCase):
 
         screen_match.capturer = MockCapturer(Section(0, 0, 1920, 1080), mock_mss)
 
-
         screen_match.load_reference_image(TEST_RESOURCES_DIR / "fake_icons.png")
         self.assertTrue(screen_match.wait_for_match(0.09, 0.03))
         self.assertEqual(3, calls[0])
-
 
     def test_wait_for_find_match(self):
         with open(TEST_RESOURCES_DIR / "fake_icons.txt", "r") as f:
@@ -59,7 +57,6 @@ class ScreenMatchTest(unittest.TestCase):
         self.assertEqual(3, calls[0])
         self.assertAlmostEqual(correct_section.left + correct_section.width / 2, result[0], delta=3)
         self.assertAlmostEqual(correct_section.top + correct_section.height / 2, result[1], delta=3)
-
 
 
 if __name__ == '__main__':

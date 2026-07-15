@@ -20,15 +20,15 @@ def setup_misc(console_base: ConsoleBase) -> None:
     def _exit():
         raise SystemExit()
 
-
-
     @completer.action("view")
-    @completer.param([str(directory.name) for directory in CURRENT_SEMESTER_DIR.iterdir() if directory.is_dir()], cast=str)
+    @completer.param(
+        [str(directory.name) for directory in CURRENT_SEMESTER_DIR.iterdir() if directory.is_dir()],
+        cast=str
+    )
     def _view(directory: str):
         printer: NumpyPrinter = NumpyPrinter()
         _display(CURRENT_SEMESTER_DIR / directory, 0, printer)
         console_base.toolbar.draw_on_canvas(printer.get_drawing(), 0, 0)
-
 
     def _display(directory: Path, indent: int, printer: NumpyPrinter):
         for item in (CURRENT_SEMESTER_DIR / directory).iterdir():
@@ -58,8 +58,6 @@ def setup_misc(console_base: ConsoleBase) -> None:
 
         os.startfile(path_to_open)
 
-
-
     @completer.action("profile")
     @completer.param(
         [item.name.rstrip(".json") for item in PROFILES_PATH.iterdir() if item.name.endswith(".json")],
@@ -70,7 +68,6 @@ def setup_misc(console_base: ConsoleBase) -> None:
             ProfileReader.reload_profile()
         else:
             ProfileReader.switch_profile(profile)
-
 
     @completer.action("restart")
     def _restart():

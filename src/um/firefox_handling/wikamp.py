@@ -20,13 +20,13 @@ class FirefoxHandler:
     Executes `on_fail` Callable whenever a step goes wrong,
     usually quiting the program or retrying
     """
+
     def __init__(self, on_fail: Callable[[], None] = lambda: None):
         self.on_fail = on_fail
         self.logger = getLogger(__name__)
         self.screen_match = ScreenMatch()
 
         self.use_firefox_if_open()
-
 
     def use_firefox_if_open(self):
         self.screen_match.load_reference_image(REFERENCE_IMAGES / "firefox_minimized.png")
@@ -49,7 +49,6 @@ class FirefoxHandler:
         self.logger.debug("Firefox already open, hijacking the window")
         InputPresser.tap_with_ctrl('t')
 
-
     def open_firefox(self):
         self.screen_match.load_reference_image(REFERENCE_IMAGES / "firefox_open.png")
 
@@ -58,7 +57,6 @@ class FirefoxHandler:
             self.logger.error("Firefox failed to open")
             self.on_fail()
 
-
     def open_website(self, url: str):
         InputPresser.tap_with_ctrl('e')
         InputPresser.tap(PyKey.backspace)
@@ -66,7 +64,6 @@ class FirefoxHandler:
         InputPresser.paste()
         InputPresser.enter()
         self.logger.debug(f"Visiting {url}")
-
 
     def open_wikamp(self):
         self.open_website(CAS)
@@ -86,7 +83,6 @@ class FirefoxHandler:
             self.logger.error("wikamp failed to load")
             self.on_fail()
 
-
     def wait_for_firefox_loading_wheel(self):
         # it takes a moment to change from loaded to loading
         sleep(ProfileReader.profile().match_firefox_loading_wheel_delay)
@@ -94,7 +90,6 @@ class FirefoxHandler:
         if not self.screen_match.wait_for_match():
             self.logger.error("website loading failed")
             self.on_fail()
-
 
     def press_register_attendance(self):
         self.screen_match.load_reference_image(REFERENCE_IMAGES / "wikamp_attendance_button.png")
@@ -108,6 +103,6 @@ class FirefoxHandler:
             self.logger.error("No register attendance button found")
             self.on_fail()
 
-        InputPresser.move_mouse((possible_match[0],possible_match[1]))
+        InputPresser.move_mouse((possible_match[0], possible_match[1]))
         InputPresser.left_click()
         self.logger.debug("Clicking register attendance")

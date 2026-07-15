@@ -8,24 +8,25 @@ from um.base_macro import MacroEventCollector, ImportantEvents
 from um_test.mock_pynput import MockInputCollector
 
 
+def empty_callback(*_args) -> None:
+    return None
+
+
 class MacroEventCollectorTest(unittest.TestCase):
     def test_auto_disconnect(self):
         mock_input_collector: MockInputCollector = MockInputCollector()
         event_collector: MacroEventCollector = MacroEventCollector(mock_input_collector)
         self.assertEqual(1, len(mock_input_collector._callers))
-        callback = lambda *args: None
-        event_collector.add_caller(callback)
-        event_collector.remove_caller(callback)
+        event_collector.add_caller(empty_callback)
+        event_collector.remove_caller(empty_callback)
         self.assertEqual(0, len(mock_input_collector._callers))
-
 
     def test_mouse_click_events(self):
         mock_input_collector: MockInputCollector = MockInputCollector()
         event_collector: MacroEventCollector = MacroEventCollector(mock_input_collector)
 
         events: list[ImportantEvents] = []
-        callback = lambda event: events.append(event)
-        event_collector.add_caller(callback)
+        event_collector.add_caller(lambda event: events.append(event))
 
         # right click
         mock_input_collector.click_anywhere(py_mouse.Button.right)
@@ -46,14 +47,12 @@ class MacroEventCollectorTest(unittest.TestCase):
         mock_input_collector.click_anywhere(py_mouse.Button.left)
         self.assertEqual(ImportantEvents.DOUBLE_CLICK, events[2])
 
-
     def test_keyboard_events(self):
         mock_input_collector: MockInputCollector = MockInputCollector()
         event_collector: MacroEventCollector = MacroEventCollector(mock_input_collector)
 
         events: list[ImportantEvents] = []
-        callback = lambda event: events.append(event)
-        event_collector.add_caller(callback)
+        event_collector.add_caller(lambda event: events.append(event))
 
         # toggle
         mock_input_collector.tap(py_keyboard.Key.num_lock)
@@ -68,7 +67,6 @@ class MacroEventCollectorTest(unittest.TestCase):
         mock_input_collector.tap(py_keyboard.KeyCode.from_char('`'))
         self.assertEqual(ImportantEvents.SHORTCUT1, events[2])
         mock_input_collector.release(py_keyboard.Key.alt_l)
-
 
         mock_input_collector.press(py_keyboard.Key.ctrl_l)
         # copy

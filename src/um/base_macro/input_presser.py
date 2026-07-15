@@ -9,13 +9,13 @@ py_keyboard_controller = KeyboardController()
 py_mouse_controller = MouseController()
 
 
-
 class InputPresser:
     """
     Convenient wrapper for pynput keyboard and mouse input
     includes delays for certain methods
     """
-    #TODO: convert repeating wait before to some annotation or sth
+
+    # TODO: convert repeating wait before to some annotation or sth
     @staticmethod
     def paste(wait_before: float = 0):
         sleep(wait_before)
@@ -25,7 +25,6 @@ class InputPresser:
     def copy(wait_before: float = 0):
         sleep(wait_before)
         InputPresser.tap_with_ctrl('c')
-
 
     @staticmethod
     def tap_with_ctrl(
@@ -45,24 +44,20 @@ class InputPresser:
         sleep(wait_before)
         py_keyboard_controller.tap(PyKey.enter)
 
-
     @staticmethod
     def press(key, wait_before: float = ProfileReader.profile().input_delay_before_enter):
         sleep(wait_before)
         py_keyboard_controller.press(key)
-
 
     @staticmethod
     def release(key, wait_before: float = ProfileReader.profile().input_delay_before_enter):
         sleep(wait_before)
         py_keyboard_controller.release(key)
 
-
     @staticmethod
     def tap(key, wait_before: float = ProfileReader.profile().input_typing_wait_time):
         sleep(wait_before)
         py_keyboard_controller.tap(key)
-
 
     @staticmethod
     def tab(count: int = 1, wait_time: float = ProfileReader.profile().input_delay_between_tabs):
@@ -70,23 +65,19 @@ class InputPresser:
             sleep(wait_time)
             py_keyboard_controller.tap(PyKey.tab)
 
-
     @staticmethod
-    def type(string: str, typing_delay: float= ProfileReader.profile().input_typing_wait_time):
+    def type(string: str, typing_delay: float = ProfileReader.profile().input_typing_wait_time):
         for s in string:
             sleep(typing_delay)
             py_keyboard_controller.tap(s)
-
 
     @staticmethod
     def left_click(count: int = 1):
         InputPresser.click_mouse(PyButton.left, count)
 
-
     @staticmethod
     def click_mouse(button: PyButton, count: int = 1):
         py_mouse_controller.click(button, count=count)
-
 
     @staticmethod
     def move_mouse(to: tuple[int, int]):
@@ -95,14 +86,12 @@ class InputPresser:
             to[1] - py_mouse_controller.position[1]
         )
 
-
     @staticmethod
     def shift_mouse(by: tuple[int, int]):
         py_mouse_controller.move(
             by[0],
             by[1]
         )
-
 
     @staticmethod
     def scroll(by: int):

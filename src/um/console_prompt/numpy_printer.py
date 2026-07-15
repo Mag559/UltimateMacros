@@ -8,14 +8,11 @@ class NumpyPrinter:
         self.max_height = max_height
         self.line = 0
 
-
     def print(self, text: str):
         if self.line >= self.max_height:
             return
         self.canvas[self.line, 0:min(len(text), self.max_width)] = list(text)[:self.max_width]
         self.line = self.line + 1
 
-
     def get_drawing(self) -> np.ndarray:
         return self.canvas
-

@@ -11,6 +11,7 @@ class Matcher:
     Class responsible for comparing two images and deciding if they match
     and finding a template image in a larger one
     """
+
     def __init__(
             self,
             reference_image: Image.Image,
@@ -35,12 +36,10 @@ class Matcher:
 
         self.logger = getLogger(__name__)
 
-
     @staticmethod
     def average_brightness(img: Image.Image) -> float:
         gray = img.convert("L")  # luminance
         return np.asarray(gray).mean()
-
 
     def match(self, screenshot: Image.Image) -> bool:
         reference_brightness = Matcher.average_brightness(self.reference_image)
@@ -59,7 +58,6 @@ class Matcher:
 
         enhancer = ImageEnhance.Brightness(screenshot)
         screenshot = enhancer.enhance(reference_brightness / screenshot_brightness)
-
 
         difference_image = ImageChops.difference(self.reference_image, screenshot)
 
@@ -83,7 +81,6 @@ class Matcher:
         self.logger.info("Match successful")
         return True
 
-
     @staticmethod
     def convert_pil_image_to_cv(image: Image.Image):
         assert image.mode == "RGB"
@@ -91,8 +88,7 @@ class Matcher:
         # img_cv = img_array[:, :, ::-1].copy()  # -1 does RGB -> BGR
         return cv2.cvtColor(img_array, cv2.COLOR_BGR2GRAY)
 
-
-    def find_match(self, screenshot: Image.Image, cached_reference_image = None) -> tuple[int, int, float]:
+    def find_match(self, screenshot: Image.Image, cached_reference_image=None) -> tuple[int, int, float]:
         """
         Find the best matching location of reference image in screenshot
         returns the center of the location and confidence
@@ -103,7 +99,8 @@ class Matcher:
         """
         res = cv2.matchTemplate(
             Matcher.convert_pil_image_to_cv(screenshot),
-            cached_reference_image if cached_reference_image is not None else Matcher.convert_pil_image_to_cv(self.reference_image),
+            cached_reference_image if cached_reference_image is not None
+            else Matcher.convert_pil_image_to_cv(self.reference_image),
             cv2.TM_CCOEFF_NORMED
         )
 

@@ -15,7 +15,6 @@ class PenroseDrawer:
 
         self.pts = np.stack(np.meshgrid(xs, ys), axis=-1)
 
-
     def draw(self, rotation: float) -> np.ndarray:
         axes = np.array([
             5 * np.pi / 6,
@@ -29,9 +28,7 @@ class PenroseDrawer:
 
         bins = np.digitize(proj, self.axis_breakpoints)
 
-
         return self.colour_map[bins[..., 0], bins[..., 1], bins[..., 2]]
-
 
     def fill_colour_map(self):
         # corners
@@ -57,13 +54,10 @@ class PenroseDrawer:
         self.colour_map[3, 3, 2] = '.'
         self.colour_map[2, 3, 3] = '#'
 
-
-
         # inner edges
         self.colour_map[3, 2, 2] = '.'
         self.colour_map[2, 2, 3] = '*'
         self.colour_map[2, 3, 2] = '#'
-
 
     @staticmethod
     def find_axis_breakpoints():
@@ -95,4 +89,3 @@ class PenroseDrawer:
         right_middle = (1 - weight) * upper1 + weight * right2
 
         return np.array([-10000, -upper1[1], -right_middle[1], -left_middle[1], -left2[1], 10000])
-

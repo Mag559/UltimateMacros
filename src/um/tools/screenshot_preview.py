@@ -4,6 +4,7 @@ from .preview_window import PreviewWindow
 from um.profiles import ProfileReader
 from um.screen_match import Capturer, Section, REFERENCE_IMAGES
 
+
 class ScreenshotPreview:
     def __init__(self):
         self.capturer = Capturer(Section(100, 100, 100, 100))
@@ -13,7 +14,6 @@ class ScreenshotPreview:
         self.schedule_next_update()
         self.window.mainloop()
 
-
     def schedule_next_update(self):
         # noinspection PyTypeChecker
         self.window.after(
@@ -21,19 +21,16 @@ class ScreenshotPreview:
             self.update
         )
 
-
     def update(self):
         self.capturer.set_section(self.get_section())
         self.window.set_image(self.capturer.capture_screenshot())
         self.schedule_next_update()
-
 
     def get_section(self):
         """
         Converts left, top, width, height to a Section object.
         """
         return Section(*self.window.get_all_numbers())
-
 
     def save(self, name):
         sleep(ProfileReader.profile().screenshot_delay_before_save)

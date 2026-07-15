@@ -18,10 +18,11 @@ class ConsoleBase:
         e.i. bind `goto` command to an action, when there is a 'goto' action group defined
         """
         self.defaults[func.__name__.lstrip("_").replace("_", " ")] = func
+
         def wrapper(*args, **kwargs):
             return func(*args, **kwargs)
-        return wrapper
 
+        return wrapper
 
     def handle_prompt(self, prompt_result: str):
         stripped_prompt = prompt_result.strip()

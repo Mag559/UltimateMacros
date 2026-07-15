@@ -1,8 +1,8 @@
 import unittest
 from threading import Thread
 from time import sleep
-from pynput import keyboard as py_keyboard, mouse as py_mouse
 
+from pynput import keyboard as py_keyboard
 
 from um.base_macro import BaseMacro, MacroEventCollector
 from um.base_macro.termination_detector import TerminationDetector
@@ -28,7 +28,6 @@ class BaseMacroTest(unittest.TestCase):
 
         base_macro.stop()
 
-
     def test_start(self):
         base_macro = BaseMacro(MockInputCollector(), 10)
         t = Thread(target=base_macro.start)
@@ -44,7 +43,6 @@ class BaseMacroTest(unittest.TestCase):
         self.assertFalse(t.is_alive())
         self.assertFalse(base_macro._exit_timer.is_alive())
 
-
     def test_timeout(self):
         base_macro = BaseMacro(MockInputCollector(), 0.1)
         t = Thread(target=base_macro.start)
@@ -52,7 +50,6 @@ class BaseMacroTest(unittest.TestCase):
         sleep(0.15)
         self.assertFalse(t.is_alive())
         self.assertFalse(base_macro._exit_timer.is_alive())
-
 
     def test_shortcut_termination(self):
         mock_input_collector = MockInputCollector()

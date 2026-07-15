@@ -2,7 +2,6 @@ import tkinter as tk
 from collections.abc import Callable
 from tkinter import ttk
 
-
 from PIL import Image, ImageTk
 
 
@@ -58,6 +57,7 @@ class PreviewWindow(tk.Tk):
         self.bind("<Right>", lambda _: self.number_vars[0].set(self.get_number(0) + 10))
 
         self.text_entry.bind("<Return>", lambda _: on_text_submitted(self.text_var.get()))
+
     # ---------- Internal helpers ----------
 
     def _on_resize(self, event):
@@ -75,7 +75,7 @@ class PreviewWindow(tk.Tk):
             return
 
         img = self._original_image.copy()
-        img.thumbnail((label_width, label_height), Image.LANCZOS)
+        img.thumbnail((label_width, label_height), Image.Resampling.LANCZOS)
 
         self._photo = ImageTk.PhotoImage(img)
         self.image_label.configure(image=self._photo)
@@ -91,12 +91,12 @@ class PreviewWindow(tk.Tk):
         """Return a single numeric input as float or None."""
         try:
             return int(self.number_vars[index].get())
-        except Exception:
+        except ValueError:
             return 1
 
     def get_all_numbers(self) -> list[int]:
         """Return all 4 numeric inputs."""
-        values:list[int] = [self.get_number(q) for q in range(4)]
+        values: list[int] = [self.get_number(q) for q in range(4)]
         return values
 
     def get_text(self):

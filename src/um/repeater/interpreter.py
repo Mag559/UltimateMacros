@@ -14,7 +14,6 @@ from um.profiles import ProfileReader
 from um.screen_match import ScreenMatch, REFERENCE_IMAGES, Section
 
 
-
 class InterpreterMode(Enum):
     END_ON_FAIL = 0
     IGNORE_FAIL = 1
@@ -22,7 +21,7 @@ class InterpreterMode(Enum):
 
 def build_file_interpreter(
         file_path: Path,
-        mode: InterpreterMode=InterpreterMode(
+        mode: InterpreterMode = InterpreterMode(
             ProfileReader.profile().macro_interpreter_mode
         )
 ) -> Interpreter:
@@ -33,7 +32,6 @@ def _read_file(file_path: Path):
     with open(file_path, "r") as file:
         for line in file:
             yield line
-
 
 
 class Interpreter:
@@ -47,11 +45,10 @@ class Interpreter:
         Thrown when `await` or `find` matching fails
         """
 
-
     def __init__(
             self,
             instruction_generator: Generator[str, None, None],
-            mode: InterpreterMode=InterpreterMode(
+            mode: InterpreterMode = InterpreterMode(
                 ProfileReader.profile().macro_interpreter_mode
             )
     ):
@@ -59,7 +56,6 @@ class Interpreter:
         self._screen_match: ScreenMatch | None = None
         self.instruction_generator = instruction_generator
         self.mode = mode
-
 
     def start(self):
         for line in self.instruction_generator:
@@ -76,14 +72,12 @@ class Interpreter:
 
         self.logger.debug(f"Finished interpreting")
 
-
     @staticmethod
     def string_to_key(s: str):
         try:
             return PyKey[s]  # special key
         except KeyError:
             return KeyCode.from_char(s)  # regular character
-
 
     def _interpret(self, line: str):
         if line.startswith("---"):
@@ -156,7 +150,6 @@ class Interpreter:
                 pyperclip.copy(x)
                 sleep(0.1)
                 InputPresser.paste()
-
 
 
 def special_swap_case(x: str) -> str:

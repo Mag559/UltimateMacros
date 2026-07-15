@@ -22,7 +22,6 @@ class ConsoleToolbar:
 
         self.indices: list = [[] for _ in range(canvas_heigh)]
 
-
     def get(self):
         if self.style_indices_need_updating:
             self.update_style_indices()
@@ -31,7 +30,6 @@ class ConsoleToolbar:
             self.update_toolbar_state()
 
         return self.toolbar_state
-
 
     def update_toolbar_state(self):
         self.toolbar_state = []
@@ -50,7 +48,6 @@ class ConsoleToolbar:
 
         self.state_needs_updating = False
 
-
     def update_style_indices(self):
         for row_idx, style_row in enumerate(self.style_canvas):
             # find places where style index changes
@@ -62,21 +59,17 @@ class ConsoleToolbar:
         self.style_indices_need_updating = False
         self.state_needs_updating = True
 
-
     def wipe_canvas(self, x: int, y: int, width: int, height: int):
         self.canvas[y:y + height, x:x + width] = ' '
         self.state_needs_updating = True
-
 
     def draw_on_canvas(self, drawing: np.ndarray, x: int, y: int) -> None:
         self.canvas[y:y + drawing.shape[0], x:x + drawing.shape[1]] = drawing
         self.state_needs_updating = True
 
-
     def add_new_style(self, style: str) -> int:
         self.styles.append(style)
         return len(self.styles) - 1
-
 
     def update_style(self, new_style: str, style_idx: int):
         if not 0 <= style_idx < len(self.styles):
@@ -84,11 +77,9 @@ class ConsoleToolbar:
         self.styles[style_idx] = new_style
         self.state_needs_updating = True
 
-
     def draw_style_canvas(self, from_x: int, from_y: int, to_x: int, to_y: int, style_idx: int) -> None:
         if not 0 <= style_idx < len(self.styles):
             raise ValueError(f"Style {style_idx} out of range")
         self.style_canvas[from_y:to_y, from_x:to_x] = style_idx
         self.style_indices_need_updating = True
         self.state_needs_updating = True
-

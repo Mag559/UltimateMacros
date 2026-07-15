@@ -17,8 +17,10 @@ WIKAMP_ATTENDANCE_WEBSITES = {
     "grafika": "https://ftims.edu.p.lodz.pl/mod/attendance/view.php?id=115194"
 }
 
+
 def _on_firefox_macro_fail():
     raise SystemExit(1)
+
 
 def setup_goto(console_base: ConsoleBase) -> None:
     goto_group = console_base.completer.group("goto")
@@ -26,7 +28,6 @@ def setup_goto(console_base: ConsoleBase) -> None:
     @console_base.default
     def _goto():
         print("Command for opening websites in firefox")
-
 
     @goto_group.action("wikamp")
     @console_base.completer.param(list(WIKAMP_SUBJECT_WEBSITES.keys()))
@@ -48,7 +49,7 @@ def setup_goto(console_base: ConsoleBase) -> None:
         fh.wait_for_firefox_loading_wheel()
         fh.open_website(WIKAMP_ATTENDANCE_WEBSITES[subject])
         fh.wait_for_firefox_loading_wheel()
-        InputPresser.move_mouse((1000, 800)) # move slightly up for the cursor to hover over the website
+        InputPresser.move_mouse((1000, 800))  # move slightly up for the cursor to hover over the website
 
         sleep(1.5)
         InputPresser.scroll(-1)
@@ -62,8 +63,6 @@ def setup_goto(console_base: ConsoleBase) -> None:
         InputPresser.tab()
         InputPresser.tap(' ')
         InputPresser.enter()
-
-
 
     @goto_group.action("youtube")
     def _goto_youtube():

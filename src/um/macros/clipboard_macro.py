@@ -12,15 +12,16 @@ class ClipboardMacro(BaseMacro):
 
     If the start / end of the list serving as the stack is reached, it loops
     """
+
     def __init__(self, init_size: int = ProfileReader.profile().macro_clipboard_stack_size):
         """
         Parameters:
-            init_size (int): Number of slots in the circular clipboard buffer; each slot is initialized to an empty string.
+            init_size (int): Number of slots in the circular clipboard buffer;
+            each slot is initialized to an empty string.
         """
         super().__init__()
         self.copy_entries: list[str] = [''] * init_size
         self.current_index: int = -1
-
 
     def _update(self, event_code: ImportantEvents):
         """
@@ -43,7 +44,6 @@ class ClipboardMacro(BaseMacro):
                 self.retrieve()
         self.logger.debug(f"Entries after event processing: {self.copy_entries}")
 
-
     def store(self):
         """
         Advance the circular buffer index and store the current system clipboard contents into that slot.
@@ -57,8 +57,6 @@ class ClipboardMacro(BaseMacro):
     def retrieve(self):
         """
         Advance the circular buffer to the previous entry and place that entry into the system clipboard.
-        
-        The method decrements the internal index with wrap-around and copies the entry at the new index to the system clipboard using pyperclip.
         """
         self.current_index = (self.current_index - 1) % len(self.copy_entries)
         pyperclip.copy(self.copy_entries[self.current_index])

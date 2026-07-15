@@ -4,10 +4,12 @@ from typing import Any
 
 CALLBACK = Callable
 
+
 @dataclass
 class PriorityCallback:
     priority: int
     callback: CALLBACK
+
     def __call__(self, *args: Any, **kwargs: Any):
         self.callback(*args, **kwargs)
 
@@ -19,9 +21,9 @@ class OrderedEmitter:
     The callback order is determined by priority:
     higher priorities are called first, lowest last
     """
+
     def __init__(self):
         self._callers: list[PriorityCallback] = []
-
 
     def add_caller(self, callback: CALLBACK, priority: int = 0) -> None:
         """
@@ -38,7 +40,6 @@ class OrderedEmitter:
         else:
             self._callers.append(priority_callback)
 
-
     def remove_caller(self, callback: CALLBACK) -> None:
         """
         Unregister a callback
@@ -49,7 +50,6 @@ class OrderedEmitter:
                 break
         else:
             raise ValueError("Can't remove non-registered callback")
-
 
     def _emit(self, *args: Any, **kwargs: Any) -> None:
         for caller in self._callers.copy():

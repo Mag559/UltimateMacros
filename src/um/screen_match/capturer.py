@@ -27,7 +27,12 @@ class Capturer:
     Captures a specified part of the screen
     and returns it a PIL Image object.
     """
-    def __init__(self, section: Section, monitor_number: int = ProfileReader.profile().match_monitor_number, capturer_override = None):
+
+    def __init__(self,
+                 section: Section,
+                 monitor_number: int = ProfileReader.profile().match_monitor_number,
+                 capturer_override=None
+                 ):
         """
         :section: Section left, top, width, height
         :monitor_number: int
@@ -48,12 +53,10 @@ class Capturer:
         self.set_monitor(monitor_number)
         self.logger.debug("Capturer initialized")
 
-
     def set_section(self, section: Section):
         self.section = section
         self.logger.debug(f"Section updated to: {section}")
         self.set_monitor(self.monitor_number)
-
 
     def set_monitor(self, monitor_number: int) -> None:
         # Get information of the specified monitor
@@ -68,7 +71,6 @@ class Capturer:
             "mon": monitor_number,
         }
         self.logger.debug(f"Monitor updated to: {self.monitor}")
-
 
     def capture_screenshot(self) -> Image.Image:
         screenshot = self.capturer.grab(self.monitor)

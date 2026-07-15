@@ -16,16 +16,13 @@ class ProfileReader:
             ProfileReader._instance = ProfileReader()
         return ProfileReader._instance.profile
 
-
     @staticmethod
     def switch_profile(new_profile_name: str):
         ProfileReader._instance._load_profile(new_profile_name)
 
-
     @staticmethod
     def reload_profile():
         ProfileReader._instance._load_profile(ProfileReader._instance.current_profile)
-
 
     def __init__(self):
         self.current_profile: str
@@ -37,8 +34,6 @@ class ProfileReader:
                 self._load_profile(last_profile)
             else:
                 self._load_profile("default")
-
-
 
     def _load_profile(self, profile_name: str):
         self.profile = Profile()
@@ -52,7 +47,6 @@ class ProfileReader:
 
         with open(COOKIES_PATH, 'w') as f:
             f.write(self.current_profile)
-
 
 
 @dataclass
@@ -116,7 +110,7 @@ class Profile:
     macro_text_map_copy_delay: float = 0.1
     macro_text_map_paste_delay: float = 0.1
 
-    macro_interpreter_mode: int = 0 # END_ON_FAIL, no easy way to serialize enum
+    macro_interpreter_mode: int = 0  # InterpreterMode.END_ON_FAIL
     macro_interpreter_sleep_spf: float = 0.1
 
     macro_recorder_time_precision: int = 5
@@ -152,10 +146,8 @@ class Profile:
 
     match_confidence: float = 0.8
 
-
     ################### tool related ###################
     screenshot_delay_before_save: float = 1.0
     screenshot_preview_spf: float = 0.1
-
 
     ################### console related ###################

@@ -20,7 +20,6 @@ from .miscellaneous import setup_misc
 from .tool import setup_tool
 
 
-
 class Main:
     def __init__(self):
         self.logger = getLogger(__name__)
@@ -48,10 +47,8 @@ class Main:
         # draws something cool on the toolbar canvas
         self.console_drawer: ConsoleDrawer = ConsoleDrawer(self.toolbar, self.session.app.invalidate, self.time_keeper)
 
-
     def get_toolbar(self):
         return self.toolbar.get()
-
 
     def get_prompt(self):
         if not self.last_command_flag:
@@ -62,7 +59,6 @@ class Main:
     def start(self):
         with patch_stdout():
             asyncio.run(self.run())
-
 
     async def run(self):
         spiny_task = asyncio.create_task(self.console_drawer.spin())
@@ -93,7 +89,6 @@ class Main:
 
         spiny_task.cancel()
 
-
     def create_key_bindings(self):
         # Przechwytywanie uzyskania focusu przez okno (Focus In: \x1b[I)
         @self.kb.add('escape', '[', 'I')
@@ -123,16 +118,14 @@ class Main:
             return not self.time_keeper.focused
 
         @self.kb.add('<any>', filter=is_unfocused)
-        def _(event):
+        def _(_event):
             self.time_keeper.on_focused()
-
 
     def import_actions(self):
         setup_goto(self.console_base)
         setup_macro(self.console_base)
         setup_misc(self.console_base)
         setup_tool(self.console_base)
-
 
     def create_session(self) -> PromptSession:
         return PromptSession(
@@ -148,10 +141,8 @@ class Main:
             auto_suggest=AutoSuggestFromHistory()
         )
 
-
     def terminate(self):
         self.session.app.exit()
-
 
 
 def main() -> None:

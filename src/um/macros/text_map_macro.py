@@ -16,11 +16,11 @@ class TextMapMacro(BaseMacro):
     the copied text is processed by the `text_map` function
     and pasted in place of the original text.
     """
+
     def __init__(self, text_map: Callable[[str], str]):
         self.text_map_logger: Logger = getLogger(__name__)
         super().__init__()
         self.text_map = text_map
-
 
     def _update(self, event_code: ImportantEvents):
         super()._update(event_code)
@@ -36,7 +36,6 @@ class TextMapMacro(BaseMacro):
 
                 pyperclip.copy(out)
                 InputPresser.paste(ProfileReader.profile().macro_text_map_paste_delay)
-
 
 
 def camel_case_to_screaming_snake_case(x: str) -> str:
@@ -56,4 +55,3 @@ def camel_case_to_screaming_snake_case(x: str) -> str:
 def surround_with(x: str, left: str, right: str) -> str:
     x = re.sub(r'(?<!\\)_', r'\\_', x)
     return left + x + right
-

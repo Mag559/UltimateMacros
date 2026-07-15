@@ -2,9 +2,9 @@ import re
 from logging import getLogger, Logger
 from pathlib import Path
 
-
 from um.base_macro import BaseMacro, ImportantEvents
 from .recorder import Recorder
+
 
 class RecorderMacro(BaseMacro):
     """
@@ -13,6 +13,7 @@ class RecorderMacro(BaseMacro):
     TOGGLE - to pause recording instructions,
     instead comments are made in the file
     """
+
     def __init__(self, file_path: Path):
         self.recorder_macro_logger: Logger = getLogger(__name__)
         super().__init__()
@@ -26,20 +27,17 @@ class RecorderMacro(BaseMacro):
         self._pause: bool = False
         self._pause_toggle: bool = False
 
-
     def start(self):
         self.recorder_macro_logger.debug(f"Start recording")
         super()._run()
         self._record()
         self.recorder_macro_logger.debug(f"Ended recording")
 
-
     def _update(self, event_code: ImportantEvents):
         super()._update(event_code)
 
         if event_code == ImportantEvents.TOGGLE:
             self._pause_toggle = True
-
 
     def _record(self):
         with open(self._file_path, 'w') as file:
@@ -51,7 +49,6 @@ class RecorderMacro(BaseMacro):
                     continue
 
                 self._write_to_file_mode(instruction, file)
-
 
     def _pause_mode(self, instruction: str, file):
         self.logger.debug(f"Processing instruction: {instruction} in pause mode")
@@ -68,7 +65,6 @@ class RecorderMacro(BaseMacro):
         if self._pause_toggle:
             self._pause_toggle = False
             self._pause = not self._pause
-
 
     def _write_to_file_mode(self, instruction: str, file):
         self.logger.debug(f"Processing instruction: {instruction} in write mode")
@@ -101,7 +97,6 @@ class RecorderMacro(BaseMacro):
             for event in self._events_buffer:
                 file.write(event + "\n")
             self._events_buffer.clear()
-
 
     def stop(self):
         self._recorder.stop()

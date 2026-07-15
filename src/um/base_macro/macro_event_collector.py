@@ -12,8 +12,8 @@ class ImportantEvents(Enum):
     COPY = 1
     PASTE = 2
     CUT = 3
-    SHORTCUT1 = 4 # left alt + `
-    SHORTCUT2 = 9 # left alt + windows
+    SHORTCUT1 = 4  # left alt + `
+    SHORTCUT2 = 9  # left alt + windows
     TOGGLE = 5
     DOUBLE_CLICK = 6
     RIGHT_CLICK = 7
@@ -25,7 +25,8 @@ class MacroEventCollector(OrderedEmitter):
     """
     Filters out important events amongst inputs collected by input collector.
     """
-    def __init__(self, collector: OrderedEmitter=InputCollector()):
+
+    def __init__(self, collector: OrderedEmitter = InputCollector()):
         self.logger = getLogger(__name__)
         super().__init__()
         self.ctrl_held = False
@@ -35,7 +36,6 @@ class MacroEventCollector(OrderedEmitter):
         self.collector: OrderedEmitter = collector
 
         self.collector.add_caller(self._update, ProfileReader.profile().macro_event_collector_priority)
-
 
     def _update(self, input_type: InputType, input_object: KeyInput | MouseInput) -> None:
         self.logger.debug(f"Received {input_type} with input object {input_object}")
@@ -49,7 +49,6 @@ class MacroEventCollector(OrderedEmitter):
             case InputType.MOUSE_PRESS:
                 assert isinstance(input_object, MouseInput)
                 self._on_mouse_press(input_object)
-
 
     def _on_key_press(self, key_input: KeyInput):
         """
@@ -92,7 +91,6 @@ class MacroEventCollector(OrderedEmitter):
 
         return None
 
-
     def _on_key_release(self, key_input: KeyInput):
         """
         Handle a key release event by updating modifier state
@@ -110,7 +108,6 @@ class MacroEventCollector(OrderedEmitter):
                 self.left_alt_held = False
         return None
 
-
     def _on_mouse_press(self, mouse_input: MouseInput):
         if mouse_input.button == py_mouse.Button.left:
             if time() - self.last_left_click < ProfileReader.profile().input_double_click_time:
@@ -127,11 +124,9 @@ class MacroEventCollector(OrderedEmitter):
 
         return None
 
-
     def emit_event(self, event: ImportantEvents) -> None:
         self.logger.debug(f"Emitting event: {event}")
         self._emit(event)
-
 
     def remove_caller(self, callback: CALLBACK) -> None:
         """
