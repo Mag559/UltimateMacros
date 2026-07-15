@@ -142,7 +142,7 @@ class Interpreter:
                 InputPresser.move_mouse(result)
                 InputPresser.left_click()
             case "special_swap_case":
-                #TODO similar to text map macro
+                # TODO similar to text map macro
                 InputPresser.copy()
                 sleep(0.1)
                 x = special_swap_case(pyperclip.paste())

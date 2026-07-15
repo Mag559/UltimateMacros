@@ -23,8 +23,8 @@ class TerminationDetector:
         Initialize a TerminationDetector that tracks recent event timestamps to decide rapid succession termination.
         
         Parameters:
-        	event_count (int): how many events need to happen in the time window to result in termination
-        	time_window (float): how wide should the time window be, in seconds
+            event_count (int): how many events need to happen in the time window to result in termination
+            time_window (float): how wide should the time window be, in seconds
         """
         self.event_count = event_count
         self.time_window = time_window

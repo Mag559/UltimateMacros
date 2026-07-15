@@ -62,7 +62,7 @@ class ConsoleDrawer:
             await self.time_keeper.drawing_sleep_if_unfocused()
 
             angle += ProfileReader.profile().console_penrose_spf \
-                     * ProfileReader.profile().console_penrose_rotation_speed
+                * ProfileReader.profile().console_penrose_rotation_speed
             penrose_drawing = drawer.draw(angle)
 
             self.update_styles(style_indexes)

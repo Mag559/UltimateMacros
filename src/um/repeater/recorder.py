@@ -46,8 +46,8 @@ class Recorder:
             if self._last_event_time == 0:
                 self._last_event_time = float(timestamp)
 
-            event = f"{(float(timestamp) - self._last_event_time)
-            :.{ProfileReader.profile().macro_recorder_time_precision}f} {instruction}"
+            event = f"{(float(timestamp) - self._last_event_time):.{
+                ProfileReader.profile().macro_recorder_time_precision}f} {instruction}"
             self._last_event_time = float(timestamp)
             self.logger.debug(f"Event processed into: {event}")
             yield event
