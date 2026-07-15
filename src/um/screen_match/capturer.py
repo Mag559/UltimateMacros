@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from logging import getLogger
 from PIL import Image
-from mss import mss
+from mss import MSS
 
 from um.profiles import ProfileReader
 
@@ -44,7 +44,7 @@ class Capturer:
             self.capturer = capturer_override
         else:
             try:
-                self.capturer = mss()
+                self.capturer = MSS()
             except Exception as e:
                 self.logger.exception("Screen capturing by mss failed")
                 raise RuntimeError(e)
@@ -77,6 +77,6 @@ class Capturer:
         self.logger.debug(f"Screenshot captured: {screenshot.size}")
         return Image.frombytes(
             "RGB",
-            screenshot.size,
+            (screenshot.size.width, screenshot.size.height),
             screenshot.rgb
         )
