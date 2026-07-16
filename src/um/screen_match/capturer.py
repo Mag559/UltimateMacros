@@ -21,6 +21,10 @@ class Section:
     def from_string(section: str):
         return Section(*[int(x) for x in section.strip(' ').split(',')])
 
+    @property
+    def centre(self) -> tuple[int, int]:
+        return int(self.left + self.width / 2), int(self.top + self.height / 2)
+
 
 class Capturer:
     """

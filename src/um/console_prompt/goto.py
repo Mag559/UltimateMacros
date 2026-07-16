@@ -52,7 +52,7 @@ def setup_goto(console_base: ConsoleBase) -> None:
         InputPresser.move_mouse((1000, 800))  # move slightly up for the cursor to hover over the website
 
         sleep(1.5)
-        InputPresser.scroll(-1)
+        InputPresser.scroll(0, -1)
 
         fh.press_register_attendance()
 

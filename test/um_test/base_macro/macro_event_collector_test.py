@@ -3,7 +3,7 @@ from time import sleep
 
 from pynput import keyboard as py_keyboard, mouse as py_mouse
 
-from um import ProfileReader
+from um.profiles import ProfileReader
 from um.base_macro import MacroEventCollector, ImportantEvents
 from um_test.mock_pynput import MockInputCollector
 
