@@ -1,4 +1,4 @@
-from collections.abc import Generator
+from collections.abc import Generator, Callable
 from logging import getLogger
 from pathlib import Path
 from time import sleep
@@ -10,8 +10,10 @@ from pynput.mouse import Button as PyButton
 
 from um.base_macro import InputPresser
 from um.profiles import ProfileReader
-from um.repeater.base_interpreter import BaseInterpreter
+from um.repeater.base_interpreter import BaseInterpreter, ThrowingArgumentParser
 from um.screen_match import ScreenMatch, REFERENCE_IMAGES, Section
+from um.repeater.instruction_declarations import create_parsers
+from um.repeater.registered_functions import create_function_registry
 
 
 def build_file_interpreter(
@@ -42,6 +44,9 @@ def advanced_filter_nones(arg_names: list[str], *args) -> dict[str, Any]:
 
 
 class Interpreter(BaseInterpreter):
+    parsers: dict[str, ThrowingArgumentParser] = create_parsers()
+    registered_functions: dict[str, Callable] = create_function_registry()
+
     def __init__(
         self,
         instruction_generator: Generator[str, None, None],

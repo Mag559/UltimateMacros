@@ -1,12 +1,8 @@
 from argparse import ArgumentParser
-from collections.abc import Callable
 from enum import Enum
 
 from pynput.keyboard import Key as PyKey, KeyCode
 from pynput.mouse import Button as PyButton
-
-from um.repeater.instruction_declarations import create_parsers
-from um.repeater.registered_functions import create_function_registry
 
 
 class ThrowingArgumentParser(ArgumentParser):
@@ -28,9 +24,6 @@ class BaseInterpreter:
     class Mode(Enum):
         END_ON_FAIL = 0
         IGNORE_FAIL = 1
-
-    parsers: dict[str, ArgumentParser] = create_parsers()
-    registered_functions: dict[str, Callable] = create_function_registry()
 
     @staticmethod
     def string_to_key(s: str):

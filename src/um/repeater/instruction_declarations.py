@@ -1,68 +1,66 @@
-from argparse import ArgumentParser
-
-from um.repeater import BaseInterpreter
+from um.repeater.base_interpreter import BaseInterpreter, ThrowingArgumentParser
 
 KeyType = BaseInterpreter.string_to_key
 MouseButtonType = BaseInterpreter.string_to_button
 
 
-def create_parsers() -> dict[str, ArgumentParser]:
+def create_parsers() -> dict[str, ThrowingArgumentParser]:
     # ----------------- keyboard -----------------
-    press_parser = ArgumentParser("press a key on the keyboard")
+    press_parser = ThrowingArgumentParser("press a key on the keyboard")
     press_parser.add_argument("key", type=KeyType, help="the key to press")
 
-    release_parser = ArgumentParser("release a key on the keyboard")
+    release_parser = ThrowingArgumentParser("release a key on the keyboard")
     release_parser.add_argument("key", type=KeyType, help="the key to release")
 
-    tap_parser = ArgumentParser("tap a key on the keyboard")
+    tap_parser = ThrowingArgumentParser("tap a key on the keyboard")
     tap_parser.add_argument("key", type=KeyType, help="the key to tap")
     tap_parser.add_argument("--duration", type=float, help="how many seconds between press and release")
 
-    type_parser = ArgumentParser("type a string on the keyboard")
+    type_parser = ThrowingArgumentParser("type a string on the keyboard")
     type_parser.add_argument("string", type=str, help="the string to type")
     type_parser.add_argument("--duration", type=float, help="how many seconds between press and release")
     type_parser.add_argument("--delay", type=float, help="how many seconds before each press")
 
     # ----------------- mouse -----------------
-    move_parser = ArgumentParser("move the mouse to absolute pixel coordinates")
+    move_parser = ThrowingArgumentParser("move the mouse to absolute pixel coordinates")
     move_parser.add_argument("x", type=int, help="the x coordinate to move")
     move_parser.add_argument("y", type=int, help="the y coordinate to move")
 
-    shift_parser = ArgumentParser("shift the mouse from the current pixel coordinates")
+    shift_parser = ThrowingArgumentParser("shift the mouse from the current pixel coordinates")
     shift_parser.add_argument("x", type=int, help="how much too shift on the x axis")
     shift_parser.add_argument("y", type=int, help="how much too shift on the y axis")
 
-    click_parser = ArgumentParser("click a mouse button")
+    click_parser = ThrowingArgumentParser("click a mouse button")
     click_parser.add_argument(
         "button",
         type=MouseButtonType,
         help="the mouse button to click: left, middle or right"
     )
 
-    scroll_parser = ArgumentParser("scroll the mouse in undefined units")
+    scroll_parser = ThrowingArgumentParser("scroll the mouse in undefined units")
     scroll_parser.add_argument("x", type=int, help="how much to scroll horizontally")
     scroll_parser.add_argument("y", type=int, help="how much to scroll vertically")
 
     # ----------------- assembly -----------------
-    jump_parser = ArgumentParser("jump to previous or next instruction")
+    jump_parser = ThrowingArgumentParser("jump to previous or next instruction")
     jump_parser.add_argument(
         "by",
         type=int,
         help="by how much to change the instruction counter on top of the default +1 (jump 0 does nothing)"
     )
 
-    conditional_jump_parser = ArgumentParser("jump to previous or next instruction if the flag is set")
+    conditional_jump_parser = ThrowingArgumentParser("jump to previous or next instruction if the flag is set")
     conditional_jump_parser.add_argument(
         "by",
         type=int,
         help="by how much to change the instruction counter on top of the default +1 (jump 0 does nothing)"
     )
 
-    set_flag_parser = ArgumentParser("set the flag")
+    set_flag_parser = ThrowingArgumentParser("set the flag")
 
-    clear_flag_parser = ArgumentParser("clear the flag")
+    clear_flag_parser = ThrowingArgumentParser("clear the flag")
 
-    log_parser = ArgumentParser("log the specified message")
+    log_parser = ThrowingArgumentParser("log the specified message")
     log_parser.add_argument("message", type=str, help="the message to log")
     log_parser.add_argument(
         "--level",
@@ -71,10 +69,10 @@ def create_parsers() -> dict[str, ArgumentParser]:
         help="the logging level in the logging package i.e.: 10 - debug, 20 - info, 30 - warning, 40 - error"
     )
 
-    end_parser = ArgumentParser("end the interpreting")
+    end_parser = ThrowingArgumentParser("end the interpreting")
 
     # ----------------- screen matching -----------------
-    detect_parser = ArgumentParser(
+    detect_parser = ThrowingArgumentParser(
         "detect if an image is present anywhere on the screen, raises the flag if it is, clears if it isn't"
     )
     detect_parser.add_argument(
@@ -99,7 +97,7 @@ def create_parsers() -> dict[str, ArgumentParser]:
         help="whether to and with what button to click the centre of the found image"
     )
 
-    match_parser = ArgumentParser(
+    match_parser = ThrowingArgumentParser(
         "match a specific section of the screen against a reference picture, "
         "raises the flag if it matches, clears if it doesn't"
     )
@@ -121,7 +119,7 @@ def create_parsers() -> dict[str, ArgumentParser]:
         help="whether to and with what button to click the centre of the found image"
     )
 
-    await_parser = ArgumentParser(
+    await_parser = ThrowingArgumentParser(
         "wait until a reference image appears on the screen"
         "and left click it's centre, raises the flag if successful, clears otherwise"
     )
@@ -168,7 +166,7 @@ def create_parsers() -> dict[str, ArgumentParser]:
     )
 
     # ----------------- other -----------------
-    command_parser = ArgumentParser("trigger a registered function")
+    command_parser = ThrowingArgumentParser("trigger a registered function")
     command_parser.add_argument(
         "function_name",
         type=str,
