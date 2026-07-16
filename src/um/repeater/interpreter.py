@@ -1,27 +1,22 @@
 from collections.abc import Generator
-from enum import Enum
 from logging import getLogger
 from pathlib import Path
-from string import ascii_lowercase, ascii_uppercase
 from time import sleep
+from typing import Any
 
 import pyperclip
-from pynput.keyboard import Controller as KeyboardController, Key as PyKey, KeyCode
+from pynput.keyboard import Controller as KeyboardController
 from pynput.mouse import Button as PyButton
 
 from um.base_macro import InputPresser
 from um.profiles import ProfileReader
+from um.repeater.base_interpreter import BaseInterpreter
 from um.screen_match import ScreenMatch, REFERENCE_IMAGES, Section
-
-
-class InterpreterMode(Enum):
-    END_ON_FAIL = 0
-    IGNORE_FAIL = 1
 
 
 def build_file_interpreter(
         file_path: Path,
-        mode: InterpreterMode = InterpreterMode(
+        mode: BaseInterpreter.Mode = BaseInterpreter.Mode(
             ProfileReader.profile().macro_interpreter_mode
         )
 ) -> Interpreter:
@@ -34,37 +29,63 @@ def _read_file(file_path: Path):
             yield line
 
 
-class Interpreter:
-    """
-    Execute instructions given by the instruction generator
-    in the format specified in the readme
-    """
+def filter_nones(*args) -> list:
+    return [arg for arg in args if arg is not None]
 
-    class MatchImageException(Exception):
-        """
-        Thrown when `await` or `find` matching fails
-        """
 
+def advanced_filter_nones(arg_names: list[str], *args) -> dict[str, Any]:
+    arguments: dict[str, Any] = {}
+    for name, arg in zip(arg_names, args):
+        if arg is not None:
+            arguments[name] = arg
+    return arguments
+
+
+class Interpreter(BaseInterpreter):
     def __init__(
-            self,
-            instruction_generator: Generator[str, None, None],
-            mode: InterpreterMode = InterpreterMode(
-                ProfileReader.profile().macro_interpreter_mode
-            )
+        self,
+        instruction_generator: Generator[str, None, None],
+        mode: BaseInterpreter.Mode = BaseInterpreter.Mode(
+            ProfileReader.profile().macro_interpreter_mode
+        )
     ):
+        super().__init__()
         self.logger = getLogger(__name__)
         self._screen_match: ScreenMatch | None = None
         self.instruction_generator = instruction_generator
         self.mode = mode
+        self._lines: list[str] = []
+        self._instruction_counter: int = -1
+        self._next_instruction_idx: int = 0
+        self.the_flag: bool = False
+        self._end_flag: bool = False
+
+    @property
+    def screen_match(self) -> ScreenMatch:
+        if self._screen_match is None:
+            self._screen_match = ScreenMatch()
+        return self._screen_match
 
     def start(self):
-        for line in self.instruction_generator:
-            line = line.rstrip('\n')
+        while True:
+            if self._end_flag:
+                break
+
+            self._instruction_counter = self._next_instruction_idx
+            self._next_instruction_idx += 1
+            try:
+                while self._instruction_counter >= len(self._lines):
+                    self._lines.append(next(self.instruction_generator).rstrip("\n"))
+            except StopIteration:
+                break
+
+            line: str = self._lines[self._instruction_counter]
+
             try:
                 self.logger.debug(f"interpreting: {line}")
                 self._interpret(line)
-            except KeyboardController.InvalidKeyException:
-                if self.mode == InterpreterMode.END_ON_FAIL:
+            except KeyboardController.InvalidKeyException | BaseInterpreter.InvalidInstruction:
+                if self.mode == BaseInterpreter.Mode.END_ON_FAIL:
                     self.logger.exception(f"Ending interpreter session after failing to interpret: {line}")
                     return
                 else:
@@ -72,18 +93,28 @@ class Interpreter:
 
         self.logger.debug(f"Finished interpreting")
 
-    @staticmethod
-    def string_to_key(s: str):
-        try:
-            return PyKey[s]  # special key
-        except KeyError:
-            return KeyCode.from_char(s)  # regular character
+    def _set_screen_match_section(self, parsed, full_otherwise: bool = False) -> None:
+        if parsed.section is not None:
+            try:
+                self.screen_match.set_compared_section(Section.from_string(parsed.section))
+            except TypeError as e:
+                raise BaseInterpreter.InvalidInstruction(e)
+        elif full_otherwise:
+            self.screen_match.set_compared_section(Section(*ProfileReader.profile().match_whole_screen))
 
-    def _interpret(self, line: str):
+    @staticmethod
+    def _click_section(parsed, centre: tuple[int, int]) -> None:
+        if parsed.click == PyButton.unknown:
+            return
+
+        InputPresser.move_mouse(centre)
+        InputPresser.left_click(parsed.click)
+
+    def _interpret(self, line: str) -> None:
         if line.startswith("---"):
             return
 
-        items = line.split(" ")
+        items: list[str] = line.split(" ")
         try:
             sleep(float(items[0]))
             items.pop(0)
@@ -91,76 +122,111 @@ class Interpreter:
             pass
 
         instruction = items[0]
+        if instruction not in self.parsers.keys():
+            return
+
+        parsed = self.parsers[instruction].parse_args(items[1:])
+
         match instruction:
             case "press":
-                InputPresser.press(Interpreter.string_to_key(items[1]), 0)
+                InputPresser.press(parsed.key, 0)
             case "release":
-                InputPresser.release(Interpreter.string_to_key(items[1]), 0)
+                InputPresser.release(parsed.key, 0)
             case "tap":
-                InputPresser.press(Interpreter.string_to_key(items[1]), 0)
-                InputPresser.release(Interpreter.string_to_key(items[1]), float(items[2]))
+                InputPresser.press(parsed.key, 0)
+                InputPresser.release(
+                    *filter_nones(parsed.key, parsed.duration)
+                )
             case "type":
-                for char in items[1]:
-                    InputPresser.press(Interpreter.string_to_key(char), 0)
-                    InputPresser.release(Interpreter.string_to_key(char), float(items[2]))
+                for char in parsed.string:
+                    InputPresser.press(
+                        *filter_nones(Interpreter.string_to_key(char), parsed.delay)
+                    )
+                    InputPresser.release(
+                        *filter_nones(Interpreter.string_to_key(char), parsed.duration)
+                    )
+
             case "move":
-                str_coordinates: list[str] = items[1].split(",")
-                to_x = int(str_coordinates[0])
-                to_y = int(str_coordinates[1])
-                self.logger.debug(f"Moving mouse to: {to_x}, {to_y}")
-                InputPresser.move_mouse((to_x, to_y))
+                self.logger.debug(f"Moving mouse to: {parsed.x}, {parsed.y}")
+                InputPresser.move_mouse((parsed.x, parsed.y))
             case "shift":
-                str_coordinates: list[str] = items[1].split(",")
-                to_x = int(str_coordinates[0])
-                to_y = int(str_coordinates[1])
-                self.logger.debug(f"Shifting mouse by: {to_x}, {to_y}")
-                InputPresser.shift_mouse((to_x, to_y))
+                self.logger.debug(f"Shifting mouse by: {parsed.x}, {parsed.y}")
+                InputPresser.shift_mouse((parsed.x, parsed.y))
             case "click":
-                InputPresser.click_mouse(PyButton[items[1]])
+                InputPresser.click_mouse(parsed.button)
+            case "scroll":
+                InputPresser.scroll(parsed.x, parsed.y)
+
+            case "jump":
+                self._next_instruction_idx += parsed.by
+            case "jump_if":
+                if self.the_flag:
+                    self._next_instruction_idx += parsed.by
+            case "set_flag":
+                self.the_flag = True
+            case "clear_flag":
+                self.the_flag = False
+            case "log":
+                self.logger.log(parsed.level, f"Log instruction: {parsed.message}")
+            case "end":
+                self._end_flag = True
+
+            case "detect":
+                self.screen_match.load_reference_image(REFERENCE_IMAGES / parsed.image_path)
+                self._set_screen_match_section(parsed, True)
+
+                result: bool | tuple[int, int] = self.screen_match.find_match(
+                    *filter_nones(parsed.confidence_required)
+                )
+                self.the_flag = result is not False
+                if self.the_flag:
+                    self._click_section(parsed, result)
+            case "match":
+                self.screen_match.load_reference_image(REFERENCE_IMAGES / parsed.image_path)
+                self._set_screen_match_section(parsed)
+                self.the_flag = self.screen_match.check_match()
+                if self.the_flag:
+                    self._click_section(parsed, self.screen_match.capturer.section.centre)
             case "await":
-                if self._screen_match is None:
-                    self._screen_match = ScreenMatch()
-                self._screen_match.load_reference_image(REFERENCE_IMAGES / items[1])
+                self.screen_match.load_reference_image(REFERENCE_IMAGES / parsed.image_path)
+                if parsed.anywhere:
+                    self._set_screen_match_section(parsed, True)
+                    result: bool | tuple[int, int] = self.screen_match.wait_for_find_match(
+                        **advanced_filter_nones(
+                            ["timeout", "interval", "confidence_required"],
+                            parsed.timeout, parsed.interval, parsed.confidence_required
+                        )
+                    )
+                    self.the_flag = result is not False
+                    if self.the_flag:
+                        self._click_section(parsed, result)
+                else:
+                    self._set_screen_match_section(parsed)
+                    self.the_flag = self.screen_match.wait_for_match(
+                        **advanced_filter_nones(["timeout", "interval"], parsed.timeout, parsed.interval)
+                    )
+                    if self.the_flag:
+                        self._click_section(parsed, self.screen_match.capturer.section.centre)
 
-                if not self._screen_match.wait_for_match():
-                    self.logger.warning(f"Failed to await for image {items[1]}")
-                    raise Interpreter.MatchImageException()
+            case "command":
+                if parsed.function_name not in self.registered_functions.keys():
+                    raise BaseInterpreter.InvalidInstruction("Function name not registered")
+                func = self.registered_functions[parsed.function_name]
+                delay = parsed.clipboard_delay if parsed.clipboard_delay is not None \
+                    else ProfileReader.profile().input_clipboard_update_delay
 
-            case "find":
-                if self._screen_match is None:
-                    self._screen_match = ScreenMatch()
+                if parsed.clipboard in ["copy", "full"]:
+                    InputPresser.copy()
+                    sleep(delay)
 
-                self._screen_match.load_reference_image(REFERENCE_IMAGES / items[1])
+                if parsed.clipboard == "none":
+                    func(*parsed.arguments)
+                else:
+                    pyperclip.copy(func(
+                        pyperclip.paste(),
+                        *parsed.arguments
+                    ))
 
-                self._screen_match.set_compared_section(Section(*ProfileReader.profile().match_whole_screen))
-
-                result = self._screen_match.wait_for_find_match()
-                if result is False:
-                    self.logger.warning(f"Failed to find image {items[1]}")
-                    raise Interpreter.MatchImageException()
-
-                InputPresser.move_mouse(result)
-                InputPresser.left_click()
-            case "special_swap_case":
-                # TODO similar to text map macro
-                InputPresser.copy()
-                sleep(0.1)
-                x = special_swap_case(pyperclip.paste())
-                # print(x)
-                pyperclip.copy(x)
-                sleep(0.1)
-                InputPresser.paste()
-
-
-def special_swap_case(x: str) -> str:
-    out: str = ""
-    for char in x:
-        if char in ascii_lowercase:
-            out += char.upper()
-            continue
-        if char in ascii_uppercase:
-            out += f'_{char}'
-            continue
-        out += char
-
-    return out
+                if parsed.clipboard in ["paste", "full"]:
+                    sleep(delay)
+                    InputPresser.paste()

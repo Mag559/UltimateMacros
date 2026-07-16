@@ -1,22 +1,27 @@
 from argparse import ArgumentParser
 
+from um.repeater import BaseInterpreter
+
+KeyType = BaseInterpreter.string_to_key
+MouseButtonType = BaseInterpreter.string_to_button
+
 
 def create_parsers() -> dict[str, ArgumentParser]:
     # ----------------- keyboard -----------------
     press_parser = ArgumentParser("press a key on the keyboard")
-    press_parser.add_argument("key", type=str, help="the key to press")
+    press_parser.add_argument("key", type=KeyType, help="the key to press")
 
     release_parser = ArgumentParser("release a key on the keyboard")
-    release_parser.add_argument("key", type=str, help="the key to release")
+    release_parser.add_argument("key", type=KeyType, help="the key to release")
 
     tap_parser = ArgumentParser("tap a key on the keyboard")
-    tap_parser.add_argument("key", type=str, help="the key to tap")
-    tap_parser.add_argument("--duration", type=str, help="how many seconds between press and release")
+    tap_parser.add_argument("key", type=KeyType, help="the key to tap")
+    tap_parser.add_argument("--duration", type=float, help="how many seconds between press and release")
 
     type_parser = ArgumentParser("type a string on the keyboard")
     type_parser.add_argument("string", type=str, help="the string to type")
-    type_parser.add_argument("--duration", type=str, help="how many seconds between press and release")
-    type_parser.add_argument("--delay", type=str, help="how many seconds between release and the next press")
+    type_parser.add_argument("--duration", type=float, help="how many seconds between press and release")
+    type_parser.add_argument("--delay", type=float, help="how many seconds before each press")
 
     # ----------------- mouse -----------------
     move_parser = ArgumentParser("move the mouse to absolute pixel coordinates")
@@ -30,8 +35,8 @@ def create_parsers() -> dict[str, ArgumentParser]:
     click_parser = ArgumentParser("click a mouse button")
     click_parser.add_argument(
         "button",
-        type=int,
-        help="the mouse button to click: left - 1, middle - 2, right - 3"
+        type=MouseButtonType,
+        help="the mouse button to click: left, middle or right"
     )
 
     scroll_parser = ArgumentParser("scroll the mouse in undefined units")
@@ -66,21 +71,32 @@ def create_parsers() -> dict[str, ArgumentParser]:
         help="the logging level in the logging package i.e.: 10 - debug, 20 - info, 30 - warning, 40 - error"
     )
 
-    end_parser = ArgumentParser("end the program via SystemExit exception")
-    end_parser.add_argument(
-        "--code",
-        type=int,
-        help="exit code, code 10 is reserved as a signal to restart the program and python interpreter with it"
-    )
+    end_parser = ArgumentParser("end the interpreting")
 
     # ----------------- screen matching -----------------
     detect_parser = ArgumentParser(
-        "detect if an image is present on the screen, raises the flag if it is, clears if it isn't"
+        "detect if an image is present anywhere on the screen, raises the flag if it is, clears if it isn't"
     )
     detect_parser.add_argument(
         "image_path",
         type=str,
         help="path to the image to be detected, relative to reference images"
+    )
+    detect_parser.add_argument(
+        "--confidence_required",
+        type=float,
+        help="how closely does the found section need to match the reference image"
+    )
+    detect_parser.add_argument(
+        "--section",
+        type=str,
+        help="left,top,width,height of the region of the screen to scan"
+    )
+    detect_parser.add_argument(
+        "--click",
+        type=MouseButtonType,
+        default="unknown",
+        help="whether to and with what button to click the centre of the found image"
     )
 
     match_parser = ArgumentParser(
@@ -98,9 +114,16 @@ def create_parsers() -> dict[str, ArgumentParser]:
         help="left,top,width,height of the section to match,"
              "usually not needed, as this is automatically read from a .txt file with the same name as the image"
     )
+    match_parser.add_argument(
+        "--click",
+        type=MouseButtonType,
+        default="unknown",
+        help="whether to and with what button to click the centre of the found image"
+    )
 
     await_parser = ArgumentParser(
-        "wait until a reference image appears on the screen, raises the flag if successful, clears otherwise"
+        "wait until a reference image appears on the screen"
+        "and left click it's centre, raises the flag if successful, clears otherwise"
     )
     await_parser.add_argument(
         "image_path",
@@ -116,7 +139,7 @@ def create_parsers() -> dict[str, ArgumentParser]:
     await_parser.add_argument(
         "--section",
         type=str,
-        help="left,top,width,height of the section to match,"
+        help="left,top,width,height of the section to match (does work regardless of the anywhere flag)"
              "usually not needed, as this is automatically read from a .txt file with the same name as the image"
     )
     await_parser.add_argument(
@@ -137,6 +160,12 @@ def create_parsers() -> dict[str, ArgumentParser]:
              " (for a matching a set section, variables in the profile are used,"
              " currently with no way to override them here)"
     )
+    await_parser.add_argument(
+        "--click",
+        type=MouseButtonType,
+        default="unknown",
+        help="whether to and with what button to click the centre of the found image"
+    )
 
     # ----------------- other -----------------
     command_parser = ArgumentParser("trigger a registered function")
@@ -146,7 +175,7 @@ def create_parsers() -> dict[str, ArgumentParser]:
         help="the name of the function to be triggered"
     )
     command_parser.add_argument(
-        "args",
+        "arguments",
         type=str,
         nargs="*",
     )
@@ -161,6 +190,11 @@ def create_parsers() -> dict[str, ArgumentParser]:
              "- copy - press ctrl+c before doing what restricted does\n"
              "- paste - do what restricted does, then press ctrl+v\n"
              "- full - 3 of the above combined"
+    )
+    command_parser.add_argument(
+        "--clipboard_delay",
+        type=float,
+        help="time in seconds given for the clipboard to get updated"
     )
 
     return {

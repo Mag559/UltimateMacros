@@ -16,6 +16,8 @@ have been joined
 
 ## Macro instructions format
 `[delay] <instruction> arguments`
+- delay
+- if optional arguments are not specified, profile defaults are used
 
 ##### delay
 delay is a float in seconds, executed before the instruction,

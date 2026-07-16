@@ -110,11 +110,10 @@ class Profile:
     macro_text_map_copy_delay: float = 0.1
     macro_text_map_paste_delay: float = 0.1
 
-    macro_interpreter_mode: int = 0  # InterpreterMode.END_ON_FAIL
+    macro_interpreter_mode: int = 0  # BaseInterpreter.Mode.END_ON_FAIL
     macro_interpreter_sleep_spf: float = 0.1
 
     macro_recorder_time_precision: int = 5
-    macro_recorder_record_thread_delay: float = 0.1
 
     ################### receive and generate inputs ###################
 
@@ -124,6 +123,8 @@ class Profile:
     input_typing_wait_time: float = 0.03
     input_delay_before_enter: float = 0.5
     input_delay_between_tabs: float = 0.03
+
+    input_clipboard_update_delay: float = 0.1
 
     ################### matching images related ###################
     match_monitor_number: int = 0
