@@ -1,3 +1,4 @@
+import shlex
 from collections.abc import Generator, Callable
 from logging import getLogger
 from pathlib import Path
@@ -64,6 +65,7 @@ class Interpreter(BaseInterpreter):
         self._next_instruction_idx: int = 0
         self.the_flag: bool = False
         self._end_flag: bool = False
+        self.temp_check = None
 
     @property
     def screen_match(self) -> ScreenMatch:
@@ -73,6 +75,10 @@ class Interpreter(BaseInterpreter):
 
     def start(self):
         while True:
+            if self.temp_check is not None:
+                keep_going = self.temp_check()
+                self._end_flag = self._end_flag or (not keep_going)
+
             if self._end_flag:
                 break
 
@@ -89,7 +95,7 @@ class Interpreter(BaseInterpreter):
             try:
                 self.logger.debug(f"interpreting: {line}")
                 self._interpret(line)
-            except KeyboardController.InvalidKeyException | BaseInterpreter.InvalidInstruction:
+            except (KeyboardController.InvalidKeyException, BaseInterpreter.InvalidInstruction):
                 if self.mode == BaseInterpreter.Mode.END_ON_FAIL:
                     self.logger.exception(f"Ending interpreter session after failing to interpret: {line}")
                     return
@@ -113,13 +119,13 @@ class Interpreter(BaseInterpreter):
             return
 
         InputPresser.move_mouse(centre)
-        InputPresser.left_click(parsed.click)
+        InputPresser.click_mouse(parsed.click)
 
     def _interpret(self, line: str) -> None:
         if line.startswith("---"):
             return
 
-        items: list[str] = line.split(" ")
+        items: list[str] = shlex.split(line)
         try:
             sleep(float(items[0]))
             items.pop(0)
@@ -217,6 +223,10 @@ class Interpreter(BaseInterpreter):
                 if parsed.function_name not in self.registered_functions.keys():
                     raise BaseInterpreter.InvalidInstruction("Function name not registered")
                 func = self.registered_functions[parsed.function_name]
+                if parsed.pass_interpreter:
+                    func(self)
+                    return
+
                 delay = parsed.clipboard_delay if parsed.clipboard_delay is not None \
                     else ProfileReader.profile().input_clipboard_update_delay
 

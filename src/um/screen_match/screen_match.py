@@ -51,7 +51,7 @@ class ScreenMatch:
     ) -> tuple[int, int] | bool:
         pos_x, pos_y, confidence = self.matcher.find_match(self.capturer.capture_screenshot(), cached_reference)
         if confidence >= confidence_required:
-            return pos_x, pos_y
+            return pos_x + self.capturer.section.left, pos_y + self.capturer.section.top
         return False
 
     def wait_for_find_match(

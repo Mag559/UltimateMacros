@@ -23,6 +23,7 @@ class InterpreterMacro(BaseMacro):
         # for use cases where the sleep times are longer
         self._stop_flag: bool = False
         self._interpreter: Interpreter = Interpreter(self._read_instructions())
+        self._interpreter.temp_check = self._temp_check
 
     def _update(self, event_code: ImportantEvents):
         super()._update(event_code)
@@ -34,6 +35,8 @@ class InterpreterMacro(BaseMacro):
         super()._run()
         self.int_logger.debug(f"Interpreting started")
         self._interpreter.start()
+        if not self._stop_flag:
+            self.stop()
         self.int_logger.debug(f"Interpreting ended")
 
     def _read_instructions(self):
@@ -51,6 +54,15 @@ class InterpreterMacro(BaseMacro):
         self.int_logger.debug(f"Read all instructions from {self._file_path}")
 
         self.stop()
+
+    def _temp_check(self) -> bool:
+        while self._pause:
+            sleep(ProfileReader.profile().macro_interpreter_sleep_spf)
+
+        if self._stop_flag:
+            self.int_logger.debug(f"Stopped reading instructions from {self._file_path}")
+            return False
+        return True
 
     def stop(self):
         self.int_logger.debug(f"Raising stop flag")

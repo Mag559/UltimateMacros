@@ -1,6 +1,10 @@
 from functools import wraps
 from collections.abc import Callable
 from string import ascii_lowercase, ascii_uppercase
+from random import random
+
+
+coin_streak: int = 0
 
 
 def create_function_registry() -> dict[str, Callable]:
@@ -31,5 +35,20 @@ def create_function_registry() -> dict[str, Callable]:
             out += char
 
         return out
+
+    @registered
+    def coin_toss(interpreter) -> None:
+        global coin_streak
+        heads: bool = random() > 0.5
+        if heads:
+            coin_streak += 1
+        else:
+            coin_streak = 0
+        interpreter.the_flag = heads
+
+    @registered
+    def is_coin_toss_won(interpreter) -> None:
+        global coin_streak
+        interpreter.the_flag = coin_streak >= 3
 
     return registry

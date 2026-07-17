@@ -30,7 +30,7 @@ class ScreenshotPreview:
         """
         Converts left, top, width, height to a Section object.
         """
-        return Section(*self.window.get_all_numbers())
+        return Section(*[max(q, 1) for q in self.window.get_all_numbers()])
 
     def save(self, name):
         sleep(ProfileReader.profile().screenshot_delay_before_save)

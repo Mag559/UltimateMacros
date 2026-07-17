@@ -1,0 +1,27 @@
+0 release enter
+1 detect notepad_icon.png --section 570,1020,1000,60 --click left
+1 press ctrl_l
+0.46900 press n
+0.14506 release n
+0.23721 release ctrl_l
+0.1 type "hello world!" --duration 0.01 --delay 0.03
+0.1 tap enter
+0.2 type "For this demo I shall keep flipping coins until I get 3 heads in a row"
+0.1 tap enter
+command coin_toss --pass_interpreter
+--- flag raised -> heads -> jump
+jump_if 6
+0.1 type "Tails"
+0.03 tap enter
+0.03 type "Dang it!"
+0.1 tap enter
+0.1 tap enter
+jump -9
+0.1 type "Heads"
+0.1 tap enter
+command is_coin_toss_won --pass_interpreter
+jump_if 1
+jump -14
+0.03 type "Easy work"
+log "Coin tossing demo successful" --level 20
+end

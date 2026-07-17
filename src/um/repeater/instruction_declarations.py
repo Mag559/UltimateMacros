@@ -18,8 +18,8 @@ def create_parsers() -> dict[str, ThrowingArgumentParser]:
 
     type_parser = ThrowingArgumentParser("type a string on the keyboard")
     type_parser.add_argument("string", type=str, help="the string to type")
-    type_parser.add_argument("--duration", type=float, help="how many seconds between press and release")
-    type_parser.add_argument("--delay", type=float, help="how many seconds before each press")
+    type_parser.add_argument("--duration", type=float, default=0.03, help="how many seconds between press and release")
+    type_parser.add_argument("--delay", type=float, default=0.03, help="how many seconds before each press")
 
     # ----------------- mouse -----------------
     move_parser = ThrowingArgumentParser("move the mouse to absolute pixel coordinates")
@@ -193,6 +193,11 @@ def create_parsers() -> dict[str, ThrowingArgumentParser]:
         "--clipboard_delay",
         type=float,
         help="time in seconds given for the clipboard to get updated"
+    )
+    command_parser.add_argument(
+        "--pass_interpreter",
+        action="store_true",
+        help="whether to pass the interpreter object to the function"
     )
 
     return {
