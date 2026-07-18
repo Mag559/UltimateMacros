@@ -22,8 +22,10 @@ class InterpreterMacro(BaseMacro):
         # could do it with the threading library and pass the interpreter an event to wait on
         # for use cases where the sleep times are longer
         self._stop_flag: bool = False
-        self._interpreter: Interpreter = Interpreter(self._read_instructions())
-        self._interpreter.temp_check = self._temp_check
+        self._interpreter: Interpreter = Interpreter(
+            self._read_instructions(),
+            before_next_instruction_callback=self._should_keep_going
+        )
 
     def _update(self, event_code: ImportantEvents):
         super()._update(event_code)
@@ -42,20 +44,13 @@ class InterpreterMacro(BaseMacro):
     def _read_instructions(self):
         with open(self._file_path, "r") as file:
             for line in file:
-
-                while self._pause:
-                    sleep(ProfileReader.profile().macro_interpreter_sleep_spf)
-
-                if self._stop_flag:
-                    self.int_logger.debug(f"Stopped reading instructions from {self._file_path}")
-                    return
                 yield line
 
         self.int_logger.debug(f"Read all instructions from {self._file_path}")
 
         self.stop()
 
-    def _temp_check(self) -> bool:
+    def _should_keep_going(self) -> bool:
         while self._pause:
             sleep(ProfileReader.profile().macro_interpreter_sleep_spf)
 

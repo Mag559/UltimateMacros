@@ -1,4 +1,5 @@
 import shlex
+from inspect import signature
 from collections.abc import Generator, Callable
 from logging import getLogger
 from pathlib import Path
@@ -32,16 +33,21 @@ def _read_file(file_path: Path):
             yield line
 
 
-def filter_nones(*args) -> list:
-    return [arg for arg in args if arg is not None]
-
-
-def advanced_filter_nones(arg_names: list[str], *args) -> dict[str, Any]:
+def filter_nones(function: Callable, *args) -> Any:
+    """
+    Call the function with specified arguments while swapping any Nones out for default values
+    :param function: function to call
+    :param args: any number of arguments
+    :returns: return value of the called function
+    """
+    argument_names = signature(function).parameters.keys()
+    assert len(argument_names) >= len(args)
+    
     arguments: dict[str, Any] = {}
-    for name, arg in zip(arg_names, args):
+    for name, arg in zip(argument_names, args):
         if arg is not None:
             arguments[name] = arg
-    return arguments
+    return function(**arguments)
 
 
 class Interpreter(BaseInterpreter):
@@ -53,19 +59,24 @@ class Interpreter(BaseInterpreter):
         instruction_generator: Generator[str, None, None],
         mode: BaseInterpreter.Mode = BaseInterpreter.Mode(
             ProfileReader.profile().macro_interpreter_mode
-        )
+        ),
+        before_next_instruction_callback: Callable[[], bool] = lambda: True
     ):
         super().__init__()
         self.logger = getLogger(__name__)
+
         self._screen_match: ScreenMatch | None = None
         self.instruction_generator = instruction_generator
         self.mode = mode
+
         self._lines: list[str] = []
         self._instruction_counter: int = -1
         self._next_instruction_idx: int = 0
+
         self.the_flag: bool = False
         self._end_flag: bool = False
-        self.temp_check = None
+
+        self.before_next_instruction_callback = before_next_instruction_callback
 
     @property
     def screen_match(self) -> ScreenMatch:
@@ -75,9 +86,8 @@ class Interpreter(BaseInterpreter):
 
     def start(self):
         while True:
-            if self.temp_check is not None:
-                keep_going = self.temp_check()
-                self._end_flag = self._end_flag or (not keep_going)
+            keep_going: bool = self.before_next_instruction_callback()
+            self._end_flag = self._end_flag or (not keep_going)
 
             if self._end_flag:
                 break
@@ -145,17 +155,11 @@ class Interpreter(BaseInterpreter):
                 InputPresser.release(parsed.key, 0)
             case "tap":
                 InputPresser.press(parsed.key, 0)
-                InputPresser.release(
-                    *filter_nones(parsed.key, parsed.duration)
-                )
+                filter_nones(InputPresser.release, parsed.key, parsed.duration)
             case "type":
                 for char in parsed.string:
-                    InputPresser.press(
-                        *filter_nones(Interpreter.string_to_key(char), parsed.delay)
-                    )
-                    InputPresser.release(
-                        *filter_nones(Interpreter.string_to_key(char), parsed.duration)
-                    )
+                    filter_nones(InputPresser.press, Interpreter.string_to_key(char), parsed.delay)
+                    filter_nones(InputPresser.release, Interpreter.string_to_key(char), parsed.duration)
 
             case "move":
                 self.logger.debug(f"Moving mouse to: {parsed.x}, {parsed.y}")
@@ -186,8 +190,9 @@ class Interpreter(BaseInterpreter):
                 self.screen_match.load_reference_image(REFERENCE_IMAGES / parsed.image_path)
                 self._set_screen_match_section(parsed, True)
 
-                result: bool | tuple[int, int] = self.screen_match.find_match(
-                    *filter_nones(parsed.confidence_required)
+                result: bool | tuple[int, int] = filter_nones(
+                    self.screen_match.find_match,
+                    parsed.confidence_required
                 )
                 self.the_flag = result is not False
                 if self.the_flag:
@@ -202,19 +207,22 @@ class Interpreter(BaseInterpreter):
                 self.screen_match.load_reference_image(REFERENCE_IMAGES / parsed.image_path)
                 if parsed.anywhere:
                     self._set_screen_match_section(parsed, True)
-                    result: bool | tuple[int, int] = self.screen_match.wait_for_find_match(
-                        **advanced_filter_nones(
-                            ["timeout", "interval", "confidence_required"],
-                            parsed.timeout, parsed.interval, parsed.confidence_required
-                        )
+                    result: bool | tuple[int, int] = filter_nones(
+                        self.screen_match.wait_for_find_match,
+                        parsed.timeout,
+                        parsed.interval,
+                        parsed.confidence_required
                     )
+
                     self.the_flag = result is not False
                     if self.the_flag:
                         self._click_section(parsed, result)
                 else:
                     self._set_screen_match_section(parsed)
-                    self.the_flag = self.screen_match.wait_for_match(
-                        **advanced_filter_nones(["timeout", "interval"], parsed.timeout, parsed.interval)
+                    self.the_flag = filter_nones(
+                        self.screen_match.wait_for_match,
+                        parsed.timeout,
+                        parsed.interval
                     )
                     if self.the_flag:
                         self._click_section(parsed, self.screen_match.capturer.section.centre)
