@@ -66,7 +66,7 @@ class Recorder:
                 self._on_mouse_press(input_object)
 
     @staticmethod
-    def key_to_string(key: py_keyboard.Key | py_keyboard.KeyCode | None):
+    def key_to_string(key: py_keyboard.Key | py_keyboard.KeyCode | None) -> str | None:
         if re.search("^'\\\\x\\d\\d'$", str(key)):
             code = int(str(key)[-3:-1], 16)
             return chr(64 + code)
@@ -75,6 +75,8 @@ class Recorder:
             return key.name
         elif isinstance(key, py_keyboard.KeyCode):
             return key.char
+        elif isinstance(key, str):
+            return key
         return None
 
     def _on_key_press(self, key_input: KeyInput) -> None:

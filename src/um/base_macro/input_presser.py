@@ -15,7 +15,6 @@ class InputPresser:
     py_keyboard_controller = KeyboardController()
     py_mouse_controller = MouseController()
 
-    # TODO: convert repeating wait before to some annotation or sth
     @staticmethod
     def paste(wait_before: float = 0):
         sleep(wait_before)
