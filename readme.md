@@ -15,27 +15,56 @@ have been joined
 
 
 ## Macro instructions format
-`[delay] <instruction> arguments`
-- delay
-- if optional arguments are not specified, profile defaults are used
+Based on the command line instruction format
+using `shlex` and `argparse` for the parsing itself.
 
-##### delay
-delay is a float in seconds, executed before the instruction,
-it can be skipped to have no delay
+#### delay
+Due to waiting for applications (or OS) to load / register inputs,
+various delays are often needed. To make it more convenient,
+every instruction can be prefixed with a floating point value,
+which will be interpreted as delay in seconds before executing that instruction.
 
-##### instruction
-- press `<key>` - press a key on the keyboard
-- release `<key>` - release a key on the keyboard
-- tap `<key> <duration>` - press a key, hold it for duration and release it
-- type `<string> <delay>` - tap each key corresponding to each letter in the string
-for delay seconds with delay seconds in between
+i.e. `0.4 press enter`
 
-- move `<tox,toy>` - move mouse to absolute coordinates
-- shift `<tox,toy>` - move mouse to relative coordinates
-- click `<button as int>` - click mouse button:
-left - 1,
-middle - 2,
-right - 3.
+If the delay is omitted it's assumed to be 0
 
-- await `<image path>` - (untested) wait until a section of the screen matches a reference image
-- find `<image path>` - (untested) wait for an image matching the reference image to appear on the screen and click its centre
+#### registers
+The "standard" instructions used for detecting images on the screen,
+manipulating the mouse and keyboard intentionally constrain their output
+to a single flag to better synergize with the jump commands.
+This way, no additional commands are needed to convert a variable to
+a boolean value accessible to `jump_if`.
+
+Extending this approach to `commands`, however, would encourage
+using nonlocal variables in the functions registered to be commands.
+#TODO A dictionary is therefore maintained by the interpreter. 
+
+#### instruction overview
+#TODO The full help messages will be available somewhere else
+
+- `press <key>` - press a key on the keyboard
+- `release <key>` - release a key on the keyboard
+- `tap <key>` - press a key and release a key
+- `type <string>` - tap each key corresponding to each letter in the string
+
+
+- `move <tox> <toy>` - move mouse to absolute coordinates
+- `shift <tox> <toy>` - move mouse to relative coordinates
+- `click {left | middle | right}` - click mouse button
+- `scroll <by_x> <by_y>` - scroll
+
+
+- `jump <by>` - change instruction counter on top of the +1
+- `jump_if <by>` - change instruction counter on top of the +1 if the flag is set
+- `set_flag` - set the flag to true
+- `clear_flag` - set the flag to false
+- `log <message>` - log the specified message
+- `end` - end the interpreting of this script
+
+
+- `detect <image_path>` - detect the image anywhere on the screen
+- `match <image_path>` - match a section of the screen against the image
+- `await <image_path>` - wait until the image is present on the screen
+
+
+- `command <function_name> <arguments>...` - trigger a registered function - command
