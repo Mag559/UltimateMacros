@@ -56,6 +56,7 @@ using nonlocal variables in the functions registered to be commands.
 
 - `jump <by>` - change instruction counter on top of the +1
 - `jump_if <by>` - change instruction counter on top of the +1 if the flag is set
+- `jump_if_not <by>` - change instruction counter on top of the +1 if the flag is NOT set
 - `set_flag` - set the flag to true
 - `clear_flag` - set the flag to false
 - `log <message>` - log the specified message

@@ -174,12 +174,22 @@ class InterpreterTest(unittest.TestCase):
         command_count = 0
 
         interpreter = Interpreter(
-            (ins for ins in ["clear_flag", "jump_if 3", "set_flag", "jump_if 1", "jump -1", "end", "---", "---"]),
+            (ins for ins in [
+                "clear_flag",
+                "jump_if 4",
+                "set_flag",
+                "jump_if_not 2",
+                "jump_if 1",
+                "jump -1",
+                "end",
+                "---",
+                "---"
+            ]),
             before_next_instruction_callback=keep_going
         )
         interpreter.start()
 
-        self.assertEqual(ins_count, 6)  # keep_going checks before checking end flag and whether out of instructions
+        self.assertEqual(ins_count, 7)  # keep_going checks before checking end flag and whether out of instructions
 
 
 if __name__ == '__main__':

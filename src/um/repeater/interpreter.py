@@ -103,6 +103,7 @@ class Interpreter(BaseInterpreter):
             line: str = self._lines[self._instruction_counter]
 
             try:
+                # self.logger.debug(f"current variables: {}")
                 self.logger.debug(f"interpreting: {line}")
                 self._interpret(line)
             except (KeyboardController.InvalidKeyException, BaseInterpreter.InvalidInstruction):
@@ -176,6 +177,9 @@ class Interpreter(BaseInterpreter):
                 self._next_instruction_idx += parsed.by
             case "jump_if":
                 if self.the_flag:
+                    self._next_instruction_idx += parsed.by
+            case "jump_if_not":
+                if not self.the_flag:
                     self._next_instruction_idx += parsed.by
             case "set_flag":
                 self.the_flag = True

@@ -56,6 +56,13 @@ def create_parsers() -> dict[str, ThrowingArgumentParser]:
         help="by how much to change the instruction counter on top of the default +1 (jump 0 does nothing)"
     )
 
+    conditional_jump_parser2 = ThrowingArgumentParser("jump to previous or next instruction if the flag is NOT set")
+    conditional_jump_parser2.add_argument(
+        "by",
+        type=int,
+        help="by how much to change the instruction counter on top of the default +1 (jump 0 does nothing)"
+    )
+
     set_flag_parser = ThrowingArgumentParser("set the flag")
 
     clear_flag_parser = ThrowingArgumentParser("clear the flag")
@@ -210,6 +217,7 @@ def create_parsers() -> dict[str, ThrowingArgumentParser]:
         "scroll": scroll_parser,
         "jump": jump_parser,
         "jump_if": conditional_jump_parser,
+        "jump_if_not": conditional_jump_parser2,
         "set_flag": set_flag_parser,
         "clear_flag": clear_flag_parser,
         "log": log_parser,
