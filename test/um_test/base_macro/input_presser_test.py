@@ -5,7 +5,7 @@ from pynput.keyboard import Key as PyKey
 from pynput.mouse import Button as PyButton
 
 from um.base_macro import InputPresser
-from um_test.mock_pynput.mock_input_presser import MockKeyboardController, MockMouseController
+from um_test.mock_pynput import MockKeyboardController, MockMouseController
 
 
 class MacroEventCollectorTest(unittest.TestCase):

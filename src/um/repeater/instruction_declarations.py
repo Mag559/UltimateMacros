@@ -129,9 +129,8 @@ def create_parsers() -> dict[str, ThrowingArgumentParser]:
         help="path to the image to be matched, relative to reference images"
     )
     await_parser.add_argument(
-        "anywhere",
-        type=bool,
-        default=False,
+        "--anywhere",
+        action="store_true",
         help="should the program only look for the image in the specified section or anywhere on the screen"
     )
     await_parser.add_argument(

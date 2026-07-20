@@ -4,9 +4,6 @@ from string import ascii_lowercase, ascii_uppercase
 from random import random
 
 
-coin_streak: int = 0
-
-
 def create_function_registry() -> dict[str, Callable]:
     registry: dict[str, Callable] = {}
 
@@ -36,9 +33,11 @@ def create_function_registry() -> dict[str, Callable]:
 
         return out
 
+    coin_streak: int = 0
+
     @registered
     def coin_toss(interpreter) -> None:
-        global coin_streak
+        nonlocal coin_streak
         heads: bool = random() > 0.5
         if heads:
             coin_streak += 1
@@ -48,7 +47,7 @@ def create_function_registry() -> dict[str, Callable]:
 
     @registered
     def is_coin_toss_won(interpreter) -> None:
-        global coin_streak
+        nonlocal coin_streak
         interpreter.the_flag = coin_streak >= 3
 
     return registry
