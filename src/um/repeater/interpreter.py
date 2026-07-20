@@ -105,7 +105,6 @@ class Interpreter(BaseInterpreter):
             line: str = self._lines[self._instruction_counter]
 
             try:
-                # self.logger.debug(f"current variables: {}")
                 self.logger.debug(f"interpreting: {line}")
                 self._interpret(line)
             except (KeyboardController.InvalidKeyException, BaseInterpreter.InvalidInstruction):
@@ -114,6 +113,13 @@ class Interpreter(BaseInterpreter):
                     return
                 else:
                     self.logger.exception(f"Skipping instruction after failing to interpret: {line}")
+            except KeyError as e:
+                if self.mode == BaseInterpreter.Mode.END_ON_FAIL:
+                    self.logger.exception(f"Ending interpreter session after: {e}")
+                    return
+                else:
+                    self.logger.exception(f"Skipping instruction likely after trying to"
+                                          f" access an uninitialized variable in the variables dict{e}")
 
         self.logger.debug(f"Finished interpreting")
 
@@ -234,6 +240,7 @@ class Interpreter(BaseInterpreter):
                         self._click_section(parsed, self.screen_match.capturer.section.centre)
 
             case "command":
+                self.logger.debug(f"variables before execution: {self.variables}")
                 if parsed.function_name not in self.registered_functions.keys():
                     raise BaseInterpreter.InvalidInstruction("Function name not registered")
 

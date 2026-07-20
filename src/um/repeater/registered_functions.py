@@ -44,21 +44,17 @@ def create_function_registry() -> dict[str, Callable]:
 
         return out
 
-    coin_streak: int = 0
-
     @registered
-    def coin_toss(interpreter) -> None:
-        nonlocal coin_streak
+    def coin_toss(interpreter, variables) -> None:
         heads: bool = random() > 0.5
         if heads:
-            coin_streak += 1
+            variables["coin_streak"] += 1
         else:
-            coin_streak = 0
+            variables["coin_streak"] = 0
         interpreter.the_flag = heads
 
     @registered
-    def is_coin_toss_won(interpreter) -> None:
-        nonlocal coin_streak
-        interpreter.the_flag = coin_streak >= 3
+    def is_coin_toss_won(interpreter, variables) -> None:
+        interpreter.the_flag = variables["coin_streak"] >= 3
 
     return registry
