@@ -76,6 +76,8 @@ class Interpreter(BaseInterpreter):
         self.the_flag: bool = False
         self._end_flag: bool = False
 
+        self.variables: dict[str, Any] = {}
+
         self.before_next_instruction_callback = before_next_instruction_callback
 
     @property
@@ -234,10 +236,6 @@ class Interpreter(BaseInterpreter):
             case "command":
                 if parsed.function_name not in self.registered_functions.keys():
                     raise BaseInterpreter.InvalidInstruction("Function name not registered")
-                func = self.registered_functions[parsed.function_name]
-                if parsed.pass_interpreter:
-                    func(self)
-                    return
 
                 delay = parsed.clipboard_delay if parsed.clipboard_delay is not None \
                     else ProfileReader.profile().input_clipboard_update_delay
@@ -246,13 +244,24 @@ class Interpreter(BaseInterpreter):
                     InputPresser.copy()
                     sleep(delay)
 
-                if parsed.clipboard == "none":
-                    func(*parsed.arguments)
-                else:
-                    pyperclip.copy(func(
-                        pyperclip.paste(),
-                        *parsed.arguments
-                    ))
+                func = self.registered_functions[parsed.function_name]
+                arguments: list[Any] = parsed.arguments
+
+                if parsed.clipboard != "none":
+                    arguments.insert(0, pyperclip.paste())
+
+                if parsed.pass_variables:
+                    arguments.insert(0, self.variables)
+
+                if parsed.pass_interpreter:
+                    arguments.insert(0, self)
+
+                return_value = func(*arguments)
+
+                if parsed.clipboard != "none":
+                    pyperclip.copy(
+                        return_value
+                    )
 
                 if parsed.clipboard in ["paste", "full"]:
                     sleep(delay)

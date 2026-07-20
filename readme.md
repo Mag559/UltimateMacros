@@ -37,7 +37,8 @@ a boolean value accessible to `jump_if`.
 
 Extending this approach to `commands`, however, would encourage
 using nonlocal variables in the functions registered to be commands.
-#TODO A dictionary is therefore maintained by the interpreter. 
+A dictionary is therefore maintained by the interpreter
+and available to commands through the `--pass_variables` flag.
 
 #### instruction overview
 #TODO The full help messages will be available somewhere else

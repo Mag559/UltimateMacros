@@ -1,7 +1,9 @@
+import ast
 from functools import wraps
 from collections.abc import Callable
 from string import ascii_lowercase, ascii_uppercase
 from random import random
+from typing import Any
 
 
 def create_function_registry() -> dict[str, Callable]:
@@ -18,6 +20,15 @@ def create_function_registry() -> dict[str, Callable]:
             return func(*args, **kwargs)
 
         return wrapper
+
+    @registered
+    def set_variable(variables: dict[str, Any], variable_name: str, type_name: str, initial_value_str: str) -> None:
+        typed_initial_value: Any
+        if type_name == "str":
+            typed_initial_value = initial_value_str
+        else:
+            typed_initial_value = ast.literal_eval(initial_value_str)
+        variables[variable_name] = typed_initial_value
 
     @registered
     def camel_to_screaming_snake_case(x: str) -> str:

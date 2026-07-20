@@ -206,6 +206,12 @@ def create_parsers() -> dict[str, ThrowingArgumentParser]:
         help="whether to pass the interpreter object to the function"
     )
 
+    command_parser.add_argument(
+        "--pass_variables",
+        action="store_true",
+        help="whether to pass the variables dictionary to the function"
+    )
+
     return {
         "press": press_parser,
         "release": release_parser,
