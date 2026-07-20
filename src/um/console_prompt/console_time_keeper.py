@@ -2,7 +2,7 @@ import asyncio
 from collections.abc import Callable
 from time import time
 
-from um import ProfileReader
+from um.profiles import ProfileReader
 
 
 class TimeKeeper:

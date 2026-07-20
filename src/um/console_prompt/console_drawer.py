@@ -5,9 +5,9 @@ from math import sin, pi
 from random import randint
 
 from um.profiles import ProfileReader
-from um.console_prompt.console_time_keeper import TimeKeeper
-from um.console_prompt.console_toolbar import ConsoleToolbar
-from um.console_prompt.penrose_drawer import PenroseDrawer
+from .console_time_keeper import TimeKeeper
+from .console_toolbar import ConsoleToolbar
+from .penrose_drawer import PenroseDrawer
 
 PI_066 = pi * 0.66
 PI_132 = pi * 1.32

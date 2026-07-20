@@ -66,14 +66,14 @@ class Profile:
             value = tuple(value)
         super().__setattr__(name, value)
 
-    ################### process related ###################
+    # ----------------- process related -----------------
     logging_level: int = logging.DEBUG
 
     # in bytes
     logging_min_size_to_clean: int = 20_000
     logging_uncleaned_size: int = 10_000
 
-    ################### console related ###################
+    # ----------------- console related -----------------
     console_timeout: float = 100
 
     console_detect_unfocus: bool = True
@@ -96,7 +96,7 @@ class Profile:
     console_penrose_size: int = 20
     console_penrose_rotation_speed: float = 1.2
 
-    ################### macro related ###################
+    # ----------------- macro related -----------------
 
     macro_event_collector_priority: int = 10
     macro_recorder_priority: int = -20
@@ -115,7 +115,7 @@ class Profile:
 
     macro_recorder_time_precision: int = 5
 
-    ################### receive and generate inputs ###################
+    # ----------------- receive and generate inputs -----------------
 
     input_double_click_time: float = 0.2
     # input_event_emission_delay: float = 0.15
@@ -126,7 +126,7 @@ class Profile:
 
     input_clipboard_update_delay: float = 0.1
 
-    ################### matching images related ###################
+    # ----------------- matching images related -----------------
     match_monitor_number: int = 0
 
     match_taskbar_section: list[int] = (570, 1020, 1000, 60)
@@ -147,8 +147,8 @@ class Profile:
 
     match_confidence: float = 0.8
 
-    ################### tool related ###################
+    # ----------------- tool related -----------------
     screenshot_delay_before_save: float = 1.0
     screenshot_preview_spf: float = 0.1
 
-    ################### console related ###################
+    # ----------------- console related -----------------

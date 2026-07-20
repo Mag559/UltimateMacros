@@ -3,7 +3,7 @@ from prompt_toolkit.completion import PathCompleter
 from um.macros import ClipboardMacro, TextMapMacro
 from um.repeater import RecorderMacro, InterpreterMacro, RepeaterMacro, MACRO_FILES
 from .console_base import ConsoleBase
-from ..macros.text_map_macro import surround_with
+from um.macros.text_map_macro import surround_with
 
 
 def setup_macro(console_base: ConsoleBase) -> None:

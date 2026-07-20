@@ -4,8 +4,7 @@ from time import sleep
 
 from pynput import keyboard as py_keyboard
 
-from um.base_macro import BaseMacro, MacroEventCollector
-from um.base_macro.termination_detector import TerminationDetector
+from um.base_macro import BaseMacro, MacroEventCollector, TerminationDetector
 from um_test.mock_pynput import MockInputCollector
 
 

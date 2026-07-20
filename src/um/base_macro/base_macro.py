@@ -4,7 +4,7 @@ from logging import getLogger
 from um.helper_classes import OrderedEmitter
 from um.profiles import ProfileReader
 from .macro_event_collector import MacroEventCollector, ImportantEvents
-from um.base_macro.termination_detector import TerminationDetector
+from .termination_detector import TerminationDetector
 
 
 class BaseMacro:

@@ -1,5 +1,4 @@
 from enum import Enum
-
 import re
 from logging import getLogger
 from threading import Thread

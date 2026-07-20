@@ -2,7 +2,7 @@ from time import sleep
 
 from .console_base import ConsoleBase
 from um.base_macro import InputPresser
-from um.firefox_handling.wikamp import FirefoxHandler
+from um.firefox_handling import FirefoxHandler
 
 WIKAMP_SUBJECT_WEBSITES = {
     "tips": "https://ftims.edu.p.lodz.pl/course/view.php?id=2206",

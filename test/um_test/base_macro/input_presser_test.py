@@ -8,7 +8,7 @@ from um.base_macro import InputPresser
 from um_test.mock_pynput import MockKeyboardController, MockMouseController
 
 
-class MacroEventCollectorTest(unittest.TestCase):
+class InputPresserTest(unittest.TestCase):
     def test_keyboard(self):
         event_list: list[str] = []
         mock_keyboard_controller = MockKeyboardController(event_list)

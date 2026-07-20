@@ -8,13 +8,6 @@ class MockInputCollector(OrderedEmitter):
     def __init__(self):
         super().__init__()
 
-    #
-    # def queue(self, events: list[tuple[py_keyboard.Key | py_keyboard.KeyCode | MouseInput, float]]) -> None:
-    #     """
-    #     Run a series of mock inputs
-    #     :param events:
-    #     """
-
     def tap(self, key: py_keyboard.Key | py_keyboard.KeyCode | None) -> None:
         self.press(key)
         self.release(key)

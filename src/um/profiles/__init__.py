@@ -1,1 +1,1 @@
-from .profile_reader import Profile, ProfileReader, PROFILES_PATH
+from .profile_reader import Profile, ProfileReader, PROFILES_PATH, COOKIES_PATH
