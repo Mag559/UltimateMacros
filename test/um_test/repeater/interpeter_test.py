@@ -2,6 +2,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
+import pyperclip
 from PIL import Image
 
 from um.base_macro import InputPresser
@@ -190,6 +191,66 @@ class InterpreterTest(unittest.TestCase):
         interpreter.start()
 
         self.assertEqual(ins_count, 7)  # keep_going checks before checking end flag and whether out of instructions
+
+    def test_command_instruction(self):
+        event_list: list[str] = []
+        interpreter: Interpreter = Interpreter(
+            (ins for ins in [])
+        )  # manually trigger _interpret for convenience
+
+        mock_keyboard_controller = MockKeyboardController(event_list)
+
+        def inc_called_test(_interpreter, variables, clipboard, arg1, arg2) -> str:
+            nonlocal self
+
+            self.assertEqual(variables["string"], "hello")
+            self.assertEqual(variables["integer"], 1)
+            self.assertEqual(variables["boolean"], True)
+            self.assertListEqual(variables["list"], [1, "t", False])
+
+            self.assertEqual(clipboard, "sth not funny")
+            self.assertEqual(arg1, "arg_1")
+            self.assertEqual(arg2, "arg_2")
+
+            return "sth funny"
+
+        interpreter.registered_functions["inc_called_test"] = inc_called_test
+
+        with patch.object(InputPresser, "py_keyboard_controller", mock_keyboard_controller):
+            interpreter._interpret(
+                "command set_variable string str hello --pass_variables"
+            )
+            interpreter._interpret(
+                "command set_variable integer int 1 --pass_variables"
+            )
+            interpreter._interpret(
+                "command set_variable boolean bool True --pass_variables"
+            )
+            interpreter._interpret(
+                "command set_variable list list \"[1, 't', False]\" --pass_variables"
+            )
+
+            pyperclip.copy("sth not funny")
+
+            interpreter._interpret(
+                "command inc_called_test arg_1 arg_2"
+                " --clipboard full --clipboard_delay 0 --pass_interpreter --pass_variables")
+
+            self.assertEqual(pyperclip.paste(), "sth funny")
+
+            self.assertListEqual(
+                event_list,
+                [
+                    "press ctrl_l",
+                    "press c",
+                    "release c",
+                    "release ctrl_l",
+                    "press ctrl_l",
+                    "press v",
+                    "release v",
+                    "release ctrl_l",
+                ]
+            )
 
 
 if __name__ == '__main__':
