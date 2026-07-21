@@ -12,7 +12,8 @@ dependencies = [
     'numpy~=2.5.1',
     'opencv-python~=5.0.0.93',
     'mss~=10.2.0',
-    'prompt_toolkit~=3.0.52'
+    'prompt_toolkit~=3.0.52',
+    'prompt-toolkit-action-completer~=1.1.1'
 ]
 
 dynamic = [
