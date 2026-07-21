@@ -6,68 +6,100 @@ MouseButtonType = BaseInterpreter.string_to_button
 
 def create_parsers() -> dict[str, ThrowingArgumentParser]:
     # ----------------- keyboard -----------------
-    press_parser = ThrowingArgumentParser("press a key on the keyboard")
+    press_parser = ThrowingArgumentParser(
+        prog="press",
+        description="press a key on the keyboard"
+    )
     press_parser.add_argument("key", type=KeyType, help="the key to press")
 
-    release_parser = ThrowingArgumentParser("release a key on the keyboard")
+    release_parser = ThrowingArgumentParser(
+        prog="release",
+        description="release a key on the keyboard"
+    )
     release_parser.add_argument("key", type=KeyType, help="the key to release")
 
-    tap_parser = ThrowingArgumentParser("tap a key on the keyboard")
+    tap_parser = ThrowingArgumentParser(
+        prog="tap",
+        description="tap a key on the keyboard"
+    )
     tap_parser.add_argument("key", type=KeyType, help="the key to tap")
     tap_parser.add_argument("--duration", type=float, help="how many seconds between press and release")
 
-    type_parser = ThrowingArgumentParser("type a string on the keyboard")
+    type_parser = ThrowingArgumentParser(
+        prog="type",
+        description="type a string on the keyboard"
+    )
     type_parser.add_argument("string", type=str, help="the string to type")
     type_parser.add_argument("--duration", type=float, default=0.03, help="how many seconds between press and release")
     type_parser.add_argument("--delay", type=float, default=0.03, help="how many seconds before each press")
 
     # ----------------- mouse -----------------
-    move_parser = ThrowingArgumentParser("move the mouse to absolute pixel coordinates")
+    move_parser = ThrowingArgumentParser(
+        prog="move",
+        description="move the mouse to absolute pixel coordinates"
+    )
     move_parser.add_argument("x", type=int, help="the x coordinate to move")
     move_parser.add_argument("y", type=int, help="the y coordinate to move")
 
-    shift_parser = ThrowingArgumentParser("shift the mouse from the current pixel coordinates")
+    shift_parser = ThrowingArgumentParser(
+        prog="shift",
+        description="shift the mouse from the current pixel coordinates"
+    )
     shift_parser.add_argument("x", type=int, help="how much too shift on the x axis")
     shift_parser.add_argument("y", type=int, help="how much too shift on the y axis")
 
-    click_parser = ThrowingArgumentParser("click a mouse button")
+    click_parser = ThrowingArgumentParser(
+        prog="click",
+        description="click a mouse button"
+    )
     click_parser.add_argument(
         "button",
         type=MouseButtonType,
         help="the mouse button to click: left, middle or right"
     )
 
-    scroll_parser = ThrowingArgumentParser("scroll the mouse in undefined units")
+    scroll_parser = ThrowingArgumentParser(
+        prog="scroll",
+        description="scroll the mouse in undefined units")
     scroll_parser.add_argument("x", type=int, help="how much to scroll horizontally")
     scroll_parser.add_argument("y", type=int, help="how much to scroll vertically")
 
     # ----------------- assembly -----------------
-    jump_parser = ThrowingArgumentParser("jump to previous or next instruction")
+    jump_parser = ThrowingArgumentParser(
+        prog="jump",
+        description="jump to previous or next instruction"
+    )
     jump_parser.add_argument(
         "by",
         type=int,
         help="by how much to change the instruction counter on top of the default +1 (jump 0 does nothing)"
     )
 
-    conditional_jump_parser = ThrowingArgumentParser("jump to previous or next instruction if the flag is set")
+    conditional_jump_parser = ThrowingArgumentParser(
+        prog="jump_if",
+        description="jump to previous or next instruction if the flag is set"
+    )
     conditional_jump_parser.add_argument(
         "by",
         type=int,
         help="by how much to change the instruction counter on top of the default +1 (jump 0 does nothing)"
     )
 
-    conditional_jump_parser2 = ThrowingArgumentParser("jump to previous or next instruction if the flag is NOT set")
+    conditional_jump_parser2 = ThrowingArgumentParser(
+        prog="jump_if_not",
+        description="jump to previous or next instruction if the flag is NOT set"
+    )
     conditional_jump_parser2.add_argument(
         "by",
         type=int,
         help="by how much to change the instruction counter on top of the default +1 (jump 0 does nothing)"
     )
 
-    set_flag_parser = ThrowingArgumentParser("set the flag")
+    set_flag_parser = ThrowingArgumentParser(prog="set_flag", description="set the flag")
 
-    clear_flag_parser = ThrowingArgumentParser("clear the flag")
+    clear_flag_parser = ThrowingArgumentParser(prog="clear_flag", description="clear the flag")
 
-    log_parser = ThrowingArgumentParser("log the specified message")
+    log_parser = ThrowingArgumentParser(prog="log", description="log the specified message")
     log_parser.add_argument("message", type=str, help="the message to log")
     log_parser.add_argument(
         "--level",
@@ -76,11 +108,12 @@ def create_parsers() -> dict[str, ThrowingArgumentParser]:
         help="the logging level in the logging package i.e.: 10 - debug, 20 - info, 30 - warning, 40 - error"
     )
 
-    end_parser = ThrowingArgumentParser("end the interpreting")
+    end_parser = ThrowingArgumentParser(prog="end", description="end the interpreting")
 
     # ----------------- screen matching -----------------
     detect_parser = ThrowingArgumentParser(
-        "detect if an image is present anywhere on the screen, raises the flag if it is, clears if it isn't"
+        prog="detect",
+        description="detect if an image is present anywhere on the screen, raises the flag if it is, clears if it isn't"
     )
     detect_parser.add_argument(
         "image_path",
@@ -105,7 +138,8 @@ def create_parsers() -> dict[str, ThrowingArgumentParser]:
     )
 
     match_parser = ThrowingArgumentParser(
-        "match a specific section of the screen against a reference picture, "
+        prog="match",
+        description="match a specific section of the screen against a reference picture, "
         "raises the flag if it matches, clears if it doesn't"
     )
     match_parser.add_argument(
@@ -127,7 +161,8 @@ def create_parsers() -> dict[str, ThrowingArgumentParser]:
     )
 
     await_parser = ThrowingArgumentParser(
-        "wait until a reference image appears on the screen"
+        prog="await",
+        description="wait until a reference image appears on the screen"
         "and left click it's centre, raises the flag if successful, clears otherwise"
     )
     await_parser.add_argument(
@@ -172,7 +207,11 @@ def create_parsers() -> dict[str, ThrowingArgumentParser]:
     )
 
     # ----------------- other -----------------
-    command_parser = ThrowingArgumentParser("trigger a registered function")
+    command_parser = ThrowingArgumentParser(
+        prog="command",
+        description="Trigger a registered function. The arguments order is as follows: "
+                    "interpreter, variables_dict, clipboard_contents, arguments"
+    )
     command_parser.add_argument(
         "function_name",
         type=str,
@@ -188,12 +227,12 @@ def create_parsers() -> dict[str, ThrowingArgumentParser]:
         type=str,
         choices=["none", "restricted", "copy", "paste", "full"],
         default="none",
-        help="how to integrate clipboard into the function:\n"
-             "- none - don't\n"
-             "- restricted - supply the current clipboard as the first argument and set it to function output\n"
-             "- copy - press ctrl+c before doing what restricted does\n"
-             "- paste - do what restricted does, then press ctrl+v\n"
-             "- full - 3 of the above combined"
+        help="how to integrate clipboard into the function: "
+             "none - don't, "
+             "restricted - supply the current clipboard and set it to function output, "
+             "copy - press ctrl+c before doing what restricted does, "
+             "paste - do what restricted does, then press ctrl+v, "
+             "full - 3 of the above combined. "
     )
     command_parser.add_argument(
         "--clipboard_delay",
