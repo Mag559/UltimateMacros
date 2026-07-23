@@ -1,20 +1,4 @@
-import sys
-from unittest.mock import MagicMock
 from pathlib import Path
-
-# Stub out heavy runtime deps not needed for building/printing parsers
-for mod_name in (
-    "pynput", "pynput.keyboard", "pynput.mouse",
-    "prompt_toolkit",
-    "numpy",
-    "cv2",
-    "PIL", "PIL.Image",
-    "mss",
-    "pyperclip",
-    "action_completer"
-):
-    sys.modules[mod_name] = MagicMock()
-
 from um.repeater.instruction_declarations import create_parsers
 
 parsers = create_parsers()
