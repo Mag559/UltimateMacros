@@ -134,7 +134,7 @@ class Interpreter(BaseInterpreter):
 
     @staticmethod
     def _click_section(parsed, centre: tuple[int, int]) -> None:
-        if parsed.click == PyButton.unknown:
+        if parsed.click is None or parsed.click == PyButton.unknown:
             return
 
         InputPresser.move_mouse(centre)

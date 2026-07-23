@@ -1,9 +1,6 @@
 from argparse import ArgumentParser
 from enum import Enum
 
-from pynput.keyboard import Key as PyKey, KeyCode
-from pynput.mouse import Button as PyButton
-
 
 class ThrowingArgumentParser(ArgumentParser):
     def error(self, message: str):
@@ -27,13 +24,19 @@ class BaseInterpreter:
 
     @staticmethod
     def string_to_key(s: str):
+        if s is None:
+            return None
+        from pynput.keyboard import Key as PyKey, KeyCode
         try:
             return PyKey[s]  # special key
         except KeyError:
             return KeyCode.from_char(s)  # regular character
 
     @staticmethod
-    def string_to_button(s: str) -> PyButton:
+    def string_to_button(s: str):
+        if s is None:
+            return None
+        from pynput.mouse import Button as PyButton
         try:
             return PyButton[s]
         except KeyError:

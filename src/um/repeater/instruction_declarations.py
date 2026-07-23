@@ -133,7 +133,6 @@ def create_parsers() -> dict[str, ThrowingArgumentParser]:
     detect_parser.add_argument(
         "--click",
         type=MouseButtonType,
-        default="unknown",
         help="whether to and with what button to click the centre of the found image"
     )
 
@@ -156,7 +155,6 @@ def create_parsers() -> dict[str, ThrowingArgumentParser]:
     match_parser.add_argument(
         "--click",
         type=MouseButtonType,
-        default="unknown",
         help="whether to and with what button to click the centre of the found image"
     )
 
@@ -202,7 +200,6 @@ def create_parsers() -> dict[str, ThrowingArgumentParser]:
     await_parser.add_argument(
         "--click",
         type=MouseButtonType,
-        default="unknown",
         help="whether to and with what button to click the centre of the found image"
     )
 
