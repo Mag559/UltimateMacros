@@ -57,7 +57,7 @@ class RecorderMacro(BaseMacro):
             file.write("---")
 
         if instruction.find("num_lock") == -1 and instruction.find("release") != -1:
-            file.write(instruction.rsplit(" ", 1)[1])
+            file.write(instruction.rsplit(" ", 1)[1] + " ")
 
         if self._pause and self._pause_toggle:
             file.write("---\n")

@@ -88,7 +88,7 @@ class Recorder:
         return None
 
     def _on_mouse_press(self, mouse_input: MouseInput):
-        self._event_queue.put(f"{time()} move {mouse_input.x},{mouse_input.y}")
+        self._event_queue.put(f"{time()} move {mouse_input.x} {mouse_input.y}")
         self._event_queue.put(f"{time()} click {mouse_input.button.name}")
         return None
 
