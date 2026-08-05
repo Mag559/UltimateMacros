@@ -2,6 +2,10 @@ from threading import Lock
 
 
 class SingletonMeta(type):
+    """
+    Metaclass for singletons,
+    features a lock, which is a little extra considering most of the thread safety hinges on the interpreter lock
+    """
     _instances = {}
     _lock: Lock = Lock()
 

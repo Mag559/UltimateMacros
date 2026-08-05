@@ -5,8 +5,11 @@ from typing import Any
 CALLBACK = Callable
 
 
-@dataclass
+@dataclass(frozen=True)
 class PriorityCallback:
+    """
+    Dataclass for a Callable with an associated int priority
+    """
     priority: int
     callback: CALLBACK
 
@@ -16,8 +19,8 @@ class PriorityCallback:
 
 class OrderedEmitter:
     """
-    Base emitter class that calls the registered callbacks.,
-    when emit method is called
+    Calls the registered callbacks, when the emit method is called on itself.
+
     The callback order is determined by priority:
     higher priorities are called first, lowest last
     """
@@ -27,9 +30,10 @@ class OrderedEmitter:
 
     def add_caller(self, callback: CALLBACK, priority: int = 0) -> None:
         """
-        Register a new callback
-        :param callback: callback
-        :param priority: callback priority highest first
+        Register a new callback and insert it into right place according to priority
+        :param callback: Callable to be registered, derived classes should specify the desired signature
+        :param priority: callback priority, highest first
+        :return:
         """
         priority_callback: PriorityCallback = PriorityCallback(priority, callback)
         for idx, elem in enumerate(self._callers):
@@ -43,6 +47,9 @@ class OrderedEmitter:
     def remove_caller(self, callback: CALLBACK) -> None:
         """
         Unregister a callback
+        :param callback:
+        :return:
+        :raises ValueError: if the callback is not registered
         """
         for idx, priority_callback in enumerate(self._callers):
             if priority_callback.callback == callback:
@@ -52,5 +59,11 @@ class OrderedEmitter:
             raise ValueError("Can't remove non-registered callback")
 
     def _emit(self, *args: Any, **kwargs: Any) -> None:
+        """
+        Call the already sorted callbacks
+        :param args:
+        :param kwargs:
+        :return:
+        """
         for caller in self._callers.copy():
             caller(*args, **kwargs)
