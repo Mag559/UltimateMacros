@@ -9,17 +9,26 @@ from .termination_detector import TerminationDetector
 
 class BaseMacro:
     """
-    Skeleton for a macro class.
-    Utilizes a dependency injection for the event collector
-    Sets a timer that closes the script after 5 min without any captured events
+    Base class for all macros.
+    Handles listening to ImportantEvents,
+    detecting the termination signal of 3x SHORTCUT1 and timeout when no events are received.
     """
 
-    def __init__(self, collector: OrderedEmitter = None, timeout: float = ProfileReader.profile().macro_timeout):
+    def __init__(
+            self,
+            collector: OrderedEmitter = MacroEventCollector(),
+            timeout: float = ProfileReader.profile().macro_timeout
+    ):
+        """
+        Initialize class and its dependencies.
+        :param collector: object supplying the ImportantEvents,
+        by default a MacroEventCollector hooked up to the InputCollector Singleton
+        :param timeout: after how long without ImportantEvents should the macro terminate,
+        default determined by ``macro_timeout`` in the profile
+        """
         self.logger = getLogger(__name__)
         self._timeout = timeout
-        if collector is None:
-            collector = MacroEventCollector()
-        self.event_collector: MacroEventCollector = collector
+        self.event_collector: OrderedEmitter = collector
 
         self._terminator: TerminationDetector = TerminationDetector()
         self._exit_timer: Timer = Timer(self._timeout, self.stop)
@@ -27,6 +36,9 @@ class BaseMacro:
         self._end_event: Event = Event()
 
     def start(self):
+        """
+        Start the base macro functionality and block further execution until termination.
+        """
         self.logger.debug("Base Macro started")
         self._exit_timer.start()
         self.event_collector.add_caller(self._update)
@@ -44,18 +56,14 @@ class BaseMacro:
         self._exit_timer.start()
         self.event_collector.add_caller(self._update)
 
-    def _update(self, event_code: ImportantEvents):
+    def _update(self, event_code: ImportantEvents) -> bool:
         """
-        Reset the inactivity timeout and handle events that may trigger termination.
-        
-        Parameters:
-            event_code (ImportantEvents): The event received from the event collector;
-            certain event values (e.g., SHORTCUT1) may cause the macro to terminate if termination conditions are met.
-        Returns:
-            bool: True if the macro was terminated, False otherwise.
-        Notes:
-            This method resets the macro's inactivity timer and, for termination-related events,
-            will invoke termination when appropriate.
+        Method intended to be overridden by derived classes for implementing most of their functionality.
+        Resets the inactivity timer and checks for the termination signal.
+
+        :param event_code: important event detected by the collector
+
+        :return: True if the macro was terminated, false otherwise
         """
         self._exit_timer.cancel()
         self._exit_timer = Timer(self._timeout, self.stop)
@@ -71,7 +79,7 @@ class BaseMacro:
 
     def stop(self):
         """
-        Stop the macro and cease input collection.
+        Stop the macro.
         """
         self.logger.debug("Shutting down base macro")
         self._exit_timer.cancel()

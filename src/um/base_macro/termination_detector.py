@@ -15,16 +15,15 @@ class TerminationDetector:
     signaling the program should terminate
     """
 
-    def __init__(self,
-                 event_count: int = ProfileReader.profile().macro_termination_event_count,
-                 time_window: float = ProfileReader.profile().macro_termination_event_window
-                 ):
+    def __init__(
+            self,
+            event_count: int = ProfileReader.profile().macro_termination_event_count,
+            time_window: float = ProfileReader.profile().macro_termination_event_window
+    ):
         """
         Initialize a TerminationDetector that tracks recent event timestamps to decide rapid succession termination.
-        
-        Parameters:
-            event_count (int): how many events need to happen in the time window to result in termination
-            time_window (float): how wide should the time window be, in seconds
+        :param event_count: how many events need to happen in the time window to result in termination
+        :param time_window: how wide should the time window be, in seconds
         """
         self.event_count = event_count
         self.time_window = time_window
@@ -33,10 +32,8 @@ class TerminationDetector:
     def should_terminate(self) -> bool:
         """
         Registers an event happened at this time
-
-        Returns:
-            True if `event_count` such events happened in the time window and termination should take place
-            False otherwise
+        :return: True if ``event_count`` such events happened in the time window and termination should take place
+        False otherwise
         """
         self.event_times.pop(0)
         self.event_times.append(time())

@@ -23,10 +23,15 @@ class ImportantEvents(Enum):
 
 class MacroEventCollector(OrderedEmitter):
     """
-    Filters out important events amongst inputs collected by input collector.
+    Filters out important events amongst inputs collected by input collector
+    and passes them out in the same fashion - via OrderedEmitter.
     """
 
     def __init__(self, collector: OrderedEmitter = InputCollector()):
+        """
+
+        :param collector: source of the raw inputs, input collector Singleton by default
+        """
         self.logger = getLogger(__name__)
         super().__init__()
         self.ctrl_held = False
@@ -38,6 +43,13 @@ class MacroEventCollector(OrderedEmitter):
         self.collector.add_caller(self._update, ProfileReader.profile().macro_event_collector_priority)
 
     def _update(self, input_type: InputType, input_object: KeyInput | MouseInput) -> None:
+        """
+        Method called by the raw input collector.
+        Figures out what input event type it is and delegate the rest to another method.
+        :param input_type: was the key pressed, released or mouse pressed, released
+        :param input_object: what key or button was used
+        :return:
+        """
         self.logger.debug(f"Received {input_type} with input object {input_object}")
         match input_type:
             case InputType.KEY_PRESS:
@@ -50,20 +62,13 @@ class MacroEventCollector(OrderedEmitter):
                 assert isinstance(input_object, MouseInput)
                 self._on_mouse_press(input_object)
 
-    def _on_key_press(self, key_input: KeyInput):
+    def _on_key_press(self, key_input: KeyInput) -> bool | None:
         """
-        Handle a keyboard key press, update modifier state, and emit matching ImportantEvents.
-        
-        Updates internal modifier flags when control or left-alt keys are pressed, emits:
-        - SHORTCUT1 when left Alt is held and the '`' key is pressed,
-        - COPY, PASTE, or CUT when the corresponding control-character key codes are received.
-        Ignores non-character keys and returns False to stop the listener if termination was requested.
-        
-        Parameters:
-            key_input: KeyInput object representing the pressed key.
-        
-        Returns:
-            False if the collector has been marked for termination and the listener should stop, None otherwise.
+        Handle a keyboard key press by tracking which modifier (alt, ctrl) keys are held
+        and emitting ImportantEvents
+
+        :param key_input: KeyInput object representing the pressed key.
+        :return:
         """
         match str(key_input.key):
             case "Key.ctrl_l":
@@ -91,15 +96,9 @@ class MacroEventCollector(OrderedEmitter):
 
         return None
 
-    def _on_key_release(self, key_input: KeyInput):
+    def _on_key_release(self, key_input: KeyInput) -> bool | None:
         """
-        Handle a key release event by updating modifier state
-        
-        Parameters:
-            key_input: KeyInput object representing the pressed key.
-        
-        Returns:
-            False if the collector has been marked for termination and the listener should stop, None otherwise.
+        Track which modifier keys were released.
         """
         match key_input.key:
             case py_keyboard.Key.ctrl:
@@ -108,7 +107,12 @@ class MacroEventCollector(OrderedEmitter):
                 self.left_alt_held = False
         return None
 
-    def _on_mouse_press(self, mouse_input: MouseInput):
+    def _on_mouse_press(self, mouse_input: MouseInput) -> bool | None:
+        """
+        Handle the recorded event and emit mouse based ImportantEvents
+        :param mouse_input: MouseInput object representing the pressed mouse button.
+        :return:
+        """
         if mouse_input.button == py_mouse.Button.left:
             if time() - self.last_left_click < ProfileReader.profile().input_double_click_time:
                 self.emit_event(ImportantEvents.DOUBLE_CLICK)
@@ -125,12 +129,19 @@ class MacroEventCollector(OrderedEmitter):
         return None
 
     def emit_event(self, event: ImportantEvents) -> None:
+        """
+        Callback subscribers based on their priority about the event.
+        :param event: ImportantEvents object representing the event.
+        """
         self.logger.debug(f"Emitting event: {event}")
         self._emit(event)
 
     def remove_caller(self, callback: CALLBACK) -> None:
         """
-        Remove caller, if it's the last one, disconnect from InputCollector Singleton
+        Remove caller,
+        if it's the last one, disconnect from the InputCollector Singleton.
+        :param callback: Callable to be removed
+        :return:
         """
         super().remove_caller(callback)
         if len(self._callers) == 0:
