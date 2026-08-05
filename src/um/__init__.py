@@ -15,4 +15,3 @@ def __getattr__(name):
         from .console_prompt import main
         return main
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
-

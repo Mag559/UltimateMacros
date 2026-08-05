@@ -1,4 +1,16 @@
 from typing import TYPE_CHECKING
+from importlib import import_module
+
+_repeater_lazy_imports = {
+    "BaseInterpreter": ".base_interpreter",
+    "Interpreter": ".interpreter",
+    "build_file_interpreter": ".interpreter",
+    "Recorder": ".recorder",
+    "RecorderMacro": ".recorder_macro",
+    "InterpreterMacro": ".interpreter_macro",
+    "RepeaterMacro": ".repeater_macro",
+    "MACRO_FILES": ".repeater_macro",
+}
 
 if TYPE_CHECKING:
     from .base_interpreter import BaseInterpreter
@@ -8,37 +20,14 @@ if TYPE_CHECKING:
     from .interpreter_macro import InterpreterMacro
     from .repeater_macro import RepeaterMacro, MACRO_FILES
 
-__all__ = [
-    "BaseInterpreter", "Interpreter", "build_file_interpreter",
-    "Recorder", "RecorderMacro",
-    "InterpreterMacro",
-    "RepeaterMacro", "MACRO_FILES"
-]
+__all__ = _repeater_lazy_imports.keys()
 
 
 def __getattr__(name):
-    if name == "BaseInterpreter":
-        from .base_interpreter import BaseInterpreter
-        return BaseInterpreter
-    if name == "Interpreter":
-        from .interpreter import Interpreter
-        return Interpreter
-    if name == "build_file_interpreter":
-        from .interpreter import build_file_interpreter
-        return build_file_interpreter
-    if name == "Recorder":
-        from .recorder import Recorder
-        return Recorder
-    if name == "RecorderMacro":
-        from .recorder_macro import RecorderMacro
-        return RecorderMacro
-    if name == "InterpreterMacro":
-        from .interpreter_macro import InterpreterMacro
-        return InterpreterMacro
-    if name == "RepeaterMacro":
-        from .repeater_macro import RepeaterMacro
-        return RepeaterMacro
-    if name == "MACRO_FILES":
-        from .repeater_macro import MACRO_FILES
-        return MACRO_FILES
-    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+    if name not in _repeater_lazy_imports.keys():
+        raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+
+    module_name = _repeater_lazy_imports[name]
+
+    module = import_module(module_name, __name__)
+    return getattr(module, name)
