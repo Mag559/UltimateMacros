@@ -18,11 +18,20 @@ class TextMapMacro(BaseMacro):
     """
 
     def __init__(self, text_map: Callable[[str], str]):
+        """
+        Initialize the macro, but do not start it.
+        :param text_map: callable that processes copied text into sth more desirable
+        """
         self.text_map_logger: Logger = getLogger(__name__)
         super().__init__()
         self.text_map = text_map
 
-    def _update(self, event_code: ImportantEvents):
+    def _update(self, event_code: ImportantEvents) -> None:
+        """
+        Check if the event was a copy and handle it if so
+        :param event_code: the clipboard event to handle
+        :return:
+        """
         super()._update(event_code)
 
         match event_code:

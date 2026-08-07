@@ -6,8 +6,8 @@ from um.base_macro import BaseMacro, ImportantEvents
 
 class ClipboardMacro(BaseMacro):
     """
-    Ctrl + c or Ctrl + x -> override the next entry in the stack, move the current entry to the next
-    Ctrl + v -> paste the current entry, move the current entry to the previous
+    Ctrl + c or Ctrl + x -> override the next entry in the stack and make it current
+    Ctrl + v -> paste the current clipboard contents, move the current entry to the previous and copy it to clipboard.
     3x Alt + ` in quick succession -> exit the program
 
     If the start / end of the list serving as the stack is reached, it loops
@@ -15,23 +15,17 @@ class ClipboardMacro(BaseMacro):
 
     def __init__(self, init_size: int = ProfileReader.profile().macro_clipboard_stack_size):
         """
-        Parameters:
-            init_size (int): Number of slots in the circular clipboard buffer;
-            each slot is initialized to an empty string.
+        :param init_size: Number of slots in the circular clipboard buffer,
+        each slot is initialized to an empty string.
         """
         super().__init__()
         self.copy_entries: list[str] = [''] * init_size
         self.current_index: int = -1
 
-    def _update(self, event_code: ImportantEvents):
+    def _update(self, event_code: ImportantEvents) -> None:
         """
-        Handle clipboard-related events by storing or retrieving entries based on the provided event code.
-        
-        Processes ImportantEvents.COPY and ImportantEvents.CUT by storing the current clipboard content,
-        and processes ImportantEvents.PASTE by retrieving and applying the next clipboard entry.
-        
-        Parameters:
-            event_code (ImportantEvents): The clipboard event to handle (COPY, CUT, or PASTE).
+        Handle clipboard-related important events
+        :param event_code: The clipboard event to handle (COPY, CUT, or PASTE are handled).
         """
         super()._update(event_code)
         self.logger.debug(f"Entries before event processing: {self.copy_entries}")
@@ -44,17 +38,14 @@ class ClipboardMacro(BaseMacro):
                 self.retrieve()
         self.logger.debug(f"Entries after event processing: {self.copy_entries}")
 
-    def store(self):
+    def store(self) -> None:
         """
         Advance the circular buffer index and store the current system clipboard contents into that slot.
-        
-        This overwrites the buffer entry at the new index with the clipboard text read from the system.
-        The index wraps to the start when it reaches the buffer length.
         """
         self.current_index = (self.current_index + 1) % len(self.copy_entries)
         self.copy_entries[self.current_index] = pyperclip.paste()
 
-    def retrieve(self):
+    def retrieve(self) -> None:
         """
         Advance the circular buffer to the previous entry and place that entry into the system clipboard.
         """

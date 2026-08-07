@@ -8,20 +8,41 @@ COOKIES_PATH = PROFILES_PATH / "cookies.txt"
 
 
 class ProfileReader:
+    """
+    Singleton-ish manager of profiles.
+    Stores the current profile in `profile_files/cookies.txt`,
+    loads profiles with overrides stored in JSON files.
+    Every profile must have a JSON file even if no overrides are desired,
+    use an empty dictionary in that case.
+    """
     _instance: ProfileReader = None
 
     @staticmethod
     def profile() -> Profile:
+        """
+        Get the current profile.
+        :return: active, readonly profile
+        """
         if ProfileReader._instance is None:
             ProfileReader._instance = ProfileReader()
         return ProfileReader._instance.profile
 
     @staticmethod
-    def switch_profile(new_profile_name: str):
+    def switch_profile(new_profile_name: str) -> None:
+        """
+        Hotswap the profile. Updates the grand majority (but not all) of the setting mid-running the program
+        :param new_profile_name: which profile to switch to
+        :return:
+        """
         ProfileReader._instance._load_profile(new_profile_name)
 
     @staticmethod
-    def reload_profile():
+    def reload_profile() -> None:
+        """
+        Reload the profile by rereading the overrides in the JSON file.
+        Kinda useless unless you're changing the profile file while the program is running.
+        :return:
+        """
         ProfileReader._instance._load_profile(ProfileReader._instance.current_profile)
 
     def __init__(self):
@@ -35,7 +56,12 @@ class ProfileReader:
             else:
                 self._load_profile("default")
 
-    def _load_profile(self, profile_name: str):
+    def _load_profile(self, profile_name: str) -> None:
+        """
+        Read the JSON profile file, create the Profile object, set the specified profile as current
+        :param profile_name: what profile to load
+        :return:
+        """
         self.profile = Profile()
         self.current_profile = profile_name
 
@@ -51,9 +77,19 @@ class ProfileReader:
 
 @dataclass
 class Profile:
+    """
+    A collection of readonly profile settings.
+    Defaults are defined below,
+    all of them can be overridden in the associated JSON profile file.
+    """
     _under_construction: bool = True
 
     def override_defaults(self, overrides: dict):
+        """
+        Override the default settings with the specified overrides.
+        :param overrides: overrides in the form of a dictionary
+        :return:
+        """
         for name, attr in overrides.items():
             self.__setattr__(name, attr)
         _under_construction = False
@@ -151,4 +187,4 @@ class Profile:
     screenshot_delay_before_save: float = 1.0
     screenshot_preview_spf: float = 0.1
 
-    # ----------------- console related -----------------
+    # ----------------- xyz related -----------------
