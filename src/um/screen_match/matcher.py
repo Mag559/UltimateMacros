@@ -9,24 +9,26 @@ from um.profiles import ProfileReader
 class Matcher:
     """
     Class responsible for comparing two images and deciding if they match
-    and finding a template image in a larger one
+    as well as finding a template image in a larger one.
     """
 
     def __init__(
-            self,
-            reference_image: Image.Image,
-            total_diff_allowed: float = ProfileReader.profile().match_total_diff_allowed,
-            individual_diff_allowed: int = ProfileReader.profile().match_individual_diff_allowed,
-            mismatched_pixels_allowed: float = ProfileReader.profile().match_mismatched_pixels_allowed,
-            brightness_diff_allowed: float = ProfileReader.profile().match_brightness_diff_allowed
+        self,
+        reference_image: Image.Image,
+        total_diff_allowed: float = ProfileReader.profile().match_total_diff_allowed,
+        individual_diff_allowed: int = ProfileReader.profile().match_individual_diff_allowed,
+        mismatched_pixels_allowed: float = ProfileReader.profile().match_mismatched_pixels_allowed,
+        brightness_diff_allowed: float = ProfileReader.profile().match_brightness_diff_allowed
     ):
         """
 
-        :param reference_image
-        :param mismatched_pixels_allowed fraction of pixels that may not fit the match
-        :param individual_diff_allowed maximum difference between the screenshot pixel and reference pixel
+        :param reference_image: static image that is looked for
+        :param mismatched_pixels_allowed: fraction of pixels that may not fit the match
+        :param individual_diff_allowed: maximum difference between the screenshot pixel and reference pixel
          in each colour, before the pixel is considered not matching
-        :param total_diff_allowed maximum average difference, before the whole image is considered not matching
+        :param total_diff_allowed: maximum average difference, before the whole image is considered not matching
+        :param brightness_diff_allowed: how different can the average brightnesses of the images be,
+        if this check passes, the screenshot's brightness is changed to the brightness level of reference image
         """
         self.brightness_diff_allowed = brightness_diff_allowed
         self.reference_image: Image.Image = reference_image
@@ -38,10 +40,23 @@ class Matcher:
 
     @staticmethod
     def average_brightness(img: Image.Image) -> float:
-        gray = img.convert("L")  # luminance
+        """
+        Compute the average brightness of the image
+        by converting it to grayscale (at the time of writing PIL documents ITU-R 601-2 luma transform)
+        and taking the arithmetic mean
+        :param img: the image to find average brightness for
+        :return: the average brightness found
+        """
+        gray = img.convert("L")  # grayscale
         return np.asarray(gray).mean()
 
     def match(self, screenshot: Image.Image) -> bool:
+        """
+        Determine if the passed screenshot is similar enough to the stored reference image
+        to be considered matching. Uses criteria with parameters specified in the constructor.
+        :param screenshot: `dynamic` image, usually a screenshot to be compared against the reference image
+        :return: True if matches, False if it doesn't
+        """
         reference_brightness = Matcher.average_brightness(self.reference_image)
         screenshot_brightness = Matcher.average_brightness(screenshot)
 
@@ -83,6 +98,12 @@ class Matcher:
 
     @staticmethod
     def convert_pil_image_to_cv(image: Image.Image):
+        """
+        Helper method to convert a PIL RGB Image to a python opencv2 grayscale image.
+        WARNING: the RGB -> BGR conversion step is skipped, since both compared images are converted this way
+        :param image: image to be converted
+        :return: a grayscale image in the cv2 format
+        """
         assert image.mode == "RGB"
         img_array = np.array(image)
         # img_cv = img_array[:, :, ::-1].copy()  # -1 does RGB -> BGR
@@ -92,6 +113,9 @@ class Matcher:
         """
         Find the best matching location of reference image in screenshot
         returns the center of the location and confidence
+        :param screenshot: bigger image in which to look for a reference image
+        :param cached_reference_image: cached reference image converted by ``Matcher.convert_pil_image_to_cv``
+        :return: a tuple of x, y pixel coordinates and confidence of the best matching location
 
         Using OpenCV
         https://stackoverflow.com/questions/7670112/finding-a-subimage-inside-a-numpy-image/9253805#9253805
