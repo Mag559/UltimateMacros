@@ -7,6 +7,10 @@ from typing import Any
 
 
 def create_function_registry() -> dict[str, Callable]:
+    """
+    Create a dictionary of commands accessible to the Interpreter on demand.
+    :return: dictionary [string command name, function to be called]
+    """
     registry: dict[str, Callable] = {}
 
     def registered(func):

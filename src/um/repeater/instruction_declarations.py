@@ -1,10 +1,15 @@
-from um.repeater.base_interpreter import BaseInterpreter, ThrowingArgumentParser
+from .base_interpreter import BaseInterpreter, ThrowingArgumentParser
 
 KeyType = BaseInterpreter.string_to_key
 MouseButtonType = BaseInterpreter.string_to_button
 
 
 def create_parsers() -> dict[str, ThrowingArgumentParser]:
+    """
+    Creates an individual argument parser for each instruction.
+    Done on demand, to refrain from polluting the global scope.
+    :return: dictionary [string instruction name, parser]
+    """
     # ----------------- keyboard -----------------
     press_parser = ThrowingArgumentParser(
         prog="press",

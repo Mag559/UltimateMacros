@@ -1,3 +1,4 @@
+from collections.abc import Generator
 from pathlib import Path
 from time import sleep
 from logging import getLogger
@@ -5,18 +6,25 @@ from logging import getLogger
 from um.profiles import ProfileReader
 from um.base_macro import BaseMacro, ImportantEvents
 from .interpreter import Interpreter
+from .base_interpreter import MACRO_FILES
 
 
 class InterpreterMacro(BaseMacro):
     """
-    Macro version of the interpreter
-    TOGGLE to pause execution
+    Macro version of the Interpreter.
+    TOGGLE -> pause execution (after executing the current instruction is done, not immediately)
+    3x Alt + ` in quick succession -> exit the program
     """
 
-    def __init__(self, file_path: Path):
+    def __init__(self, file_path: Path | str):
+        """
+
+        :param file_path: path to the text file with instructions, relative to `macro_files`,
+        by convention with .ins extension
+        """
         super().__init__()
         self.int_logger = getLogger(__name__)
-        self._file_path = file_path
+        self._file_path = MACRO_FILES / file_path
 
         self._pause: bool = False
         # could do it with the threading library and pass the interpreter an event to wait on
@@ -27,13 +35,22 @@ class InterpreterMacro(BaseMacro):
             before_next_instruction_callback=self._should_keep_going
         )
 
-    def _update(self, event_code: ImportantEvents):
+    def _update(self, event_code: ImportantEvents) -> None:
+        """
+        Handle important events
+        :param event_code: ImportantEvent to handle (TOGGLE is handled)
+        :return:
+        """
         super()._update(event_code)
 
         if event_code == ImportantEvents.TOGGLE:
             self._pause = not self._pause
 
-    def start(self):
+    def start(self) -> None:
+        """
+        Start the Interpreter Macro
+        :return:
+        """
         super()._run()
         self.int_logger.debug(f"Interpreting started")
         self._interpreter.start()
@@ -41,7 +58,11 @@ class InterpreterMacro(BaseMacro):
             self.stop()
         self.int_logger.debug(f"Interpreting ended")
 
-    def _read_instructions(self):
+    def _read_instructions(self) -> Generator[str, None, None]:
+        """
+        Reads the instructions from the file and return them in the form of a generator.
+        :return: Generator of instructions
+        """
         with open(self._file_path, "r") as file:
             for line in file:
                 yield line
@@ -51,6 +72,11 @@ class InterpreterMacro(BaseMacro):
         self.stop()
 
     def _should_keep_going(self) -> bool:
+        """
+        Method called by the Interpreter object.
+        Halts execution or ends it when appropriate
+        :return: True if the instruction execution should proceed, False if it should stop
+        """
         while self._pause:
             sleep(ProfileReader.profile().macro_interpreter_sleep_spf)
 
@@ -59,7 +85,11 @@ class InterpreterMacro(BaseMacro):
             return False
         return True
 
-    def stop(self):
+    def stop(self) -> None:
+        """
+        End the macro execution.
+        :return:
+        """
         self.int_logger.debug(f"Raising stop flag")
         self._stop_flag = True
         self._pause = False

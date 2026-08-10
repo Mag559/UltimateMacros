@@ -4,22 +4,28 @@ from pathlib import Path
 
 from um.base_macro import BaseMacro, ImportantEvents
 from .recorder import Recorder
+from .base_interpreter import MACRO_FILES
 
 
 class RecorderMacro(BaseMacro):
     """
     Macro version of the recorder
     Filters out SHORTCUT1 and TOGGLE.
-    TOGGLE - to pause recording instructions,
-    instead comments are made in the file
+    TOGGLE -> pause recording instructions.
+    Inputs are still recorded while paused, but they are written as comments in the file
     """
 
-    def __init__(self, file_path: Path):
+    def __init__(self, file_path: Path | str):
+        """
+
+        :param file_path: path of a text file to record the instructions to,
+        relative to `macro_files` in the project root directory.
+        """
         self.recorder_macro_logger: Logger = getLogger(__name__)
         super().__init__()
 
         self._recorder = Recorder()
-        self._file_path = file_path
+        self._file_path = MACRO_FILES / file_path
 
         self._events_buffer: list = []
         self._possible_shortcut = False
@@ -27,30 +33,50 @@ class RecorderMacro(BaseMacro):
         self._pause: bool = False
         self._pause_toggle: bool = False
 
-    def start(self):
+    def start(self) -> None:
+        """
+        Start recording instructions.
+        :return:
+        """
         self.recorder_macro_logger.debug(f"Start recording")
         super()._run()
         self._record()
         self.recorder_macro_logger.debug(f"Ended recording")
 
-    def _update(self, event_code: ImportantEvents):
+    def _update(self, event_code: ImportantEvents) -> None:
+        """
+        Handle Important Events.
+        :param event_code: important event to handle (TOGGLE is handled)
+        :return:
+        """
         super()._update(event_code)
 
         if event_code == ImportantEvents.TOGGLE:
             self._pause_toggle = True
 
-    def _record(self):
+    def _record(self) -> None:
+        """
+        Write the instructions recorded by the Recorder to the file.
+        Due to a very low priority in the OrderedEmitter, should run after all the other handlers.
+        :return:
+        """
         with open(self._file_path, 'w') as file:
             for instruction in self._recorder.start():
-                # update should run first due to priorities in the ordered emitter
-
                 if self._pause or self._pause_toggle:
                     self._pause_mode(instruction, file)
                     continue
 
                 self._write_to_file_mode(instruction, file)
 
-    def _pause_mode(self, instruction: str, file):
+    def _pause_mode(self, instruction: str, file) -> None:
+        """
+        Process instruction in pause mode:
+        still write it to the file but only in the form of extracted key / button abd as a comment.
+        Also detect TOGGLE and SHORTCUT1 to be filtered out.
+        :param instruction: instruction recorded by the Recorder
+        :param file: opened file
+        :return:
+        """
         self.logger.debug(f"Processing instruction: {instruction} in pause mode")
 
         if not self._pause and self._pause_toggle:
@@ -66,7 +92,15 @@ class RecorderMacro(BaseMacro):
             self._pause_toggle = False
             self._pause = not self._pause
 
-    def _write_to_file_mode(self, instruction: str, file):
+    def _write_to_file_mode(self, instruction: str, file) -> None:
+        """
+        Check if the instruction isn't the TOGGLE or SHORTCUT1 to be filtered out.
+        Deffer the decision by using a buffer if needed.
+        If it passes as a 'regular' instruction, it is written to the file.
+        :param instruction: considered instruction recorded by the Recorder
+        :param file: opened file
+        :return:
+        """
         self.logger.debug(f"Processing instruction: {instruction} in write mode")
 
         if re.search(r"num_lock", instruction):
@@ -99,5 +133,9 @@ class RecorderMacro(BaseMacro):
             self._events_buffer.clear()
 
     def stop(self):
+        """
+        Stop recording instructions and the macro.
+        :return:
+        """
         self._recorder.stop()
         super().stop()

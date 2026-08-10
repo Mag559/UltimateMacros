@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from prompt_toolkit.completion import PathCompleter
 
 from um.macros import ClipboardMacro, TextMapMacro
@@ -29,7 +31,7 @@ def setup_macro(console_base: ConsoleBase) -> None:
     @console_base.completer.param(macro_files_completer, cast=str)
     def _recorder_macro(file_name: str):
         console_base.focus_release()
-        RecorderMacro(MACRO_FILES / file_name).start()
+        RecorderMacro(Path(file_name)).start()
 
     @macro_group.action("interpreter")
     @console_base.completer.param(macro_files_completer, cast=str)
@@ -37,7 +39,7 @@ def setup_macro(console_base: ConsoleBase) -> None:
         console_base.focus_release()
         if not file_name.endswith('.ins'):
             file_name += '.ins'
-        InterpreterMacro(MACRO_FILES / file_name).start()
+        InterpreterMacro(Path(file_name)).start()
 
     @macro_group.action("repeater")
     def _repeater_macro():

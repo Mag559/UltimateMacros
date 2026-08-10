@@ -14,10 +14,14 @@ from um.profiles import ProfileReader
 class Recorder:
     """
     Stores inputs received from the collector into a queue
-    The main thread (running starts) processes them and yields the event as string
+    The main thread (running start) processes them and yields the event as string
     """
 
     def __init__(self, collector: OrderedEmitter = InputCollector()):
+        """
+
+        :param collector: raw input collector, InputCollector Singleton by default
+        """
         self.logger = getLogger(__name__)
 
         self._stop_flag: bool = False
@@ -29,9 +33,10 @@ class Recorder:
 
     def start(self) -> Generator[str, None, None]:
         """
-        Start keyboard and mouse event collection
+        Start keyboard and mouse event collection,
+        running until stop flag is set
 
-        Acts as a generator method, returning recorded instructions
+        :return: generator of recorded instructions
         """
         self.logger.debug(f"Start recording")
 
@@ -53,6 +58,12 @@ class Recorder:
             yield event
 
     def _update(self, input_type: InputType, input_object: KeyInput | MouseInput) -> None:
+        """
+        Delegate handling of the raw input event to the right method.
+        :param input_type: was a keyboard key pressed, released, mouse button pressed, released
+        :param input_object: what key or button
+        :return:
+        """
         self.logger.debug(f"Received {input_type} with input object {input_object}")
         match input_type:
             case InputType.KEY_PRESS:
@@ -67,6 +78,12 @@ class Recorder:
 
     @staticmethod
     def key_to_string(key: py_keyboard.Key | py_keyboard.KeyCode | None) -> str | None:
+        """
+        Convert the key to string or None if unsuccessful.
+        Extracts the letter key from a typical Ctrl + X shortcut.
+        :param key: key to be converted
+        :return: string name of the key, understood by the Interpreter or None if unsuccessful
+        """
         if re.search("^'\\\\x\\d\\d'$", str(key)):
             code = int(str(key)[-3:-1], 16)
             return chr(64 + code)
@@ -80,19 +97,40 @@ class Recorder:
         return None
 
     def _on_key_press(self, key_input: KeyInput) -> None:
+        """
+        Record a key press.
+        :param key_input: what key was pressed
+        :return:
+        """
         self._event_queue.put(f"{time()} press {Recorder.key_to_string(key_input.key)}")
         return None
 
-    def _on_key_release(self, key_input: KeyInput):
+    def _on_key_release(self, key_input: KeyInput) -> None:
+        """
+        Record a key release.
+        :param key_input: what key was released
+        :return:
+        """
         self._event_queue.put(f"{time()} release {Recorder.key_to_string(key_input.key)}")
         return None
 
-    def _on_mouse_press(self, mouse_input: MouseInput):
+    def _on_mouse_press(self, mouse_input: MouseInput) -> None:
+        """
+        Record a mouse press.
+        Mouse released aren't recorded, assuming the presses were short.
+        Therefore, dragging can't be recorded.
+        :param mouse_input: what mouse button was pressed
+        :return:
+        """
         self._event_queue.put(f"{time()} move {mouse_input.x} {mouse_input.y}")
         self._event_queue.put(f"{time()} click {mouse_input.button.name}")
         return None
 
-    def stop(self):
+    def stop(self) -> None:
+        """
+        Stop recording.
+        :return:
+        """
         self.logger.debug(f"Stop recording")
         self.collector.remove_caller(self._update)
         self._stop_flag = True

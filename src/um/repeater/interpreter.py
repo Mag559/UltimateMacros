@@ -12,22 +12,35 @@ from pynput.mouse import Button as PyButton
 
 from um.base_macro import InputPresser
 from um.profiles import ProfileReader
-from um.repeater.base_interpreter import BaseInterpreter, ThrowingArgumentParser
+from .base_interpreter import BaseInterpreter, ThrowingArgumentParser, MACRO_FILES
 from um.screen_match import ScreenMatch, REFERENCE_IMAGES, Section
-from um.repeater.instruction_declarations import create_parsers
-from um.repeater.registered_functions import create_function_registry
+from .instruction_declarations import create_parsers
+from .registered_functions import create_function_registry
 
 
 def build_file_interpreter(
-        file_path: Path,
-        mode: BaseInterpreter.Mode = BaseInterpreter.Mode(
-            ProfileReader.profile().macro_interpreter_mode
-        )
+    file_path: Path | str,
+    mode: BaseInterpreter.Mode = BaseInterpreter.Mode(
+        ProfileReader.profile().macro_interpreter_mode
+    )
 ) -> Interpreter:
-    return Interpreter(_read_file(file_path), mode)
+    """
+    Create the simplest Interpreter variant, with instructions in the specified file.
+    :param file_path: path to the text file with instructions, by convention with .ins extension,
+    relative to `macro_files` in the project root directory
+    :param mode: how should the interpreter react to an invalid instruction - end its work or skip the instruction
+    :return: initialized, but not started Interpreter
+    """
+    return Interpreter(_read_file(MACRO_FILES / file_path), mode)
 
 
-def _read_file(file_path: Path):
+def _read_file(file_path: Path) -> Generator[str, None, None]:
+    """
+    Create a generator that yields lines from a text file.
+    :param file_path: path to the text file,
+    global or relative to the project root directory assuming it's the current directory when running
+    :return: Generator object
+    """
     with open(file_path, "r") as file:
         for line in file:
             yield line
@@ -51,17 +64,27 @@ def filter_nones(function: Callable, *args) -> Any:
 
 
 class Interpreter(BaseInterpreter):
+    """
+    Execute instructions given by the instruction generator.
+    All the instructions are listed in the readme,
+    their usages are automatically updated at `docs/instructions.md`.
+    """
     parsers: dict[str, ThrowingArgumentParser] = create_parsers()
     registered_functions: dict[str, Callable] = create_function_registry()
 
     def __init__(
         self,
         instruction_generator: Generator[str, None, None],
-        mode: BaseInterpreter.Mode = BaseInterpreter.Mode(
-            ProfileReader.profile().macro_interpreter_mode
-        ),
+        mode: BaseInterpreter.Mode = BaseInterpreter.Mode(ProfileReader.profile().macro_interpreter_mode),
         before_next_instruction_callback: Callable[[], bool] = lambda: True
     ):
+        """
+
+        :param instruction_generator: source of the string instructions in the form of a generator
+        :param mode: how to handle an invalid instruction - end the interpreting or skip it
+        :param before_next_instruction_callback: callable that is asked whether the interpreter should continue working
+        before executing every instruction
+        """
         super().__init__()
         self.logger = getLogger(__name__)
 
@@ -82,11 +105,19 @@ class Interpreter(BaseInterpreter):
 
     @property
     def screen_match(self) -> ScreenMatch:
+        """
+        Get lazily initialized ScreenMatch object used for detect, match and await
+        :return: a ScreenMatch object
+        """
         if self._screen_match is None:
             self._screen_match = ScreenMatch()
         return self._screen_match
 
-    def start(self):
+    def start(self) -> None:
+        """
+        Start the interpreter.
+        :return:
+        """
         while True:
             keep_going: bool = self.before_next_instruction_callback()
             self._end_flag = self._end_flag or (not keep_going)
@@ -124,6 +155,15 @@ class Interpreter(BaseInterpreter):
         self.logger.debug(f"Finished interpreting")
 
     def _set_screen_match_section(self, parsed, full_otherwise: bool = False) -> None:
+        """
+        Helper method to set the compared section on screen match
+        :param parsed: Namespace from parsing the instruction,
+        has to have the ``section`` member of either None or string type
+        :param full_otherwise: configures behaviour if parsed.section is None:
+        if true, sets the compared section to the full screen,
+        if false, doesn't change the compared section
+        :return:
+        """
         if parsed.section is not None:
             try:
                 self.screen_match.set_compared_section(Section.from_string(parsed.section))
@@ -134,6 +174,13 @@ class Interpreter(BaseInterpreter):
 
     @staticmethod
     def _click_section(parsed, centre: tuple[int, int]) -> None:
+        """
+        Used InputPresser to move the mouse and click the centre position
+        :param parsed: Namespace from parsing the instruction,
+        with the ``click`` member of either None or pynput.mouse.Button type
+        :param centre: position where to click
+        :return:
+        """
         if parsed.click is None or parsed.click == PyButton.unknown:
             return
 
@@ -141,6 +188,11 @@ class Interpreter(BaseInterpreter):
         InputPresser.click_mouse(parsed.click)
 
     def _interpret(self, line: str) -> None:
+        """
+        Parse and interpret a single instruction.
+        :param line: the instruction to interpret
+        :return:
+        """
         if line.startswith("---"):
             return
 

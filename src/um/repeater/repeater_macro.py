@@ -1,3 +1,4 @@
+from collections.abc import Generator
 from enum import Enum
 import re
 from logging import getLogger
@@ -9,18 +10,17 @@ from um.base_macro import BaseMacro, ImportantEvents
 from um.profiles import ProfileReader
 from .interpreter import Interpreter
 from .recorder import Recorder
-
-MACRO_FILES = Path(__file__).parents[3] / "macro_files"
+from .base_interpreter import MACRO_FILES
 
 
 class RepeaterMacro(BaseMacro):
     """
     Macro mix of recorder and interpreter
-    TOGGLE to pause recording or executing instructions
-    SHORTCUT1 to start recording or end recording
-    SHORTCUT2 to start execution of last instruction set or end it prematurely
+    TOGGLE -> pause recording or executing instructions
+    SHORTCUT1 -> start recording or end recording
+    SHORTCUT2 -> start execution of latest instruction set or end it prematurely
 
-    Pressing SHORTCUT2 while recording ends it
+    Pressing SHORTCUT2 while recording or SHORTCUT1 while interpreting (unless 3x to terminate) does nothing
     """
 
     class State(Enum):
@@ -28,7 +28,12 @@ class RepeaterMacro(BaseMacro):
         RECORDING = 1
         INTERPRETING = 3
 
-    def __init__(self, dir_path: Path | None = None):
+    def __init__(self, dir_path: Path = MACRO_FILES / "repeater"):
+        """
+
+        :param dir_path: path of the directory to store recorded scripts,
+        absolute or relative to project root if program is run in the right way
+        """
         super().__init__()
         self.repeater_logger = getLogger(__name__)
 
@@ -38,10 +43,7 @@ class RepeaterMacro(BaseMacro):
         self._interpreter: Interpreter | None = None
         self._interpreter_thread: Thread | None = None
 
-        if dir_path is None:
-            self._dir_path: Path = MACRO_FILES / "repeater"
-        else:
-            self._dir_path: Path = dir_path
+        self._dir_path: Path = dir_path
 
         # probably unneeded safeguards
         if not self._dir_path.is_dir():
@@ -62,7 +64,11 @@ class RepeaterMacro(BaseMacro):
 
         self._end_interpreting_flag: bool = False
 
-    def start(self):
+    def start(self) -> None:
+        """
+        Start the macro. Don't start either the Recorder or the Interpreter yet, wait for the user.
+        :return:
+        """
         self.repeater_logger.debug("Repeater starting")
         super().start()
 
@@ -73,7 +79,12 @@ class RepeaterMacro(BaseMacro):
 
         self.repeater_logger.debug("Repeater start method ended")
 
-    def _update(self, event_code: ImportantEvents):
+    def _update(self, event_code: ImportantEvents) -> None:
+        """
+        Handle the Important Event.
+        :param event_code: Important Event to handle (TOGGLE, SHORTCUT1 and SHORTCUT2 are handled)
+        :return:
+        """
         super()._update(event_code)
 
         if self._stop_flag:
@@ -95,7 +106,11 @@ class RepeaterMacro(BaseMacro):
                 elif self.state == RepeaterMacro.State.IDLE:
                     self.start_interpreting()
 
-    def start_recording(self):
+    def start_recording(self) -> None:
+        """
+        Asynchronously start recording user inputs with a Recorder
+        :return:
+        """
         self._file_idx += 1
         self.state = RepeaterMacro.State.RECORDING
 
@@ -105,7 +120,11 @@ class RepeaterMacro(BaseMacro):
 
         self._record_thread.start()
 
-    def stop_recording(self):
+    def stop_recording(self) -> None:
+        """
+        Stop recording user inputs.
+        :return:
+        """
         if self._recorder is None:
             return
         self._recorder.stop()
@@ -114,18 +133,34 @@ class RepeaterMacro(BaseMacro):
         self.repeater_logger.debug("Repeater recording ended")
 
         self.state = RepeaterMacro.State.IDLE
+        self._recorder = None
 
-    def start_interpreting(self):
+    def start_interpreting(self) -> None:
+        """
+        Asynchronously start interpreting instructions from the latest file:
+        `-1.ins` if no recording has been triggered during the lifetime of this macro,
+        `0.ins` if one recording has been done .
+        The counter resets if macro is terminated and rerun within the same program session.
+        :return:
+        """
         self.state = RepeaterMacro.State.INTERPRETING
 
         self.repeater_logger.debug(f"Interpreting started")
 
-        self._interpreter = Interpreter(self._read_instructions())
+        self._interpreter = Interpreter(
+            self._read_instructions(),
+            before_next_instruction_callback=self._should_keep_going
+        )
         self._interpreter_thread = Thread(target=self._interpreter.start, name="RepeaterMacro interpreter")
 
         self._interpreter_thread.start()
 
-    def stop_interpreting(self):
+    def stop_interpreting(self) -> None:
+        """
+        Terminate the interpreting early.
+        Does not get called when interpreting ends naturally - due to no further instructions.
+        :return:
+        """
         self._end_interpreting_flag = True
 
         if self._interpreter_thread is None:
@@ -135,7 +170,12 @@ class RepeaterMacro(BaseMacro):
 
         self.repeater_logger.debug(f"Interpreting ended")
 
-    def stop(self):
+    def stop(self) -> None:
+        """
+        Stop the whole macro.
+        Interpreting is ended by the ``self._stop_flag`` and recording with ``self.stop_recording()``
+        :return:
+        """
         self.repeater_logger.debug(f"Raising stop flag")
         self._stop_flag = True
         self._pause = False
@@ -143,21 +183,38 @@ class RepeaterMacro(BaseMacro):
         self.stop_recording()
         super().stop()
 
-    def _get_current_file(self):
+    def _get_current_file(self) -> Path:
+        """
+        Get the latest file with instructions in the directory specified in the constructor.
+        `-1.ins` if no recording has been triggered during the lifetime of this macro,
+        `0.ins` if 1 has been triggered and so on.
+        :return:
+        """
         return self._dir_path / f"{self._file_idx}.ins"
 
-    def _record(self):
+    def _record(self) -> None:
+        """
+        Write the instructions recorded by the Recorder to the file.
+        Due to a very low priority in the OrderedEmitter, should run after all the other handlers.
+        :return:
+        """
         with open(self._get_current_file(), 'w') as file:
             for instruction in self._recorder.start():
-                # update should run first due to priorities in the ordered emitter
-
                 if self._pause or self._pause_toggle:
                     self._pause_mode(instruction, file)
                     continue
 
                 self._write_to_file_mode(instruction, file)
 
-    def _pause_mode(self, instruction: str, file):
+    def _pause_mode(self, instruction: str, file) -> None:
+        """
+        Process instruction in pause mode:
+        still write it to the file but only in the form of extracted key / button abd as a comment.
+        Also detect TOGGLE and SHORTCUT1 to be filtered out.
+        :param instruction: instruction recorded by the Recorder
+        :param file: opened file
+        :return:
+        """
         self.repeater_logger.debug(f"Processing instruction: {instruction} in pause mode")
 
         if not self._pause and self._pause_toggle:
@@ -173,7 +230,15 @@ class RepeaterMacro(BaseMacro):
             self._pause_toggle = False
             self._pause = not self._pause
 
-    def _write_to_file_mode(self, instruction: str, file):
+    def _write_to_file_mode(self, instruction: str, file) -> None:
+        """
+        Check if the instruction isn't the TOGGLE or SHORTCUT1 to be filtered out.
+        Deffer the decision by using a buffer if needed.
+        If it passes as a 'regular' instruction, it is written to the file.
+        :param instruction: considered instruction recorded by the Recorder
+        :param file: opened file
+        :return:
+        """
         self.repeater_logger.debug(f"Processing instruction: {instruction} in write mode")
 
         if re.search(r"num_lock", instruction):
@@ -205,25 +270,38 @@ class RepeaterMacro(BaseMacro):
                 file.write(event + "\n")
             self._events_buffer.clear()
 
-    def _read_instructions(self):
+    def _should_keep_going(self) -> bool:
+        """
+        Method called by the Interpreter object.
+        Halts execution or ends it when appropriate
+        :return: True if the instruction execution should proceed, False if it should stop
+        """
+
+        if self._pause_toggle:
+            self._pause = True
+            self._pause_toggle = False
+
+        while self._pause:
+            sleep(ProfileReader.profile().macro_interpreter_sleep_spf)
+            if self._pause_toggle:
+                self._pause = False
+                self._pause_toggle = False
+
+        if self._stop_flag or self._end_interpreting_flag:
+            self.repeater_logger.debug(f"Stopped reading instructions from {self._get_current_file()}")
+            self._end_interpreting_flag = False
+            return False
+
+        return True
+
+    def _read_instructions(self) -> Generator[str, None, None]:
+        """
+        Reads the instructions from the file and return them in the form of a generator.
+        :return: Generator of instructions
+        """
         if self._get_current_file().exists():
             with open(self._get_current_file(), "r") as file:
                 for line in file:
-
-                    if self._pause_toggle:
-                        self._pause = True
-                        self._pause_toggle = False
-
-                    while self._pause:
-                        sleep(ProfileReader.profile().macro_interpreter_sleep_spf)
-                        if self._pause_toggle:
-                            self._pause = False
-                            self._pause_toggle = False
-
-                    if self._stop_flag or self._end_interpreting_flag:
-                        self.repeater_logger.debug(f"Stopped reading instructions from {self._get_current_file()}")
-                        self._end_interpreting_flag = False
-                        return
                     yield line
         else:
             self.repeater_logger.debug(f"File {self._get_current_file()} does not exist")
