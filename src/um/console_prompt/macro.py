@@ -9,6 +9,11 @@ from um.macros.text_map_macro import surround_with
 
 
 def setup_macro(console_base: ConsoleBase) -> None:
+    """
+    Register actions for running macros.
+    :param console_base: a bridge to some of the console Main's functionality
+    :return:
+    """
     macro_group = console_base.completer.group("macro")
     macro_files_completer: PathCompleter = PathCompleter(
         False,

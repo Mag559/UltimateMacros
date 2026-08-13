@@ -13,7 +13,7 @@ from um.profiles import ProfileReader, PROFILES_PATH
 from .console_base import ConsoleBase
 from .console_drawer import ConsoleDrawer
 from .console_time_keeper import TimeKeeper
-from .console_toolbar import ConsoleToolbar
+from .console_toolbar import ConsoleToolbar, TOOLBAR_STATE
 from .goto import setup_goto
 from .macro import setup_macro
 from .miscellaneous import setup_misc
@@ -21,6 +21,10 @@ from .tool import setup_tool
 
 
 class Main:
+    """
+    Main class of the TUI application,
+    in charge of handling the prompt toolkit session and delegating work to other classes.
+    """
     def __init__(self):
         self.logger = getLogger(__name__)
         self.last_command_flag: bool = False
@@ -32,41 +36,70 @@ class Main:
         )
 
         # manages sleeping when app is unfocused
-        self.time_keeper: TimeKeeper = TimeKeeper(self.terminate)
+        self.time_keeper: TimeKeeper = TimeKeeper()
 
         self.kb = KeyBindings()
-        self.create_key_bindings()
+        self._create_key_bindings()
 
         # sort of api given to definitions of actions to draw on the toolbar and signal losing focus
         self.console_base: ConsoleBase = ConsoleBase(self.toolbar, self.time_keeper.on_unfocused)
 
-        self.import_actions()
+        self._import_actions()
 
-        self.session = self.create_session()
+        self.session = self._create_session()
 
         # draws something cool on the toolbar canvas
         self.console_drawer: ConsoleDrawer = ConsoleDrawer(self.toolbar, self.session.app.invalidate, self.time_keeper)
 
-    def get_toolbar(self):
+    def get_toolbar(self) -> TOOLBAR_STATE:
+        """
+        Wrapper for ``self.toolbar.get()``
+        :return: the current, updated toolbar state from ConsoleToolbar
+        """
         return self.toolbar.get()
 
-    def get_prompt(self):
+    def _get_prompt(self) -> str | list[tuple[str, str]]:
+        """
+        Get the string prompting the user.
+        Styled if the last command flag is raised.
+        :return: plain or styled prompt
+        """
         if not self.last_command_flag:
             return ProfileReader.profile().console_prompt
 
         return [(ProfileReader.profile().console_last_command_style, ProfileReader.profile().console_prompt)]
 
-    def start(self):
-        with patch_stdout():
-            asyncio.run(self.run())
+    def start(self) -> None:
+        """
+        Executes the main coroutine with asyncio.
+        :return:
+        """
+        asyncio.run(self._main_with_patch_stdout())
 
-    async def run(self):
+    async def _main_with_patch_stdout(self) -> None:
+        """
+        Wraps the main ``self._run`` method in prompt toolkit context manager,
+        which makes sure users output plays nice with toolbar text below.
+        :return:
+        """
+        with patch_stdout():
+            await self._main_loop()
+
+    async def _main_loop(self) -> None:
+        """
+        Main loop of the application.
+        Creates and cancels the task responsible for animation ``self.console_drawer.spin()``.
+        Waits for the user prompt and passes it to ConsoleBase.
+        Terminates after some time without a prompt (`console_timeout` setting in the profile).
+        Handles the user's request for a prompt to be his last with SHORTCUT1 (terminates after finishing it).
+        :return:
+        """
         spiny_task = asyncio.create_task(self.console_drawer.spin())
 
         while True:
             try:
                 prompt_result = await asyncio.wait_for(
-                    self.session.prompt_async(self.get_prompt),
+                    self.session.prompt_async(self._get_prompt),
                     timeout=ProfileReader.profile().console_timeout
                 )
             except asyncio.TimeoutError:
@@ -74,7 +107,6 @@ class Main:
                 break
 
             self.logger.info(f"User prompt: {prompt_result}")
-
             try:
                 self.console_base.handle_prompt(prompt_result)
             except ValueError:
@@ -89,26 +121,33 @@ class Main:
 
         spiny_task.cancel()
 
-    def create_key_bindings(self):
-        # Przechwytywanie uzyskania focusu przez okno (Focus In: \x1b[I)
+    def _create_key_bindings(self) -> None:
+        """
+        Setup key bindings for the application.
+        They don't interfere when a macro is running.
+        :return:
+        """
+        # (system focus in: \x1b [ I)
         @self.kb.add('escape', '[', 'I')
         def _(_event):
             self.time_keeper.on_focused()
 
-        # Przechwytywanie utraty focusu przez okno (Focus Out: \x1b[O)
+        # (system focus out: \x1b [ O)
         @self.kb.add('escape', '[', 'O')
         def _(_event):
             self.time_keeper.on_unfocused()
 
-        # Wyjście z aplikacji (Ctrl+C)
+        # Ctrl + c terminate the application
         @self.kb.add('c-c')
         def _(event):
             event.app.exit()
 
+        # alt + ` for signalling to close the application after the end of next prompt's execution
         @self.kb.add('escape', '`')
         def _(_event):
             self.last_command_flag = not self.last_command_flag
 
+        # ignore the ` key in isolation
         @self.kb.add("`")
         def _(_event):
             return
@@ -117,17 +156,27 @@ class Main:
         def is_unfocused():
             return not self.time_keeper.focused
 
+        # wake up the application from being unfocused with any key
         @self.kb.add('<any>', filter=is_unfocused)
         def _(_event):
             self.time_keeper.on_focused()
 
-    def import_actions(self):
+    def _import_actions(self) -> None:
+        """
+        Register / import actions from other scripts
+        :return:
+        """
         setup_goto(self.console_base)
         setup_macro(self.console_base)
         setup_misc(self.console_base)
         setup_tool(self.console_base)
 
-    def create_session(self) -> PromptSession:
+    def _create_session(self) -> PromptSession:
+        """
+        Create a customized and well-connected PromptSession from prompt toolkit.
+        :return: PromptSession with specified base styles, keybindings, bottom toolbar display,
+        completer with access to the actions and autosuggest from history at `profile_files/history.txt`.
+        """
         return PromptSession(
             style=Style.from_dict({
                 '': ProfileReader.profile().console_prompt_style,
@@ -140,9 +189,6 @@ class Main:
             history=FileHistory(PROFILES_PATH / "history.txt"),
             auto_suggest=AutoSuggestFromHistory()
         )
-
-    def terminate(self):
-        self.session.app.exit()
 
 
 def main() -> None:

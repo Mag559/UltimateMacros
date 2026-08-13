@@ -12,6 +12,11 @@ RESTART_CODE = 10
 
 
 def setup_misc(console_base: ConsoleBase) -> None:
+    """
+    Registers miscellaneous actions like exiting, restarting, switching profiles etc.
+    :param console_base: a bridge to some of the console Main's functionality
+    :return:
+    """
     completer = console_base.completer
 
     @completer.action("exit")

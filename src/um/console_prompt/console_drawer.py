@@ -14,6 +14,11 @@ PI_132 = pi * 1.32
 
 
 def get_color_style(current_time: float) -> str:
+    """
+    Produce colour that changes in a rainbow-ish pattern over time.
+    :param current_time: time controlling the rate of change of the colour.
+    :return: the colour in prompt_toolkit style format - front ground.
+    """
     r = int((sin(current_time) + 1.0) * 127.5)
     g = int((sin(current_time + PI_066) + 1.0) * 127.5)
     b = int((sin(current_time + PI_132) + 1.0) * 127.5)
@@ -26,6 +31,9 @@ RIGHT = LEFT + 2 * ProfileReader.profile().console_penrose_size
 TOP = 0
 BOTTOM = ProfileReader.profile().console_penrose_size
 
+STYLE_INIT_CALLABLE = Callable[[], list[int]]
+STYLE_UPDATE_CALLABLE = Callable[[list[int]], None]
+
 
 class ConsoleDrawerStyle(Enum):
     RGB = 0
@@ -34,23 +42,40 @@ class ConsoleDrawerStyle(Enum):
 
 
 class ConsoleDrawer:
+    """
+    Class responsible for taking the drawing produced by PenroseDrawer,
+    centering it, giving it colours with the help of ConsoleToolbar
+    and spinning it.
+    """
     def __init__(self, toolbar: ConsoleToolbar, update_drawing: Callable[[], None], time_keeper: TimeKeeper) -> None:
+        """
+
+        :param toolbar: ConsoleToolbar instance
+        :param update_drawing: callable to call for prompt toolkit to refresh the console text
+        :param time_keeper: TimeKeeper instance
+        """
         self.time_keeper = time_keeper
         self.update_drawing = update_drawing
         self.toolbar = toolbar
 
         match ConsoleDrawerStyle(ProfileReader.profile().console_penrose_style):
             case ConsoleDrawerStyle.RGB:
-                self.initialize_styles: Callable[[], list[int]] = self.initialize_rgb_styles
-                self.update_styles: Callable[[list[int]], None] = self.update_rgb_styles
+                self.initialize_styles: STYLE_INIT_CALLABLE = self.initialize_rgb_styles
+                self.update_styles: STYLE_UPDATE_CALLABLE = self.update_rgb_styles
             case ConsoleDrawerStyle.MONO:
-                self.initialize_styles: Callable[[], list[int]] = self.initialize_mono_styles
-                self.update_styles: Callable[[list[int]], None] = self.update_mono_style
+                self.initialize_styles: STYLE_INIT_CALLABLE = self.initialize_mono_styles
+                self.update_styles: STYLE_UPDATE_CALLABLE = self.update_mono_style
             case ConsoleDrawerStyle.RANDOM_STATIC:
-                self.initialize_styles: Callable[[], list[int]] = self.initialize_random_static_style
-                self.update_styles: Callable[[list[int]], None] = self.update_random_static_style
+                self.initialize_styles: STYLE_INIT_CALLABLE = self.initialize_random_static_style
+                self.update_styles: STYLE_UPDATE_CALLABLE = self.update_random_static_style
 
-    async def spin(self):
+    async def spin(self) -> None:
+        """
+        Asynchronously spin the Penrose triangle using asyncio.
+        Update rate depends on a profile setting ``console_penrose_spf``.
+        Sleeps if the console window is unfocused.
+        :return:
+        """
         angle: float = ProfileReader.profile().console_penrose_starting_angle
         drawer = PenroseDrawer(ProfileReader.profile().console_penrose_size)
 
@@ -96,11 +121,11 @@ class ConsoleDrawer:
 
     # -------------- random colour for the whole triangle ------------------------
     def initialize_random_static_style(self) -> list[int]:
-        mono_style: int = self.toolbar.add_new_style(
+        static_style: int = self.toolbar.add_new_style(
             f'fg: #{randint(0, 255):02x}{randint(0, 255):02x}{randint(0, 255):02x}'
         )
-        self.toolbar.draw_style_canvas(LEFT, TOP, RIGHT, BOTTOM, mono_style)
-        return [mono_style]
+        self.toolbar.draw_style_canvas(LEFT, TOP, RIGHT, BOTTOM, static_style)
+        return [static_style]
 
     def update_random_static_style(self, _style_indexes: list[int]) -> None:
         return

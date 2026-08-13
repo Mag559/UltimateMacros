@@ -23,6 +23,11 @@ def _on_firefox_macro_fail():
 
 
 def setup_goto(console_base: ConsoleBase) -> None:
+    """
+    Register actions for going to a certain website.
+    :param console_base: a bridge to some of the console Main's functionality
+    :return:
+    """
     goto_group = console_base.completer.group("goto")
 
     @console_base.default
