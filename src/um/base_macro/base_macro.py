@@ -28,10 +28,12 @@ class BaseMacro:
         """
         self.logger = getLogger(__name__)
         self._timeout = timeout
+
         if collector is None:
             self.event_collector: OrderedEmitter = MacroEventCollector()
         else:
             self.event_collector: OrderedEmitter = collector
+        self.event_collector.add_callback(self._update)
 
         self._terminator: TerminationDetector = TerminationDetector()
         self._exit_timer: Timer = Timer(self._timeout, self.stop)
@@ -44,7 +46,7 @@ class BaseMacro:
         """
         self.logger.debug("Base Macro started")
         self._exit_timer.start()
-        self.event_collector.add_callback(self._update)
+        self.event_collector.run()
 
         # block further execution until it's done
         self._end_event.wait()
@@ -57,7 +59,7 @@ class BaseMacro:
         """
         self.logger.debug("Base Macro started asynchronously")
         self._exit_timer.start()
-        self.event_collector.add_callback(self._update)
+        self.event_collector.run()
 
     def _update(self, event_code: ImportantEvent) -> bool:
         """

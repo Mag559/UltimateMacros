@@ -75,6 +75,7 @@ class InputCollector(OrderedEmitter, metaclass=SingletonMeta):
         self.mouse_listener: py_mouse.Listener | None = None
         self._consumer: Thread | None = None
         self._event_queue: Queue[tuple[InputType, KeyInput | MouseInput]] | None = None
+        self._running: bool = False
 
     def _create_consumer(self):
         """
@@ -96,7 +97,7 @@ class InputCollector(OrderedEmitter, metaclass=SingletonMeta):
         """
         super().add_callback(callback, priority)
         if len(self._callers) == 1:
-            self._run()
+            self.run()
 
     def remove_callback(self, callback: CALLBACK) -> None:
         """
@@ -110,11 +111,15 @@ class InputCollector(OrderedEmitter, metaclass=SingletonMeta):
         if len(self._callers) == 0:
             self._stop()
 
-    def _run(self) -> None:
+    def run(self) -> None:
         """
-        Start keyboard and mouse event collection
-        Does not stop further code execution
+        Start keyboard and mouse event collection.
+        Does not stop further code execution.
+        Triggered automatically when the first callback subscribes
         """
+        if self._running:
+            return
+        self._running = True
         self.keyboard_listener = py_keyboard.Listener(
             on_press=self._on_press,
             on_release=self._on_release,
@@ -203,7 +208,11 @@ class InputCollector(OrderedEmitter, metaclass=SingletonMeta):
         (Temporarily) stop the threads.
         :return:
         """
+        if not self._running:
+            return
+
         self.keyboard_listener.stop()
         self.mouse_listener.stop()
         self.logger.debug("listener threads stopped")
         self._event_queue.shutdown()
+        self._running = False

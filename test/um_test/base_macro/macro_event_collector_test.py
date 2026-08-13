@@ -16,6 +16,8 @@ class MacroEventCollectorTest(unittest.TestCase):
     def test_auto_disconnect(self):
         mock_input_collector: MockInputCollector = MockInputCollector()
         event_collector: MacroEventCollector = MacroEventCollector(mock_input_collector)
+        self.assertEqual(0, len(mock_input_collector._callers))
+        event_collector.run()
         self.assertEqual(1, len(mock_input_collector._callers))
         event_collector.add_callback(empty_callback)
         event_collector.remove_callback(empty_callback)
@@ -27,6 +29,7 @@ class MacroEventCollectorTest(unittest.TestCase):
 
         events: list[ImportantEvent] = []
         event_collector.add_callback(lambda event: events.append(event))
+        event_collector.run()
 
         # right click
         mock_input_collector.click_anywhere(py_mouse.Button.right)
@@ -53,6 +56,7 @@ class MacroEventCollectorTest(unittest.TestCase):
 
         events: list[ImportantEvent] = []
         event_collector.add_callback(lambda event: events.append(event))
+        event_collector.run()
 
         # toggle
         mock_input_collector.tap(py_keyboard.Key.num_lock)

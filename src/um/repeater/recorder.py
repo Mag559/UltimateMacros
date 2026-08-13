@@ -32,8 +32,6 @@ class Recorder:
         else:
             self.collector: OrderedEmitter = collector
 
-        self.collector.add_callback(self._update, ProfileReader.profile().macro_recorder_priority)
-
     def start(self) -> Generator[str, None, None]:
         """
         Start keyboard and mouse event collection,
@@ -42,6 +40,7 @@ class Recorder:
         :return: generator of recorded instructions
         """
         self.logger.debug(f"Start recording")
+        self.collector.add_callback(self._update, ProfileReader.profile().macro_recorder_priority)
 
         while True:
             event: str = self._event_queue.get()

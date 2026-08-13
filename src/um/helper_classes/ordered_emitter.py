@@ -28,6 +28,14 @@ class OrderedEmitter:
     def __init__(self):
         self._callers: list[PriorityCallback] = []
 
+    def run(self) -> None:
+        """
+        Empty method to be overridden by derived classes.
+        To consciously start emitting, often asynchronous, events.
+        :return:
+        """
+        pass
+
     def add_callback(self, callback: CALLBACK, priority: int = 0) -> None:
         """
         Register a new callback and insert it into right place according to priority

@@ -43,6 +43,11 @@ class MacroEventCollector(OrderedEmitter):
         else:
             self.collector: OrderedEmitter = collector
 
+    def run(self) -> None:
+        """
+        Connect to the raw input source and thus start emitting events.
+        :return:
+        """
         self.collector.add_callback(self._update, ProfileReader.profile().macro_event_collector_priority)
 
     def _update(self, input_type: InputType, input_object: KeyInput | MouseInput) -> None:
