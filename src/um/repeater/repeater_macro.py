@@ -79,16 +79,16 @@ class RepeaterMacro(BaseMacro):
 
         self.repeater_logger.debug("Repeater start method ended")
 
-    def _update(self, event_code: ImportantEvent) -> None:
+    def _update(self, event_code: ImportantEvent) -> bool:
         """
         Handle the Important Event.
         :param event_code: Important Event to handle (TOGGLE, SHORTCUT1 and SHORTCUT2 are handled)
-        :return:
+        :return: True if the macro was terminated, false otherwise
         """
-        super()._update(event_code)
+        was_terminated: bool = super()._update(event_code)
 
-        if self._stop_flag:
-            return
+        if self._stop_flag or was_terminated:
+            return True
 
         match event_code:
             case ImportantEvent.TOGGLE:
@@ -105,6 +105,8 @@ class RepeaterMacro(BaseMacro):
                     self.stop_interpreting()
                 elif self.state == RepeaterMacro.State.IDLE:
                     self.start_interpreting()
+
+        return False
 
     def start_recording(self) -> None:
         """

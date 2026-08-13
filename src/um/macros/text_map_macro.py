@@ -26,14 +26,12 @@ class TextMapMacro(BaseMacro):
         super().__init__()
         self.text_map = text_map
 
-    def _update(self, event_code: ImportantEvent) -> None:
+    def _update(self, event_code: ImportantEvent) -> bool:
         """
         Check if the event was a copy and handle it if so
         :param event_code: the clipboard event to handle
-        :return:
+        :return: True if the macro was terminated, false otherwise
         """
-        super()._update(event_code)
-
         match event_code:
             case ImportantEvent.COPY:
                 sleep(ProfileReader.profile().macro_text_map_copy_delay)
@@ -45,6 +43,8 @@ class TextMapMacro(BaseMacro):
 
                 pyperclip.copy(out)
                 InputPresser.paste(ProfileReader.profile().macro_text_map_paste_delay)
+
+        return super()._update(event_code)
 
 
 def camel_case_to_screaming_snake_case(x: str) -> str:

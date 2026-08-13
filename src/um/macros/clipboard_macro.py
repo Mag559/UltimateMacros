@@ -22,12 +22,12 @@ class ClipboardMacro(BaseMacro):
         self.copy_entries: list[str] = [''] * init_size
         self.current_index: int = -1
 
-    def _update(self, event_code: ImportantEvent) -> None:
+    def _update(self, event_code: ImportantEvent) -> bool:
         """
         Handle clipboard-related important events
         :param event_code: The clipboard event to handle (COPY, CUT, or PASTE are handled).
+        :return: True if the macro was terminated, false otherwise
         """
-        super()._update(event_code)
         self.logger.debug(f"Entries before event processing: {self.copy_entries}")
         match event_code:
             case ImportantEvent.COPY:
@@ -37,6 +37,8 @@ class ClipboardMacro(BaseMacro):
             case ImportantEvent.PASTE:
                 self.retrieve()
         self.logger.debug(f"Entries after event processing: {self.copy_entries}")
+
+        return super()._update(event_code)
 
     def store(self) -> None:
         """

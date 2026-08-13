@@ -35,16 +35,16 @@ class InterpreterMacro(BaseMacro):
             before_next_instruction_callback=self._should_keep_going
         )
 
-    def _update(self, event_code: ImportantEvent) -> None:
+    def _update(self, event_code: ImportantEvent) -> bool:
         """
         Handle important events
         :param event_code: ImportantEvent to handle (TOGGLE is handled)
-        :return:
+        :return: True if the macro was terminated, false otherwise
         """
-        super()._update(event_code)
-
         if event_code == ImportantEvent.TOGGLE:
             self._pause = not self._pause
+
+        return super()._update(event_code)
 
     def start(self) -> None:
         """

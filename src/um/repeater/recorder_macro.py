@@ -43,16 +43,16 @@ class RecorderMacro(BaseMacro):
         self._record()
         self.recorder_macro_logger.debug(f"Ended recording")
 
-    def _update(self, event_code: ImportantEvent) -> None:
+    def _update(self, event_code: ImportantEvent) -> bool:
         """
         Handle Important Events.
         :param event_code: important event to handle (TOGGLE is handled)
-        :return:
+        :return: True if the macro was terminated, false otherwise
         """
-        super()._update(event_code)
-
         if event_code == ImportantEvent.TOGGLE:
             self._pause_toggle = True
+
+        return super()._update(event_code)
 
     def _record(self) -> None:
         """
