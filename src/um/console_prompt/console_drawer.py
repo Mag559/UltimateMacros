@@ -47,7 +47,12 @@ class ConsoleDrawer:
     centering it, giving it colours with the help of ConsoleToolbar
     and spinning it.
     """
-    def __init__(self, toolbar: ConsoleToolbar, update_drawing: Callable[[], None], time_keeper: TimeKeeper) -> None:
+    def __init__(
+        self,
+        toolbar: ConsoleToolbar,
+        update_drawing: Callable[[], None],
+        time_keeper: TimeKeeper
+    ) -> None:
         """
 
         :param toolbar: ConsoleToolbar instance

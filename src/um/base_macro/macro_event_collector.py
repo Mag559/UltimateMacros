@@ -27,7 +27,7 @@ class MacroEventCollector(OrderedEmitter):
     and passes them out in the same fashion - via OrderedEmitter.
     """
 
-    def __init__(self, collector: OrderedEmitter = InputCollector()):
+    def __init__(self, collector: OrderedEmitter = None):
         """
 
         :param collector: source of the raw inputs, input collector Singleton by default
@@ -38,7 +38,10 @@ class MacroEventCollector(OrderedEmitter):
         self.left_alt_held = False
 
         self.last_left_click: float = 0.0
-        self.collector: OrderedEmitter = collector
+        if collector is None:
+            self.collector: OrderedEmitter = InputCollector()
+        else:
+            self.collector: OrderedEmitter = collector
 
         self.collector.add_caller(self._update, ProfileReader.profile().macro_event_collector_priority)
 

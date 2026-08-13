@@ -17,7 +17,7 @@ class Recorder:
     The main thread (running start) processes them and yields the event as string
     """
 
-    def __init__(self, collector: OrderedEmitter = InputCollector()):
+    def __init__(self, collector: OrderedEmitter = None):
         """
 
         :param collector: raw input collector, InputCollector Singleton by default
@@ -27,7 +27,10 @@ class Recorder:
         self._stop_flag: bool = False
         self._event_queue: Queue[str] = Queue()
         self._last_event_time: float = 0
-        self.collector: OrderedEmitter = collector
+        if collector is None:
+            self.collector: OrderedEmitter = InputCollector()
+        else:
+            self.collector: OrderedEmitter = collector
 
         self.collector.add_caller(self._update, ProfileReader.profile().macro_recorder_priority)
 

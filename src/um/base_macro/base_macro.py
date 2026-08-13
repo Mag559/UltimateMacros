@@ -16,7 +16,7 @@ class BaseMacro:
 
     def __init__(
             self,
-            collector: OrderedEmitter = MacroEventCollector(),
+            collector: OrderedEmitter = None,
             timeout: float = ProfileReader.profile().macro_timeout
     ):
         """
@@ -28,7 +28,10 @@ class BaseMacro:
         """
         self.logger = getLogger(__name__)
         self._timeout = timeout
-        self.event_collector: OrderedEmitter = collector
+        if collector is None:
+            self.event_collector: OrderedEmitter = MacroEventCollector()
+        else:
+            self.event_collector: OrderedEmitter = collector
 
         self._terminator: TerminationDetector = TerminationDetector()
         self._exit_timer: Timer = Timer(self._timeout, self.stop)
