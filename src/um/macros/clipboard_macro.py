@@ -1,7 +1,7 @@
 import pyperclip
 
 from um.profiles import ProfileReader
-from um.base_macro import BaseMacro, ImportantEvents
+from um.base_macro import BaseMacro, ImportantEvent
 
 
 class ClipboardMacro(BaseMacro):
@@ -22,7 +22,7 @@ class ClipboardMacro(BaseMacro):
         self.copy_entries: list[str] = [''] * init_size
         self.current_index: int = -1
 
-    def _update(self, event_code: ImportantEvents) -> None:
+    def _update(self, event_code: ImportantEvent) -> None:
         """
         Handle clipboard-related important events
         :param event_code: The clipboard event to handle (COPY, CUT, or PASTE are handled).
@@ -30,11 +30,11 @@ class ClipboardMacro(BaseMacro):
         super()._update(event_code)
         self.logger.debug(f"Entries before event processing: {self.copy_entries}")
         match event_code:
-            case ImportantEvents.COPY:
+            case ImportantEvent.COPY:
                 self.store()
-            case ImportantEvents.CUT:
+            case ImportantEvent.CUT:
                 self.store()
-            case ImportantEvents.PASTE:
+            case ImportantEvent.PASTE:
                 self.retrieve()
         self.logger.debug(f"Entries after event processing: {self.copy_entries}")
 

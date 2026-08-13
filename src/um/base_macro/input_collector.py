@@ -83,7 +83,7 @@ class InputCollector(OrderedEmitter, metaclass=SingletonMeta):
         self._consumer = Thread(target=self._consume_events, name="InputCollector consumer")
         self._event_queue = Queue()
 
-    def add_caller(self, callback: CALLBACK, priority: int = 0) -> None:
+    def add_callback(self, callback: CALLBACK, priority: int = 0) -> None:
         """
         Register a new priority callback like in the parent class,
         additionally recreate the threads if the newly added callback is the only one.
@@ -94,11 +94,11 @@ class InputCollector(OrderedEmitter, metaclass=SingletonMeta):
         :param callback: suited to handle ``input_type: InputType, input_object: KeyInput | MouseInput``
         :param priority: higher first
         """
-        super().add_caller(callback, priority)
+        super().add_callback(callback, priority)
         if len(self._callers) == 1:
             self._run()
 
-    def remove_caller(self, callback: CALLBACK) -> None:
+    def remove_callback(self, callback: CALLBACK) -> None:
         """
         Remove the callback like in the parent class,
         additionally stop the threads if there are no more callbacks registered.
@@ -106,7 +106,7 @@ class InputCollector(OrderedEmitter, metaclass=SingletonMeta):
         :return:
         :raises ValueError: if callback is not registered
         """
-        super().remove_caller(callback)
+        super().remove_callback(callback)
         if len(self._callers) == 0:
             self._stop()
 

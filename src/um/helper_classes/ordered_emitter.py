@@ -28,7 +28,7 @@ class OrderedEmitter:
     def __init__(self):
         self._callers: list[PriorityCallback] = []
 
-    def add_caller(self, callback: CALLBACK, priority: int = 0) -> None:
+    def add_callback(self, callback: CALLBACK, priority: int = 0) -> None:
         """
         Register a new callback and insert it into right place according to priority
         :param callback: Callable to be registered, derived classes should specify the desired signature
@@ -44,7 +44,7 @@ class OrderedEmitter:
         else:
             self._callers.append(priority_callback)
 
-    def remove_caller(self, callback: CALLBACK) -> None:
+    def remove_callback(self, callback: CALLBACK) -> None:
         """
         Unregister a callback
         :param callback:

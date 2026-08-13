@@ -7,7 +7,7 @@ from time import sleep
 import pyperclip
 
 from um.profiles import ProfileReader
-from um.base_macro import BaseMacro, InputPresser, ImportantEvents
+from um.base_macro import BaseMacro, InputPresser, ImportantEvent
 
 
 class TextMapMacro(BaseMacro):
@@ -26,7 +26,7 @@ class TextMapMacro(BaseMacro):
         super().__init__()
         self.text_map = text_map
 
-    def _update(self, event_code: ImportantEvents) -> None:
+    def _update(self, event_code: ImportantEvent) -> None:
         """
         Check if the event was a copy and handle it if so
         :param event_code: the clipboard event to handle
@@ -35,7 +35,7 @@ class TextMapMacro(BaseMacro):
         super()._update(event_code)
 
         match event_code:
-            case ImportantEvents.COPY:
+            case ImportantEvent.COPY:
                 sleep(ProfileReader.profile().macro_text_map_copy_delay)
                 inp: str = pyperclip.paste()
                 self.text_map_logger.debug(f"Text map macro input: {inp}")

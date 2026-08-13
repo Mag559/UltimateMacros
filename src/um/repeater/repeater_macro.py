@@ -6,7 +6,7 @@ from threading import Thread
 from pathlib import Path
 from time import sleep
 
-from um.base_macro import BaseMacro, ImportantEvents
+from um.base_macro import BaseMacro, ImportantEvent
 from um.profiles import ProfileReader
 from .interpreter import Interpreter
 from .recorder import Recorder
@@ -79,7 +79,7 @@ class RepeaterMacro(BaseMacro):
 
         self.repeater_logger.debug("Repeater start method ended")
 
-    def _update(self, event_code: ImportantEvents) -> None:
+    def _update(self, event_code: ImportantEvent) -> None:
         """
         Handle the Important Event.
         :param event_code: Important Event to handle (TOGGLE, SHORTCUT1 and SHORTCUT2 are handled)
@@ -91,16 +91,16 @@ class RepeaterMacro(BaseMacro):
             return
 
         match event_code:
-            case ImportantEvents.TOGGLE:
+            case ImportantEvent.TOGGLE:
                 self._pause_toggle = True
 
-            case ImportantEvents.SHORTCUT1:
+            case ImportantEvent.SHORTCUT1:
                 if self.state == RepeaterMacro.State.RECORDING:
                     self.stop_recording()
                 elif self.state == RepeaterMacro.State.IDLE:
                     self.start_recording()
 
-            case ImportantEvents.SHORTCUT2:
+            case ImportantEvent.SHORTCUT2:
                 if self.state == RepeaterMacro.State.INTERPRETING:
                     self.stop_interpreting()
                 elif self.state == RepeaterMacro.State.IDLE:

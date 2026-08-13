@@ -4,7 +4,7 @@ from time import sleep
 from logging import getLogger
 
 from um.profiles import ProfileReader
-from um.base_macro import BaseMacro, ImportantEvents
+from um.base_macro import BaseMacro, ImportantEvent
 from .interpreter import Interpreter
 from .base_interpreter import MACRO_FILES
 
@@ -35,7 +35,7 @@ class InterpreterMacro(BaseMacro):
             before_next_instruction_callback=self._should_keep_going
         )
 
-    def _update(self, event_code: ImportantEvents) -> None:
+    def _update(self, event_code: ImportantEvent) -> None:
         """
         Handle important events
         :param event_code: ImportantEvent to handle (TOGGLE is handled)
@@ -43,7 +43,7 @@ class InterpreterMacro(BaseMacro):
         """
         super()._update(event_code)
 
-        if event_code == ImportantEvents.TOGGLE:
+        if event_code == ImportantEvent.TOGGLE:
             self._pause = not self._pause
 
     def start(self) -> None:

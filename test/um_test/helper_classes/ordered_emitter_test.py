@@ -8,14 +8,14 @@ class OrderedEmitterTest(unittest.TestCase):
         emitter = OrderedEmitter()
         calls = []
         first_callable = lambda: calls.append("1_0")
-        emitter.add_caller(first_callable, 1)
-        emitter.add_caller(lambda: calls.append("10"), 10)
-        emitter.add_caller(lambda: calls.append("1_1"), 1)
+        emitter.add_callback(first_callable, 1)
+        emitter.add_callback(lambda: calls.append("10"), 10)
+        emitter.add_callback(lambda: calls.append("1_1"), 1)
 
         emitter._emit()
         self.assertListEqual(calls, ["10", "1_0", "1_1"])
-        emitter.remove_caller(first_callable)
-        self.assertRaises(ValueError, emitter.remove_caller, first_callable)
+        emitter.remove_callback(first_callable)
+        self.assertRaises(ValueError, emitter.remove_callback, first_callable)
         calls = []
 
         emitter._emit()
@@ -25,20 +25,20 @@ class OrderedEmitterTest(unittest.TestCase):
         emitter = OrderedEmitter()
         calls = []
         first = lambda: calls.append("1")
-        second = lambda: emitter.remove_caller(first)
+        second = lambda: emitter.remove_callback(first)
         third = lambda: calls.append("3")
-        fourth = lambda: emitter.add_caller(fifth, 1)
+        fourth = lambda: emitter.add_callback(fifth, 1)
         fifth = lambda: calls.append("5")
 
-        emitter.add_caller(first, 5)
-        emitter.add_caller(second, 4)
-        emitter.add_caller(third, 3)
-        emitter.add_caller(fourth, 2)
+        emitter.add_callback(first, 5)
+        emitter.add_callback(second, 4)
+        emitter.add_callback(third, 3)
+        emitter.add_callback(fourth, 2)
 
         emitter._emit()
         self.assertListEqual(calls, ["1", "3"])
 
-        emitter.remove_caller(second)
+        emitter.remove_callback(second)
 
         calls = []
         emitter._emit()

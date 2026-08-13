@@ -32,7 +32,7 @@ class Recorder:
         else:
             self.collector: OrderedEmitter = collector
 
-        self.collector.add_caller(self._update, ProfileReader.profile().macro_recorder_priority)
+        self.collector.add_callback(self._update, ProfileReader.profile().macro_recorder_priority)
 
     def start(self) -> Generator[str, None, None]:
         """
@@ -135,6 +135,6 @@ class Recorder:
         :return:
         """
         self.logger.debug(f"Stop recording")
-        self.collector.remove_caller(self._update)
+        self.collector.remove_callback(self._update)
         self._stop_flag = True
         self._event_queue.put("")

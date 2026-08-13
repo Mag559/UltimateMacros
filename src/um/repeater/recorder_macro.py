@@ -2,7 +2,7 @@ import re
 from logging import getLogger, Logger
 from pathlib import Path
 
-from um.base_macro import BaseMacro, ImportantEvents
+from um.base_macro import BaseMacro, ImportantEvent
 from .recorder import Recorder
 from .base_interpreter import MACRO_FILES
 
@@ -43,7 +43,7 @@ class RecorderMacro(BaseMacro):
         self._record()
         self.recorder_macro_logger.debug(f"Ended recording")
 
-    def _update(self, event_code: ImportantEvents) -> None:
+    def _update(self, event_code: ImportantEvent) -> None:
         """
         Handle Important Events.
         :param event_code: important event to handle (TOGGLE is handled)
@@ -51,7 +51,7 @@ class RecorderMacro(BaseMacro):
         """
         super()._update(event_code)
 
-        if event_code == ImportantEvents.TOGGLE:
+        if event_code == ImportantEvent.TOGGLE:
             self._pause_toggle = True
 
     def _record(self) -> None:

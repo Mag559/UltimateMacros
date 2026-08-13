@@ -3,7 +3,7 @@ from logging import getLogger
 
 from um.helper_classes import OrderedEmitter
 from um.profiles import ProfileReader
-from .macro_event_collector import MacroEventCollector, ImportantEvents
+from .macro_event_collector import MacroEventCollector, ImportantEvent
 from .termination_detector import TerminationDetector
 
 
@@ -44,7 +44,7 @@ class BaseMacro:
         """
         self.logger.debug("Base Macro started")
         self._exit_timer.start()
-        self.event_collector.add_caller(self._update)
+        self.event_collector.add_callback(self._update)
 
         # block further execution until it's done
         self._end_event.wait()
@@ -57,9 +57,9 @@ class BaseMacro:
         """
         self.logger.debug("Base Macro started asynchronously")
         self._exit_timer.start()
-        self.event_collector.add_caller(self._update)
+        self.event_collector.add_callback(self._update)
 
-    def _update(self, event_code: ImportantEvents) -> bool:
+    def _update(self, event_code: ImportantEvent) -> bool:
         """
         Method intended to be overridden by derived classes for implementing most of their functionality.
         Resets the inactivity timer and checks for the termination signal.
@@ -72,7 +72,7 @@ class BaseMacro:
         self._exit_timer = Timer(self._timeout, self.stop)
         self._exit_timer.start()
         match event_code:
-            case ImportantEvents.SHORTCUT1:
+            case ImportantEvent.SHORTCUT1:
                 self.logger.debug("Shortcut1")
                 if self._terminator.should_terminate():
                     self.logger.info("Terminating due to repeated shortcut1")
@@ -86,5 +86,5 @@ class BaseMacro:
         """
         self.logger.debug("Shutting down base macro")
         self._exit_timer.cancel()
-        self.event_collector.remove_caller(self._update)
+        self.event_collector.remove_callback(self._update)
         self._end_event.set()

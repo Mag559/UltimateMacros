@@ -8,7 +8,7 @@ from um.helper_classes import OrderedEmitter, CALLBACK
 from pynput import keyboard as py_keyboard, mouse as py_mouse
 
 
-class ImportantEvents(Enum):
+class ImportantEvent(Enum):
     COPY = 1
     PASTE = 2
     CUT = 3
@@ -43,7 +43,7 @@ class MacroEventCollector(OrderedEmitter):
         else:
             self.collector: OrderedEmitter = collector
 
-        self.collector.add_caller(self._update, ProfileReader.profile().macro_event_collector_priority)
+        self.collector.add_callback(self._update, ProfileReader.profile().macro_event_collector_priority)
 
     def _update(self, input_type: InputType, input_object: KeyInput | MouseInput) -> None:
         """
@@ -82,20 +82,20 @@ class MacroEventCollector(OrderedEmitter):
                 self.left_alt_held = True
             case "'`'":
                 if self.left_alt_held:
-                    self.emit_event(ImportantEvents.SHORTCUT1)
+                    self.emit_event(ImportantEvent.SHORTCUT1)
             case "'\\x03'":
-                self.emit_event(ImportantEvents.COPY)
+                self.emit_event(ImportantEvent.COPY)
             case "'\\x16'":
-                self.emit_event(ImportantEvents.PASTE)
+                self.emit_event(ImportantEvent.PASTE)
             case "'\\x18'":
-                self.emit_event(ImportantEvents.CUT)
+                self.emit_event(ImportantEvent.CUT)
             case "'\\x13'":
-                self.emit_event(ImportantEvents.SAVE)
+                self.emit_event(ImportantEvent.SAVE)
             case "Key.num_lock":
-                self.emit_event(ImportantEvents.TOGGLE)
+                self.emit_event(ImportantEvent.TOGGLE)
             case "Key.cmd":
                 if self.left_alt_held:
-                    self.emit_event(ImportantEvents.SHORTCUT2)
+                    self.emit_event(ImportantEvent.SHORTCUT2)
 
         return None
 
@@ -118,20 +118,20 @@ class MacroEventCollector(OrderedEmitter):
         """
         if mouse_input.button == py_mouse.Button.left:
             if time() - self.last_left_click < ProfileReader.profile().input_double_click_time:
-                self.emit_event(ImportantEvents.DOUBLE_CLICK)
+                self.emit_event(ImportantEvent.DOUBLE_CLICK)
                 self.last_left_click = 0
             else:
                 self.last_left_click = time()
 
         if mouse_input.button == py_mouse.Button.right:
-            self.emit_event(ImportantEvents.RIGHT_CLICK)
+            self.emit_event(ImportantEvent.RIGHT_CLICK)
 
         if mouse_input.button == py_mouse.Button.middle:
-            self.emit_event(ImportantEvents.MIDDLE_CLICK)
+            self.emit_event(ImportantEvent.MIDDLE_CLICK)
 
         return None
 
-    def emit_event(self, event: ImportantEvents) -> None:
+    def emit_event(self, event: ImportantEvent) -> None:
         """
         Callback subscribers based on their priority about the event.
         :param event: ImportantEvents object representing the event.
@@ -139,13 +139,13 @@ class MacroEventCollector(OrderedEmitter):
         self.logger.debug(f"Emitting event: {event}")
         self._emit(event)
 
-    def remove_caller(self, callback: CALLBACK) -> None:
+    def remove_callback(self, callback: CALLBACK) -> None:
         """
         Remove caller,
         if it's the last one, disconnect from the InputCollector Singleton.
         :param callback: Callable to be removed
         :return:
         """
-        super().remove_caller(callback)
+        super().remove_callback(callback)
         if len(self._callers) == 0:
-            self.collector.remove_caller(self._update)
+            self.collector.remove_callback(self._update)
