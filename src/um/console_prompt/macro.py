@@ -1,11 +1,9 @@
 from pathlib import Path
-
 from prompt_toolkit.completion import PathCompleter
 
-from um.macros import ClipboardMacro, TextMapMacro
-from um.repeater import RecorderMacro, InterpreterMacro, RepeaterMacro, MACRO_FILES
+import um.macros
+import um.repeater
 from .console_base import ConsoleBase
-from um.macros.text_map_macro import surround_with
 
 
 def setup_macro(console_base: ConsoleBase) -> None:
@@ -17,7 +15,7 @@ def setup_macro(console_base: ConsoleBase) -> None:
     macro_group = console_base.completer.group("macro")
     macro_files_completer: PathCompleter = PathCompleter(
         False,
-        lambda: [str(MACRO_FILES)],
+        lambda: [str(um.repeater.MACRO_FILES)],
         lambda path: path.endswith('.ins')
     )
 
@@ -29,14 +27,14 @@ def setup_macro(console_base: ConsoleBase) -> None:
     @console_base.completer.param(["2", "3", "5", "10", "100"], cast=int)
     def _clipboard_macro(stack_size: int = 10):
         console_base.focus_release()
-        macro: ClipboardMacro = ClipboardMacro(stack_size)
+        macro: um.macros.ClipboardMacro = um.macros.ClipboardMacro(stack_size)
         macro.start()
 
     @macro_group.action("recorder")
     @console_base.completer.param(macro_files_completer, cast=str)
     def _recorder_macro(file_name: str):
         console_base.focus_release()
-        RecorderMacro(Path(file_name)).start()
+        um.repeater.RecorderMacro(Path(file_name)).start()
 
     @macro_group.action("interpreter")
     @console_base.completer.param(macro_files_completer, cast=str)
@@ -44,14 +42,14 @@ def setup_macro(console_base: ConsoleBase) -> None:
         console_base.focus_release()
         if not file_name.endswith('.ins'):
             file_name += '.ins'
-        InterpreterMacro(Path(file_name)).start()
+        um.repeater.InterpreterMacro(Path(file_name)).start()
 
     @macro_group.action("repeater")
     def _repeater_macro():
         console_base.focus_release()
-        RepeaterMacro().start()
+        um.repeater.RepeaterMacro().start()
 
     @macro_group.action("textmap")
     def _text_map_macro():
         console_base.focus_release()
-        TextMapMacro(lambda x: surround_with(x, "$\\texttt{", "}$")).start()
+        um.repeater.TextMapMacro(lambda x: um.macros.surround_with(x, "$\\texttt{", "}$")).start()

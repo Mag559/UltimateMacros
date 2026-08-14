@@ -7,6 +7,8 @@ from um.profiles import ProfileReader
 from .capturer import Capturer, Section
 from .matcher import Matcher
 
+REFERENCE_IMAGES = Path(__file__).parents[3] / "reference_images"
+
 
 class ScreenMatch:
     """
@@ -103,13 +105,16 @@ class ScreenMatch:
         self.matcher.reference_image = reference_image
         return self
 
-    def load_reference_image(self, image_path: Path) -> 'ScreenMatch':
+    def load_reference_image(self, image_path: Path | str) -> 'ScreenMatch':
         """
         Preferred method to set the reference image
         Loads the image and, if present, the section file with the same name as the image, but .txt extension
-        :param image_path: reference image path relative to `reference_images` in the project root directory
+        :param image_path: reference image path relative to `reference_images` in the project root directory or absolute
         :return: itself to allow for chaining of the setters
         """
+        if image_path is not Path or not image_path.is_absolute():
+            image_path = REFERENCE_IMAGES / image_path
+
         with Image.open(image_path) as image:
             self.set_reference_image(image.copy())
 

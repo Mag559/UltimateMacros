@@ -4,12 +4,12 @@ from time import sleep
 from logging import getLogger
 
 from um.profiles import ProfileReader
-from um.base_macro import BaseMacro, ImportantEvent
+import um.base_macro
 from .interpreter import Interpreter
 from .base_interpreter import MACRO_FILES
 
 
-class InterpreterMacro(BaseMacro):
+class InterpreterMacro(um.base_macro.BaseMacro):
     """
     Macro version of the Interpreter.
     TOGGLE -> pause execution (after executing the current instruction is done, not immediately)
@@ -35,13 +35,13 @@ class InterpreterMacro(BaseMacro):
             before_next_instruction_callback=self._should_keep_going
         )
 
-    def _update(self, event_code: ImportantEvent) -> bool:
+    def _update(self, event_code: um.base_macro.ImportantEvent) -> bool:
         """
         Handle important events
         :param event_code: ImportantEvent to handle (TOGGLE is handled)
         :return: True if the macro was terminated, false otherwise
         """
-        if event_code == ImportantEvent.TOGGLE:
+        if event_code == um.base_macro.ImportantEvent.TOGGLE:
             self._pause = not self._pause
 
         return super()._update(event_code)

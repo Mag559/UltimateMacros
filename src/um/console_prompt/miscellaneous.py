@@ -1,6 +1,5 @@
 import os
 from pathlib import Path
-
 from prompt_toolkit.completion import PathCompleter
 
 from um.profiles import PROFILES_PATH, ProfileReader

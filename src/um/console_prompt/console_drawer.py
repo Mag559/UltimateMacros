@@ -48,10 +48,10 @@ class ConsoleDrawer:
     and spinning it.
     """
     def __init__(
-        self,
-        toolbar: ConsoleToolbar,
-        update_drawing: Callable[[], None],
-        time_keeper: TimeKeeper
+            self,
+            toolbar: ConsoleToolbar,
+            update_drawing: Callable[[], None],
+            time_keeper: TimeKeeper
     ) -> None:
         """
 

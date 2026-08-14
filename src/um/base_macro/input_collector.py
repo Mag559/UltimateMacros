@@ -3,7 +3,6 @@ from enum import Enum
 from logging import getLogger
 from queue import Queue, ShutDown
 from threading import Thread
-
 from pynput import keyboard as py_keyboard, mouse as py_mouse
 
 from um.helper_classes import OrderedEmitter, SingletonMeta, CALLBACK

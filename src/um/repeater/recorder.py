@@ -6,7 +6,7 @@ from time import time
 from pynput import keyboard as py_keyboard
 from queue import Queue
 
-from um.base_macro import InputCollector, KeyInput, MouseInput, InputType
+import um.base_macro
 from um.helper_classes import OrderedEmitter
 from um.profiles import ProfileReader
 
@@ -28,7 +28,7 @@ class Recorder:
         self._event_queue: Queue[str] = Queue()
         self._last_event_time: float = 0
         if collector is None:
-            self.collector: OrderedEmitter = InputCollector()
+            self.collector: OrderedEmitter = um.base_macro.InputCollector()
         else:
             self.collector: OrderedEmitter = collector
 
@@ -59,7 +59,11 @@ class Recorder:
             self.logger.debug(f"Event processed into: {event}")
             yield event
 
-    def _update(self, input_type: InputType, input_object: KeyInput | MouseInput) -> None:
+    def _update(
+            self,
+            input_type: um.base_macro.InputType,
+            input_object: um.base_macro.KeyInput | um.base_macro.MouseInput
+    ) -> None:
         """
         Delegate handling of the raw input event to the right method.
         :param input_type: was a keyboard key pressed, released, mouse button pressed, released
@@ -68,14 +72,14 @@ class Recorder:
         """
         self.logger.debug(f"Received {input_type} with input object {input_object}")
         match input_type:
-            case InputType.KEY_PRESS:
-                assert isinstance(input_object, KeyInput)
+            case um.base_macro.InputType.KEY_PRESS:
+                assert isinstance(input_object, um.base_macro.KeyInput)
                 self._on_key_press(input_object)
-            case InputType.KEY_RELEASE:
-                assert isinstance(input_object, KeyInput)
+            case um.base_macro.InputType.KEY_RELEASE:
+                assert isinstance(input_object, um.base_macro.KeyInput)
                 self._on_key_release(input_object)
-            case InputType.MOUSE_PRESS:
-                assert isinstance(input_object, MouseInput)
+            case um.base_macro.InputType.MOUSE_PRESS:
+                assert isinstance(input_object, um.base_macro.MouseInput)
                 self._on_mouse_press(input_object)
 
     @staticmethod
@@ -98,7 +102,7 @@ class Recorder:
             return key
         return None
 
-    def _on_key_press(self, key_input: KeyInput) -> None:
+    def _on_key_press(self, key_input: um.base_macro.KeyInput) -> None:
         """
         Record a key press.
         :param key_input: what key was pressed
@@ -107,7 +111,7 @@ class Recorder:
         self._event_queue.put(f"{time()} press {Recorder.key_to_string(key_input.key)}")
         return None
 
-    def _on_key_release(self, key_input: KeyInput) -> None:
+    def _on_key_release(self, key_input: um.base_macro.KeyInput) -> None:
         """
         Record a key release.
         :param key_input: what key was released
@@ -116,7 +120,7 @@ class Recorder:
         self._event_queue.put(f"{time()} release {Recorder.key_to_string(key_input.key)}")
         return None
 
-    def _on_mouse_press(self, mouse_input: MouseInput) -> None:
+    def _on_mouse_press(self, mouse_input: um.base_macro.MouseInput) -> None:
         """
         Record a mouse press.
         Mouse released aren't recorded, assuming the presses were short.

@@ -1,7 +1,7 @@
 from time import sleep
 
 from .console_base import ConsoleBase
-from um.base_macro import InputPresser
+import um.base_macro
 from um.firefox_handling import FirefoxHandler
 
 WIKAMP_SUBJECT_WEBSITES = {
@@ -54,20 +54,20 @@ def setup_goto(console_base: ConsoleBase) -> None:
         fh.wait_for_firefox_loading_wheel()
         fh.open_website(WIKAMP_ATTENDANCE_WEBSITES[subject])
         fh.wait_for_firefox_loading_wheel()
-        InputPresser.move_mouse((1000, 800))  # move slightly up for the cursor to hover over the website
+        um.base_macro.InputPresser.move_mouse((1000, 800))  # move slightly up for the cursor to hover over the website
 
         sleep(1.5)
-        InputPresser.scroll(0, -1)
+        um.base_macro.InputPresser.scroll(0, -1)
 
         fh.press_register_attendance()
 
-        InputPresser.move_mouse((687, 595))
-        InputPresser.left_click()
+        um.base_macro.InputPresser.move_mouse((687, 595))
+        um.base_macro.InputPresser.left_click()
 
-        InputPresser.type(attendance_code)
-        InputPresser.tab()
-        InputPresser.tap(' ')
-        InputPresser.enter()
+        um.base_macro.InputPresser.type(attendance_code)
+        um.base_macro.InputPresser.tab()
+        um.base_macro.InputPresser.tap(' ')
+        um.base_macro.InputPresser.enter()
 
     @goto_group.action("youtube")
     def _goto_youtube():

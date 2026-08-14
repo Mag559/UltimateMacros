@@ -13,12 +13,12 @@ class Matcher:
     """
 
     def __init__(
-        self,
-        reference_image: Image.Image,
-        total_diff_allowed: float = ProfileReader.profile().match_total_diff_allowed,
-        individual_diff_allowed: int = ProfileReader.profile().match_individual_diff_allowed,
-        mismatched_pixels_allowed: float = ProfileReader.profile().match_mismatched_pixels_allowed,
-        brightness_diff_allowed: float = ProfileReader.profile().match_brightness_diff_allowed
+            self,
+            reference_image: Image.Image,
+            total_diff_allowed: float = ProfileReader.profile().match_total_diff_allowed,
+            individual_diff_allowed: int = ProfileReader.profile().match_individual_diff_allowed,
+            mismatched_pixels_allowed: float = ProfileReader.profile().match_mismatched_pixels_allowed,
+            brightness_diff_allowed: float = ProfileReader.profile().match_brightness_diff_allowed
     ):
         """
 

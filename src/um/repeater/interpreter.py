@@ -10,10 +10,10 @@ import pyperclip
 from pynput.keyboard import Controller as KeyboardController
 from pynput.mouse import Button as PyButton
 
-from um.base_macro import InputPresser
+import um.base_macro
 from um.profiles import ProfileReader
+import um.screen_match
 from .base_interpreter import BaseInterpreter, ThrowingArgumentParser, MACRO_FILES
-from um.screen_match import ScreenMatch, REFERENCE_IMAGES, Section
 from .instruction_declarations import create_parsers
 from .registered_functions import create_function_registry
 
@@ -73,10 +73,10 @@ class Interpreter(BaseInterpreter):
     registered_functions: dict[str, Callable] = create_function_registry()
 
     def __init__(
-        self,
-        instruction_generator: Generator[str, None, None],
-        mode: BaseInterpreter.Mode = BaseInterpreter.Mode(ProfileReader.profile().macro_interpreter_mode),
-        before_next_instruction_callback: Callable[[], bool] = lambda: True
+            self,
+            instruction_generator: Generator[str, None, None],
+            mode: BaseInterpreter.Mode = BaseInterpreter.Mode(ProfileReader.profile().macro_interpreter_mode),
+            before_next_instruction_callback: Callable[[], bool] = lambda: True
     ):
         """
 
@@ -88,7 +88,7 @@ class Interpreter(BaseInterpreter):
         super().__init__()
         self.logger = getLogger(__name__)
 
-        self._screen_match: ScreenMatch | None = None
+        self._screen_match: um.screen_match.ScreenMatch | None = None
         self.instruction_generator = instruction_generator
         self.mode = mode
 
@@ -104,13 +104,13 @@ class Interpreter(BaseInterpreter):
         self.before_next_instruction_callback = before_next_instruction_callback
 
     @property
-    def screen_match(self) -> ScreenMatch:
+    def screen_match(self) -> um.screen_match.ScreenMatch:
         """
         Get lazily initialized ScreenMatch object used for detect, match and await
         :return: a ScreenMatch object
         """
         if self._screen_match is None:
-            self._screen_match = ScreenMatch()
+            self._screen_match = um.screen_match.ScreenMatch()
         return self._screen_match
 
     def start(self) -> None:
@@ -166,11 +166,11 @@ class Interpreter(BaseInterpreter):
         """
         if parsed.section is not None:
             try:
-                self.screen_match.set_compared_section(Section.from_string(parsed.section))
+                self.screen_match.set_compared_section(um.screen_match.Section.from_string(parsed.section))
             except TypeError as e:
                 raise BaseInterpreter.InvalidInstruction(e)
         elif full_otherwise:
-            self.screen_match.set_compared_section(Section(*ProfileReader.profile().match_whole_screen))
+            self.screen_match.set_compared_section(um.screen_match.Section(*ProfileReader.profile().match_whole_screen))
 
     @staticmethod
     def _click_section(parsed, centre: tuple[int, int]) -> None:
@@ -184,8 +184,8 @@ class Interpreter(BaseInterpreter):
         if parsed.click is None or parsed.click == PyButton.unknown:
             return
 
-        InputPresser.move_mouse(centre)
-        InputPresser.click_mouse(parsed.click)
+        um.base_macro.InputPresser.move_mouse(centre)
+        um.base_macro.InputPresser.click_mouse(parsed.click)
 
     def _interpret(self, line: str) -> None:
         """
@@ -193,6 +193,7 @@ class Interpreter(BaseInterpreter):
         :param line: the instruction to interpret
         :return:
         """
+        from um.base_macro import InputPresser
         if line.startswith("---"):
             return
 
@@ -251,7 +252,7 @@ class Interpreter(BaseInterpreter):
                 self._end_flag = True
 
             case "detect":
-                self.screen_match.load_reference_image(REFERENCE_IMAGES / parsed.image_path)
+                self.screen_match.load_reference_image(parsed.image_path)
                 self._set_screen_match_section(parsed, True)
 
                 result: bool | tuple[int, int] = filter_nones(
@@ -262,13 +263,13 @@ class Interpreter(BaseInterpreter):
                 if self.the_flag:
                     self._click_section(parsed, result)
             case "match":
-                self.screen_match.load_reference_image(REFERENCE_IMAGES / parsed.image_path)
+                self.screen_match.load_reference_image(parsed.image_path)
                 self._set_screen_match_section(parsed)
                 self.the_flag = self.screen_match.check_match()
                 if self.the_flag:
                     self._click_section(parsed, self.screen_match.capturer.section.centre)
             case "await":
-                self.screen_match.load_reference_image(REFERENCE_IMAGES / parsed.image_path)
+                self.screen_match.load_reference_image(parsed.image_path)
                 if parsed.anywhere:
                     self._set_screen_match_section(parsed, True)
                     result: bool | tuple[int, int] = filter_nones(

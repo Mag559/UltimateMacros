@@ -3,14 +3,13 @@ from logging import getLogger, Logger
 from collections.abc import Callable
 from string import ascii_lowercase, ascii_uppercase
 from time import sleep
-
 import pyperclip
 
 from um.profiles import ProfileReader
-from um.base_macro import BaseMacro, InputPresser, ImportantEvent
+import um.base_macro
 
 
-class TextMapMacro(BaseMacro):
+class TextMapMacro(um.base_macro.BaseMacro):
     """
     Ctrl+c the text,
     the copied text is processed by the `text_map` function
@@ -26,14 +25,14 @@ class TextMapMacro(BaseMacro):
         super().__init__()
         self.text_map = text_map
 
-    def _update(self, event_code: ImportantEvent) -> bool:
+    def _update(self, event_code: um.base_macro.ImportantEvent) -> bool:
         """
         Check if the event was a copy and handle it if so
         :param event_code: the clipboard event to handle
         :return: True if the macro was terminated, false otherwise
         """
         match event_code:
-            case ImportantEvent.COPY:
+            case um.base_macro.ImportantEvent.COPY:
                 sleep(ProfileReader.profile().macro_text_map_copy_delay)
                 inp: str = pyperclip.paste()
                 self.text_map_logger.debug(f"Text map macro input: {inp}")
@@ -42,7 +41,7 @@ class TextMapMacro(BaseMacro):
                 self.text_map_logger.debug(f"Text map macro output: {out}")
 
                 pyperclip.copy(out)
-                InputPresser.paste(ProfileReader.profile().macro_text_map_paste_delay)
+                um.base_macro.InputPresser.paste(ProfileReader.profile().macro_text_map_paste_delay)
 
         return super()._update(event_code)
 

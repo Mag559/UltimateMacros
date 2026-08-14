@@ -29,7 +29,7 @@ class FirefoxHandler:
         self.use_firefox_if_open()
 
     def use_firefox_if_open(self):
-        self.screen_match.load_reference_image(REFERENCE_IMAGES / "firefox_minimized.png")
+        self.screen_match.load_reference_image("firefox_minimized.png")
         self.screen_match.set_compared_section(Section(*ProfileReader.profile().match_taskbar_section))
 
         possible_match = self.screen_match.find_match(
@@ -50,7 +50,7 @@ class FirefoxHandler:
         InputPresser.tap_with_ctrl('t')
 
     def open_firefox(self):
-        self.screen_match.load_reference_image(REFERENCE_IMAGES / "firefox_open.png")
+        self.screen_match.load_reference_image("firefox_open.png")
 
         system('start firefox')
         if not self.screen_match.wait_for_match():
@@ -68,7 +68,7 @@ class FirefoxHandler:
     def open_wikamp(self):
         self.open_website(CAS)
 
-        self.screen_match.load_reference_image(REFERENCE_IMAGES / "cas_open.png")
+        self.screen_match.load_reference_image("cas_open.png")
 
         if not self.screen_match.wait_for_match():
             self.logger.error("CAS failed to load")
@@ -78,7 +78,7 @@ class FirefoxHandler:
         InputPresser.enter(1)
         InputPresser.enter(1)
 
-        self.screen_match.load_reference_image(REFERENCE_IMAGES / "wikamp_open.png")
+        self.screen_match.load_reference_image("wikamp_open.png")
         if not self.screen_match.wait_for_match():
             self.logger.error("wikamp failed to load")
             self.on_fail()
@@ -86,13 +86,13 @@ class FirefoxHandler:
     def wait_for_firefox_loading_wheel(self):
         # it takes a moment to change from loaded to loading
         sleep(ProfileReader.profile().match_firefox_loading_wheel_delay)
-        self.screen_match.load_reference_image(REFERENCE_IMAGES / "firefox_loading_website.png")
+        self.screen_match.load_reference_image("firefox_loading_website.png")
         if not self.screen_match.wait_for_match():
             self.logger.error("website loading failed")
             self.on_fail()
 
     def press_register_attendance(self):
-        self.screen_match.load_reference_image(REFERENCE_IMAGES / "wikamp_attendance_button.png")
+        self.screen_match.load_reference_image("wikamp_attendance_button.png")
         self.screen_match.set_compared_section(Section(*ProfileReader.profile().match_whole_screen))
 
         possible_match = self.screen_match.find_match(

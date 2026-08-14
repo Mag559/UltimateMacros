@@ -2,7 +2,7 @@ from time import sleep
 
 from .preview_window import PreviewWindow
 from um.profiles import ProfileReader
-from um.screen_match import Capturer, Section, REFERENCE_IMAGES
+import um.screen_match
 
 
 class ScreenshotPreview:
@@ -12,7 +12,7 @@ class ScreenshotPreview:
     this acts as a middle man between it, Capturer of the screenshot and saving.
     """
     def __init__(self):
-        self.capturer = Capturer(Section(100, 100, 100, 100))
+        self.capturer = um.screen_match.Capturer(um.screen_match.Section(100, 100, 100, 100))
         self.window = PreviewWindow(self.capturer.capture_screenshot(), self.save)
 
     def start(self) -> None:
@@ -41,11 +41,11 @@ class ScreenshotPreview:
         self.window.set_image(self.capturer.capture_screenshot())
         self._schedule_next_update()
 
-    def get_section(self) -> Section:
+    def get_section(self) -> um.screen_match.Section:
         """
         Converts left, top, width, height to a Section object.
         """
-        return Section(*[max(q, 1) for q in self.window.get_all_numbers()])
+        return um.screen_match.Section(*[max(q, 1) for q in self.window.get_all_numbers()])
 
     def save(self, name) -> None:
         """
@@ -54,9 +54,9 @@ class ScreenshotPreview:
         """
         sleep(ProfileReader.profile().screenshot_delay_before_save)
         self.capturer.capture_screenshot().save(
-            REFERENCE_IMAGES / f"{name}.png",
+            um.screen_match.REFERENCE_IMAGES / f"{name}.png",
             "PNG"
         )
-        with open(REFERENCE_IMAGES / f"{name}.txt", "w") as f:
+        with open(um.screen_match.REFERENCE_IMAGES / f"{name}.txt", "w") as f:
             f.write(",".join([str(x) for x in self.window.get_all_numbers()]))
         self.window.destroy()

@@ -1,5 +1,5 @@
-from um.tools import ScreenshotPreview
 from .console_base import ConsoleBase
+import um.tools
 
 
 def setup_tool(console_base: ConsoleBase) -> None:
@@ -16,4 +16,4 @@ def setup_tool(console_base: ConsoleBase) -> None:
 
     @tool_group.action("screenshot_preview")
     def _screenshot_preview():
-        ScreenshotPreview().start()
+        um.tools.ScreenshotPreview().start()

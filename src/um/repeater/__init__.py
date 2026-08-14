@@ -20,11 +20,11 @@ if TYPE_CHECKING:
     from .interpreter_macro import InterpreterMacro
     from .repeater_macro import RepeaterMacro, MACRO_FILES
 
-__all__ = _repeater_lazy_imports.keys()
+__all__ = list(_repeater_lazy_imports)
 
 
 def __getattr__(name):
-    if name not in _repeater_lazy_imports.keys():
+    if name not in _repeater_lazy_imports:
         raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
     module_name = _repeater_lazy_imports[name]

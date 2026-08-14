@@ -2,12 +2,12 @@ import re
 from logging import getLogger, Logger
 from pathlib import Path
 
-from um.base_macro import BaseMacro, ImportantEvent
+import um.base_macro
 from .recorder import Recorder
 from .base_interpreter import MACRO_FILES
 
 
-class RecorderMacro(BaseMacro):
+class RecorderMacro(um.base_macro.BaseMacro):
     """
     Macro version of the recorder
     Filters out SHORTCUT1 and TOGGLE.
@@ -43,13 +43,13 @@ class RecorderMacro(BaseMacro):
         self._record()
         self.recorder_macro_logger.debug(f"Ended recording")
 
-    def _update(self, event_code: ImportantEvent) -> bool:
+    def _update(self, event_code: um.base_macro.ImportantEvent) -> bool:
         """
         Handle Important Events.
         :param event_code: important event to handle (TOGGLE is handled)
         :return: True if the macro was terminated, false otherwise
         """
-        if event_code == ImportantEvent.TOGGLE:
+        if event_code == um.base_macro.ImportantEvent.TOGGLE:
             self._pause_toggle = True
 
         return super()._update(event_code)

@@ -1,17 +1,23 @@
 from typing import TYPE_CHECKING
+from importlib import import_module
+
+_tools_lazy_imports = {
+    "main": ".console_prompt",
+    "ProfileReader": ".profiles",
+}
 
 if TYPE_CHECKING:
     from .profiles import ProfileReader
     from .console_prompt import main
 
-__all__ = ["ProfileReader", "main"]
+__all__ = list(_tools_lazy_imports)
 
 
 def __getattr__(name):
-    if name == "ProfileReader":
-        from .profiles import ProfileReader
-        return ProfileReader
-    if name == "main":
-        from .console_prompt import main
-        return main
-    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+    if name not in _tools_lazy_imports:
+        raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+
+    module_name = _tools_lazy_imports[name]
+
+    module = import_module(module_name, __name__)
+    return getattr(module, name)

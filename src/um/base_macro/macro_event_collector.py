@@ -1,11 +1,11 @@
 from time import time
 from enum import Enum
 from logging import getLogger
+from pynput import keyboard as py_keyboard, mouse as py_mouse
 
 from um.profiles import ProfileReader
-from .input_collector import InputCollector, KeyInput, MouseInput, InputType
 from um.helper_classes import OrderedEmitter, CALLBACK
-from pynput import keyboard as py_keyboard, mouse as py_mouse
+from .input_collector import InputCollector, KeyInput, MouseInput, InputType
 
 
 class ImportantEvent(Enum):
