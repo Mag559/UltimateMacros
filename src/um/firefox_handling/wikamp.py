@@ -8,7 +8,7 @@ import pyperclip
 
 from um.profiles import ProfileReader
 from um.base_macro import InputPresser
-from um.screen_match import ScreenMatch, Section, REFERENCE_IMAGES
+from um.screen_match import ScreenMatch, Section
 
 CAS = "https://login.p.lodz.pl/login?service=https%3A%2F%2Fedu.p.lodz.pl%2Flogin%2Findex.php%3FauthCAS%3DCAS"
 

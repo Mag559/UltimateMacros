@@ -1,11 +1,9 @@
 from collections.abc import Callable
-from pathlib import Path
-
 from PIL import Image
 
 from um.screen_match import Capturer, Section
+from um.profiles import TEST_RESOURCES_DIR
 
-TEST_RESOURCES_DIR = Path(__file__).resolve().parents[2] / "resources"
 TEST_MONITOR_RESOLUTION = (1920, 1080)
 
 
@@ -48,4 +46,3 @@ class MockCapturer(Capturer):
 
     def capture_screenshot(self) -> Image.Image:
         return self.capturer.grab(self.monitor)
-

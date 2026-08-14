@@ -7,10 +7,9 @@ from pathlib import Path
 from time import sleep
 
 import um.base_macro
-from um.profiles import ProfileReader
+from um.profiles import ProfileReader, MACRO_FILES
 from .interpreter import Interpreter
 from .recorder import Recorder
-from .base_interpreter import MACRO_FILES
 
 
 class RepeaterMacro(um.base_macro.BaseMacro):

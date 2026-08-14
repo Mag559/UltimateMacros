@@ -1,15 +1,12 @@
 import logging
 import ctypes
-from pathlib import Path
 
-from um import main, ProfileReader
+from um import main, ProfileReader, PROJECT_ROOT
 from sys import stdout
 
 # have a unified coordinate system for pynput mouse movement and detection (no scale)
 PROCESS_PER_MONITOR_DPI_AWARE = 2
 ctypes.windll.shcore.SetProcessDpiAwareness(PROCESS_PER_MONITOR_DPI_AWARE)
-
-PROJECT_ROOT = Path(__file__).parents[2]
 
 
 def clean_logs():

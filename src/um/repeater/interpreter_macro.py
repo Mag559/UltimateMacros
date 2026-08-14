@@ -3,10 +3,9 @@ from pathlib import Path
 from time import sleep
 from logging import getLogger
 
-from um.profiles import ProfileReader
+from um.profiles import ProfileReader, MACRO_FILES
 import um.base_macro
 from .interpreter import Interpreter
-from .base_interpreter import MACRO_FILES
 
 
 class InterpreterMacro(um.base_macro.BaseMacro):

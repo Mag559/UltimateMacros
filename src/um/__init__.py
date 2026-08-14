@@ -3,11 +3,12 @@ from importlib import import_module
 
 _tools_lazy_imports = {
     "main": ".console_prompt",
+    "PROJECT_ROOT": ".profiles",
     "ProfileReader": ".profiles",
 }
 
 if TYPE_CHECKING:
-    from .profiles import ProfileReader
+    from .profiles import ProfileReader, PROJECT_ROOT
     from .console_prompt import main
 
 __all__ = list(_tools_lazy_imports)

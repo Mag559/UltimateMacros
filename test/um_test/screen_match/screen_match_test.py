@@ -1,12 +1,9 @@
 import unittest
-from pathlib import Path
-
 from PIL import Image
 
 from um.screen_match import Section, ScreenMatch
-from um_test.screen_match.mock_capturer import MockCapturer, MockMss
-
-TEST_RESOURCES_DIR = Path(__file__).resolve().parents[2] / "resources"
+from um_test.screen_match import MockCapturer, MockMss
+from um.profiles import TEST_RESOURCES_DIR
 
 
 def before_grab(calls: list[int], mock_mss: MockMss, total_calls: int, replacement_img):

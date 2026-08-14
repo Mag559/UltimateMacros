@@ -4,7 +4,7 @@ from pathlib import Path
 
 import um.base_macro
 from .recorder import Recorder
-from .base_interpreter import MACRO_FILES
+from um.profiles import MACRO_FILES
 
 
 class RecorderMacro(um.base_macro.BaseMacro):

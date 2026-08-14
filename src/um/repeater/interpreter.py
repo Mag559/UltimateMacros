@@ -11,9 +11,9 @@ from pynput.keyboard import Controller as KeyboardController
 from pynput.mouse import Button as PyButton
 
 import um.base_macro
-from um.profiles import ProfileReader
+from um.profiles import ProfileReader, MACRO_FILES
 import um.screen_match
-from .base_interpreter import BaseInterpreter, ThrowingArgumentParser, MACRO_FILES
+from .base_interpreter import BaseInterpreter, ThrowingArgumentParser
 from .instruction_declarations import create_parsers
 from .registered_functions import create_function_registry
 

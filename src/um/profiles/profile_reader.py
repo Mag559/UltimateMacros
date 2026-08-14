@@ -1,10 +1,8 @@
 import logging
 from dataclasses import dataclass
-from pathlib import Path
 import json
 
-PROFILES_PATH = Path(__file__).parents[3] / "profile_files"
-COOKIES_PATH = PROFILES_PATH / "cookies.txt"
+from .directories_manager import COOKIES_PATH, PROFILES_PATH
 
 
 class ProfileReader:

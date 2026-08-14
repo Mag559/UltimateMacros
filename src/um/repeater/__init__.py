@@ -9,7 +9,6 @@ _repeater_lazy_imports = {
     "RecorderMacro": ".recorder_macro",
     "InterpreterMacro": ".interpreter_macro",
     "RepeaterMacro": ".repeater_macro",
-    "MACRO_FILES": ".repeater_macro",
 }
 
 if TYPE_CHECKING:
@@ -18,7 +17,7 @@ if TYPE_CHECKING:
     from .recorder import Recorder
     from .recorder_macro import RecorderMacro
     from .interpreter_macro import InterpreterMacro
-    from .repeater_macro import RepeaterMacro, MACRO_FILES
+    from .repeater_macro import RepeaterMacro
 
 __all__ = list(_repeater_lazy_imports)
 

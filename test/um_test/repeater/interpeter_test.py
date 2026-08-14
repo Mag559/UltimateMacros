@@ -1,5 +1,4 @@
 import unittest
-from pathlib import Path
 from unittest.mock import patch
 
 import pyperclip
@@ -10,9 +9,7 @@ from um.repeater import Interpreter
 from um.screen_match import ScreenMatch, Section
 from um_test.mock_pynput import MockKeyboardController, MockMouseController
 from um_test.screen_match import MockMss, MockCapturer
-
-
-TEST_RESOURCES_DIR = Path(__file__).resolve().parents[2] / "resources"
+from um.profiles import TEST_RESOURCES_DIR
 
 
 def before_grab(calls: list[int], mock_mss: MockMss, total_calls: int, replacement_img):
@@ -103,12 +100,12 @@ class InterpreterTest(unittest.TestCase):
             self.assertTrue(interpreter.the_flag)
             self.assertAlmostEqual(
                 mock_mouse_controller.position[0],
-                correct_section.left + correct_section.width / 2,
+                correct_section.left + correct_section.width // 2,
                 delta=3
             )
             self.assertAlmostEqual(
                 mock_mouse_controller.position[1],
-                correct_section.top + correct_section.height / 2,
+                correct_section.top + correct_section.height // 2,
                 delta=3
             )
             self.assertEqual(calls[0], 1)
@@ -125,12 +122,12 @@ class InterpreterTest(unittest.TestCase):
             self.assertTrue(interpreter.the_flag)
             self.assertAlmostEqual(
                 mock_mouse_controller.position[0],
-                correct_fake_section.left + correct_fake_section.width / 2,
+                correct_fake_section.left + correct_fake_section.width // 2,
                 delta=3
             )
             self.assertAlmostEqual(
                 mock_mouse_controller.position[1],
-                correct_fake_section.top + correct_fake_section.height / 2,
+                correct_fake_section.top + correct_fake_section.height // 2,
                 delta=3
             )
             self.assertEqual(calls[0], 4)

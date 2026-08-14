@@ -3,11 +3,9 @@ from pathlib import Path
 from PIL import Image
 from logging import getLogger
 
-from um.profiles import ProfileReader
+from um.profiles import ProfileReader, REFERENCE_IMAGES
 from .capturer import Capturer, Section
 from .matcher import Matcher
-
-REFERENCE_IMAGES = Path(__file__).parents[3] / "reference_images"
 
 
 class ScreenMatch:

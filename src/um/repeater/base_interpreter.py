@@ -1,8 +1,5 @@
 from argparse import ArgumentParser
 from enum import Enum
-from pathlib import Path
-
-MACRO_FILES = Path(__file__).parents[3] / "macro_files"
 
 
 class ThrowingArgumentParser(ArgumentParser):

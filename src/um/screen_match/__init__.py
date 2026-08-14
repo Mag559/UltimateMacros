@@ -7,13 +7,12 @@ _screen_match_lazy_imports = {
     "Capturer": ".capturer",
     "Matcher": ".matcher",
     "ScreenMatch": ".screen_match",
-    "REFERENCE_IMAGES": ".screen_match",
 }
 
 if TYPE_CHECKING:
     from .capturer import Section, Capturer
     from .matcher import Matcher
-    from .screen_match import ScreenMatch, REFERENCE_IMAGES
+    from .screen_match import ScreenMatch
 
 __all__ = list(_screen_match_lazy_imports)
 
