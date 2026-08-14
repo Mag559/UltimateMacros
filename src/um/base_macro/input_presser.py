@@ -51,7 +51,7 @@ class InputPresser:
         """
         sleep(wait_before)
         InputPresser.py_keyboard_controller.press(PyKey.ctrl_l)
-        InputPresser.tap(key, wait_mid)
+        InputPresser.tap(key, wait_mid, wait_mid)
         sleep(wait_mid)
         InputPresser.py_keyboard_controller.release(PyKey.ctrl_l)
 
@@ -88,15 +88,18 @@ class InputPresser:
         InputPresser.py_keyboard_controller.release(key)
 
     @staticmethod
-    def tap(key, wait_before: float = ProfileReader.profile().input_typing_wait_time) -> None:
+    def tap(key, wait_before: float = ProfileReader.profile().input_typing_wait_time, duration: float = 0) -> None:
         """
         Press and release the key within a very short time window.
         :param key: the key to tap
         :param wait_before: time to sleep before the input in seconds
+        :param duration: how long to hold the key
         :return:
         """
         sleep(wait_before)
-        InputPresser.py_keyboard_controller.tap(key)
+        InputPresser.py_keyboard_controller.press(key)
+        sleep(duration)
+        InputPresser.py_keyboard_controller.release(key)
 
     @staticmethod
     def tab(count: int = 1, wait_time: float = ProfileReader.profile().input_delay_between_tabs) -> None:

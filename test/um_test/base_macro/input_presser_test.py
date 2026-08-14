@@ -19,7 +19,7 @@ class InputPresserTest(unittest.TestCase):
             InputPresser.enter(0)
             InputPresser.press(PyKey.num_lock, 0)
             InputPresser.release(PyKey.num_lock, 0)
-            InputPresser.tap(PyKey.cmd, 0)
+            InputPresser.tap(PyKey.cmd, 0, 0)
             InputPresser.tab(3, 0)
             InputPresser.type("abc", 0)
 

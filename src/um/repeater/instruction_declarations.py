@@ -29,6 +29,11 @@ def create_parsers() -> dict[str, ThrowingArgumentParser]:
     )
     tap_parser.add_argument("key", type=KeyType, help="the key to tap")
     tap_parser.add_argument("--duration", type=float, help="how many seconds between press and release")
+    tap_parser.add_argument(
+        "--with_ctrl",
+        action="store_true",
+        help="Press control_l before tapping the key and release it after"
+    )
 
     type_parser = ThrowingArgumentParser(
         prog="type",

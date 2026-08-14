@@ -1,9 +1,12 @@
 import ast
 from functools import wraps
 from collections.abc import Callable
+from os import system
 from string import ascii_lowercase, ascii_uppercase
 from random import random
 from typing import Any
+
+import pyperclip
 
 
 def create_function_registry() -> dict[str, Callable]:
@@ -60,5 +63,13 @@ def create_function_registry() -> dict[str, Callable]:
     @registered
     def is_coin_toss_won(interpreter, variables) -> None:
         interpreter.the_flag = variables["coin_streak"] >= 3
+
+    @registered
+    def open_firefox() -> None:
+        system('start firefox')
+
+    @registered
+    def copy(text: str) -> None:
+        pyperclip.copy(text)
 
     return registry

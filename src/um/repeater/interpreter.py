@@ -216,8 +216,10 @@ class Interpreter(BaseInterpreter):
             case "release":
                 InputPresser.release(parsed.key, 0)
             case "tap":
-                InputPresser.press(parsed.key, 0)
-                filter_nones(InputPresser.release, parsed.key, parsed.duration)
+                if parsed.with_ctrl:
+                    filter_nones(InputPresser.tap_with_ctrl, parsed.key, 0, parsed.duration)
+                else:
+                    filter_nones(InputPresser.tap, parsed.key, 0, parsed.duration)
             case "type":
                 for char in parsed.string:
                     filter_nones(InputPresser.press, Interpreter.string_to_key(char), parsed.delay)
