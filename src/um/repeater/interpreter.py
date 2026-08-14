@@ -82,6 +82,7 @@ class Interpreter(BaseInterpreter):
         self.mode = mode
 
         self._lines: list[str] = instructions
+        self._labels: dict[str, int] = self._locate_labels()
         self._instruction_counter: int = -1
         self._next_instruction_idx: int = 0
 
@@ -174,6 +175,18 @@ class Interpreter(BaseInterpreter):
         um.base_macro.InputPresser.move_mouse(centre)
         um.base_macro.InputPresser.click_mouse(parsed.click)
 
+    def _locate_labels(self) -> dict[str, int]:
+        """
+        Iterate over the instruction lines and locate labels.
+        :return: dictionary[str label name, line index]
+        """
+        labels: dict[str, int] = {}
+        for i, line in enumerate(self._lines):
+            if line.startswith(">"):
+                label = line.lstrip(">").strip()
+                labels[label] = i
+        return labels
+
     def _interpret(self, line: str) -> None:
         """
         Parse and interpret a single instruction.
@@ -181,7 +194,7 @@ class Interpreter(BaseInterpreter):
         :return:
         """
         from um.base_macro import InputPresser
-        if line.startswith("---"):
+        if line.startswith("---") or line.startswith(">"):
             return
 
         items: list[str] = shlex.split(line)
@@ -224,13 +237,16 @@ class Interpreter(BaseInterpreter):
                 InputPresser.scroll(parsed.x, parsed.y)
 
             case "jump":
-                self._next_instruction_idx += parsed.by
-            case "jump_if":
-                if self.the_flag:
+                if parsed.__dict__["if"]:
+                    if not self.the_flag:
+                        return
+                if parsed.unless:
+                    if self.the_flag:
+                        return
+                if parsed.by:
                     self._next_instruction_idx += parsed.by
-            case "jump_if_not":
-                if not self.the_flag:
-                    self._next_instruction_idx += parsed.by
+                else:
+                    self._next_instruction_idx = self._labels[parsed.to]
             case "set_flag":
                 self.the_flag = True
             case "clear_flag":

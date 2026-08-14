@@ -77,32 +77,30 @@ def create_parsers() -> dict[str, ThrowingArgumentParser]:
     # ----------------- assembly -----------------
     jump_parser = ThrowingArgumentParser(
         prog="jump",
-        description="jump to previous or next instruction"
-    )
-    jump_parser.add_argument(
-        "by",
-        type=int,
-        help="by how much to change the instruction counter on top of the default +1 (jump 0 does nothing)"
+        description="jump to an instruction of label"
     )
 
-    conditional_jump_parser = ThrowingArgumentParser(
-        prog="jump_if",
-        description="jump to previous or next instruction if the flag is set"
+    mode_group = jump_parser.add_mutually_exclusive_group()
+    mode_group.add_argument(
+        "-if",
+        action='store_true',
+        help="perform the jump only if the flag is set"
     )
-    conditional_jump_parser.add_argument(
-        "by",
+    mode_group.add_argument(
+        "-unless",
+        action="store_true",
+        help="perform the jump only if the flag is NOT set"
+    )
+    destination_group = jump_parser.add_mutually_exclusive_group(required=True)
+    destination_group.add_argument(
+        "-by",
         type=int,
-        help="by how much to change the instruction counter on top of the default +1 (jump 0 does nothing)"
+        help="by how much to change the instruction counter on top of the default +1 (jump -by 0 does nothing)"
     )
-
-    conditional_jump_parser2 = ThrowingArgumentParser(
-        prog="jump_if_not",
-        description="jump to previous or next instruction if the flag is NOT set"
-    )
-    conditional_jump_parser2.add_argument(
-        "by",
-        type=int,
-        help="by how much to change the instruction counter on top of the default +1 (jump 0 does nothing)"
+    destination_group.add_argument(
+        "-to",
+        type=str,
+        help="to what the label to jump to (> this_is_a_label)"
     )
 
     set_flag_parser = ThrowingArgumentParser(prog="set_flag", description="set the flag")
@@ -268,8 +266,6 @@ def create_parsers() -> dict[str, ThrowingArgumentParser]:
         "click": click_parser,
         "scroll": scroll_parser,
         "jump": jump_parser,
-        "jump_if": conditional_jump_parser,
-        "jump_if_not": conditional_jump_parser2,
         "set_flag": set_flag_parser,
         "clear_flag": clear_flag_parser,
         "log": log_parser,

@@ -158,7 +158,7 @@ class InterpreterTest(unittest.TestCase):
             command_count += 1
 
         interpreter: Interpreter = Interpreter(
-            ["command test_command_count++", "--- comment", "jump -3"],
+            ["command test_command_count++", "--- comment", "jump -by -3"],
             before_next_instruction_callback=keep_going
         )
         interpreter.registered_functions["test_command_count++"] = inc_test_command_count
@@ -174,13 +174,33 @@ class InterpreterTest(unittest.TestCase):
         interpreter = Interpreter(
             [
                 "clear_flag",
-                "jump_if 4",
+                "jump -if -by 4",
                 "set_flag",
-                "jump_if_not 2",
-                "jump_if 1",
-                "jump -1",
+                "jump -unless -by 2",
+                "jump -if -by 1",
+                "jump -by -1",
                 "end",
                 "---",
+                "---"
+            ],
+            before_next_instruction_callback=keep_going
+        )
+        interpreter.start()
+
+        self.assertEqual(ins_count, 7)  # keep_going checks before checking end flag and whether out of instructions
+
+        ins_count = 0
+
+        interpreter = Interpreter(
+            [
+                "clear_flag",
+                "jump -unless -to here",
+                "end",
+                "> there",
+                "end",
+                "> here",
+                "jump -to there",
+                "end",
                 "---"
             ],
             before_next_instruction_callback=keep_going
