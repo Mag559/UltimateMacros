@@ -23,12 +23,12 @@ class InterpreterTest(unittest.TestCase):
         event_list: list[str] = []
         mock_keyboard_controller = MockKeyboardController(event_list)
         interpreter: Interpreter = Interpreter(
-            (ins for ins in [
+            [
                 "press a",
                 "release a",
                 "tap b --duration 0",
                 "type cde --delay 0 --duration 0",
-            ])
+            ]
         )
         with patch.object(InputPresser, "py_keyboard_controller", mock_keyboard_controller):
             interpreter.start()
@@ -53,12 +53,12 @@ class InterpreterTest(unittest.TestCase):
         event_list: list[str] = []
         mock_mouse_controller = MockMouseController(event_list)
         interpreter: Interpreter = Interpreter(
-            (ins for ins in [
+            [
                 "move 100 200",
                 "shift -10 20",
                 "click left",
                 "scroll -10 20"
-            ])
+            ]
         )
         with patch.object(InputPresser, "py_mouse_controller", mock_mouse_controller):
             interpreter.start()
@@ -75,7 +75,7 @@ class InterpreterTest(unittest.TestCase):
     def test_image_matching(self):
         event_list: list[str] = []
         interpreter: Interpreter = Interpreter(
-            (ins for ins in [])
+            []
         )  # manually trigger _interpret for convenience
 
         calls = [0]
@@ -158,7 +158,7 @@ class InterpreterTest(unittest.TestCase):
             command_count += 1
 
         interpreter: Interpreter = Interpreter(
-            (ins for ins in ["command test_command_count++", "--- comment", "jump -3"]),
+            ["command test_command_count++", "--- comment", "jump -3"],
             before_next_instruction_callback=keep_going
         )
         interpreter.registered_functions["test_command_count++"] = inc_test_command_count
@@ -172,7 +172,7 @@ class InterpreterTest(unittest.TestCase):
         command_count = 0
 
         interpreter = Interpreter(
-            (ins for ins in [
+            [
                 "clear_flag",
                 "jump_if 4",
                 "set_flag",
@@ -182,7 +182,7 @@ class InterpreterTest(unittest.TestCase):
                 "end",
                 "---",
                 "---"
-            ]),
+            ],
             before_next_instruction_callback=keep_going
         )
         interpreter.start()
@@ -192,7 +192,7 @@ class InterpreterTest(unittest.TestCase):
     def test_command_instruction(self):
         event_list: list[str] = []
         interpreter: Interpreter = Interpreter(
-            (ins for ins in [])
+            []
         )  # manually trigger _interpret for convenience
 
         mock_keyboard_controller = MockKeyboardController(event_list)

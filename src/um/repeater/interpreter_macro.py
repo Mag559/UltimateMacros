@@ -1,10 +1,9 @@
-from collections.abc import Generator
+from logging import getLogger
 from pathlib import Path
 from time import sleep
-from logging import getLogger
 
-from um.profiles import ProfileReader, MACRO_FILES
 import um.base_macro
+from um.profiles import ProfileReader, MACRO_FILES
 from .interpreter import Interpreter
 
 
@@ -29,8 +28,12 @@ class InterpreterMacro(um.base_macro.BaseMacro):
         # could do it with the threading library and pass the interpreter an event to wait on
         # for use cases where the sleep times are longer
         self._stop_flag: bool = False
+
+        with open(self._file_path, "r") as file:
+            file_instructions: list[str] = file.readlines()
+
         self._interpreter: Interpreter = Interpreter(
-            self._read_instructions(),
+            file_instructions,
             before_next_instruction_callback=self._should_keep_going
         )
 
@@ -56,19 +59,6 @@ class InterpreterMacro(um.base_macro.BaseMacro):
         if not self._stop_flag:
             self.stop()
         self.int_logger.debug(f"Interpreting ended")
-
-    def _read_instructions(self) -> Generator[str, None, None]:
-        """
-        Reads the instructions from the file and return them in the form of a generator.
-        :return: Generator of instructions
-        """
-        with open(self._file_path, "r") as file:
-            for line in file:
-                yield line
-
-        self.int_logger.debug(f"Read all instructions from {self._file_path}")
-
-        self.stop()
 
     def _should_keep_going(self) -> bool:
         """

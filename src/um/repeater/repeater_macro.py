@@ -1,9 +1,8 @@
-from collections.abc import Generator
-from enum import Enum
 import re
+from enum import Enum
 from logging import getLogger
-from threading import Thread
 from pathlib import Path
+from threading import Thread
 from time import sleep
 
 import um.base_macro
@@ -152,9 +151,13 @@ class RepeaterMacro(um.base_macro.BaseMacro):
             self._read_instructions(),
             before_next_instruction_callback=self._should_keep_going
         )
-        self._interpreter_thread = Thread(target=self._interpreter.start, name="RepeaterMacro interpreter")
+        self._interpreter_thread = Thread(target=self._interpret, name="RepeaterMacro interpreter")
 
         self._interpreter_thread.start()
+
+    def _interpret(self) -> None:
+        self._interpreter.start()
+        self.state = RepeaterMacro.State.IDLE
 
     def stop_interpreting(self) -> None:
         """
@@ -295,17 +298,14 @@ class RepeaterMacro(um.base_macro.BaseMacro):
 
         return True
 
-    def _read_instructions(self) -> Generator[str, None, None]:
+    def _read_instructions(self) -> list[str]:
         """
         Reads the instructions from the file and return them in the form of a generator.
-        :return: Generator of instructions
+        :return: list of instructions read from the file or empty list if file doesn't exist
         """
         if self._get_current_file().exists():
             with open(self._get_current_file(), "r") as file:
-                for line in file:
-                    yield line
+                return file.readlines()
         else:
             self.repeater_logger.debug(f"File {self._get_current_file()} does not exist")
-
-        self.repeater_logger.debug(f"Read all instructions from {self._get_current_file()}")
-        self.state = RepeaterMacro.State.IDLE
+            return []

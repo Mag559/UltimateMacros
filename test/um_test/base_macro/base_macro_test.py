@@ -10,7 +10,7 @@ from um_test.mock_pynput import MockInputCollector
 
 def trigger_shortcut(mock_input_collector):
     mock_input_collector.press(py_keyboard.Key.alt_l)
-    mock_input_collector.tap(py_keyboard.KeyCode.from_char('`'), 0, 0)
+    mock_input_collector.tap(py_keyboard.KeyCode.from_char('`'))
     mock_input_collector.release(py_keyboard.Key.alt_l)
 
 

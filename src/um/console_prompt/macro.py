@@ -3,6 +3,7 @@ from prompt_toolkit.completion import PathCompleter
 
 import um.macros
 import um.repeater
+from um.profiles import MACRO_FILES
 from .console_base import ConsoleBase
 
 
@@ -15,7 +16,7 @@ def setup_macro(console_base: ConsoleBase) -> None:
     macro_group = console_base.completer.group("macro")
     macro_files_completer: PathCompleter = PathCompleter(
         False,
-        lambda: [str(um.repeater.MACRO_FILES)],
+        lambda: [str(MACRO_FILES)],
         lambda path: path.endswith('.ins')
     )
 

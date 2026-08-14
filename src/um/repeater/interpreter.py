@@ -1,6 +1,6 @@
 import shlex
 from inspect import signature
-from collections.abc import Generator, Callable
+from collections.abc import Callable
 from logging import getLogger
 from pathlib import Path
 from time import sleep
@@ -31,19 +31,9 @@ def build_file_interpreter(
     :param mode: how should the interpreter react to an invalid instruction - end its work or skip the instruction
     :return: initialized, but not started Interpreter
     """
-    return Interpreter(_read_file(MACRO_FILES / file_path), mode)
-
-
-def _read_file(file_path: Path) -> Generator[str, None, None]:
-    """
-    Create a generator that yields lines from a text file.
-    :param file_path: path to the text file,
-    global or relative to the project root directory assuming it's the current directory when running
-    :return: Generator object
-    """
-    with open(file_path, "r") as file:
-        for line in file:
-            yield line
+    with open(MACRO_FILES / file_path, "r") as file:
+        file_instructions: list[str] = file.readlines()
+    return Interpreter(file_instructions, mode)
 
 
 def filter_nones(function: Callable, *args) -> Any:
@@ -74,13 +64,13 @@ class Interpreter(BaseInterpreter):
 
     def __init__(
             self,
-            instruction_generator: Generator[str, None, None],
+            instructions: list[str],
             mode: BaseInterpreter.Mode = BaseInterpreter.Mode(ProfileReader.profile().macro_interpreter_mode),
             before_next_instruction_callback: Callable[[], bool] = lambda: True
     ):
         """
 
-        :param instruction_generator: source of the string instructions in the form of a generator
+        :param instructions: list of instructions to execute
         :param mode: how to handle an invalid instruction - end the interpreting or skip it
         :param before_next_instruction_callback: callable that is asked whether the interpreter should continue working
         before executing every instruction
@@ -89,10 +79,9 @@ class Interpreter(BaseInterpreter):
         self.logger = getLogger(__name__)
 
         self._screen_match: um.screen_match.ScreenMatch | None = None
-        self.instruction_generator = instruction_generator
         self.mode = mode
 
-        self._lines: list[str] = []
+        self._lines: list[str] = instructions
         self._instruction_counter: int = -1
         self._next_instruction_idx: int = 0
 
@@ -127,10 +116,8 @@ class Interpreter(BaseInterpreter):
 
             self._instruction_counter = self._next_instruction_idx
             self._next_instruction_idx += 1
-            try:
-                while self._instruction_counter >= len(self._lines):
-                    self._lines.append(next(self.instruction_generator).rstrip("\n"))
-            except StopIteration:
+            if self._instruction_counter >= len(self._lines):
+                self.logger.info("No more instructions to execute")
                 break
 
             line: str = self._lines[self._instruction_counter]
