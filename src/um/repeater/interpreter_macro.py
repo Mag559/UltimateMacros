@@ -32,7 +32,7 @@ class InterpreterMacro(um.base_macro.BaseMacro):
         with open(self._file_path, "r") as file:
             file_instructions: list[str] = file.readlines()
 
-        self._interpreter: Interpreter = Interpreter(
+        self.interpreter: Interpreter = Interpreter(
             file_instructions,
             before_next_instruction_callback=self._should_keep_going
         )
@@ -55,7 +55,7 @@ class InterpreterMacro(um.base_macro.BaseMacro):
         """
         super()._run()
         self.int_logger.debug(f"Interpreting started")
-        self._interpreter.start()
+        self.interpreter.start()
         if not self._stop_flag:
             self.stop()
         self.int_logger.debug(f"Interpreting ended")

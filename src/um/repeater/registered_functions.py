@@ -72,4 +72,12 @@ def create_function_registry() -> dict[str, Callable]:
     def copy(text: str) -> None:
         pyperclip.copy(text)
 
+    @registered
+    def copy_variable(variables, variable_name: str) -> None:
+        pyperclip.copy(variables[variable_name])
+
+    @registered
+    def is_variable_initialized(interpreter, variables, variable_name: str) -> None:
+        interpreter.the_flag = variable_name in variables
+
     return registry

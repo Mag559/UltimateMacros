@@ -1,8 +1,6 @@
-from time import sleep
-
 from .console_base import ConsoleBase
 import um.base_macro
-from um.firefox_handling import FirefoxHandler
+import um.repeater
 
 WIKAMP_SUBJECT_WEBSITES = {
     "tips": "https://ftims.edu.p.lodz.pl/course/view.php?id=2206",
@@ -37,40 +35,17 @@ def setup_goto(console_base: ConsoleBase) -> None:
     @goto_group.action("wikamp")
     @console_base.completer.param(list(WIKAMP_SUBJECT_WEBSITES.keys()))
     @console_base.completer.param(None, cast=str)
-    def _goto_wikamp(subject: str = "", attendance_code: str = ""):
+    def _goto_wikamp(subject: str = ""):
         console_base.focus_release()
-        fh = FirefoxHandler(_on_firefox_macro_fail)
-        fh.open_wikamp()
-        if subject == "":
-            return
-        fh.open_website(WIKAMP_SUBJECT_WEBSITES[subject])
+        macro_interpreter = um.repeater.InterpreterMacro("wikamp.ins")
 
-        if attendance_code == "":
-            return
+        if subject != "":
+            macro_interpreter.interpreter.variables["subject"] = WIKAMP_SUBJECT_WEBSITES[subject]
 
-        if subject not in WIKAMP_ATTENDANCE_WEBSITES.keys():
-            print("Attendance has not been configured for this subject")
+        macro_interpreter.start()
 
-        fh.wait_for_firefox_loading_wheel()
-        fh.open_website(WIKAMP_ATTENDANCE_WEBSITES[subject])
-        fh.wait_for_firefox_loading_wheel()
-        um.base_macro.InputPresser.move_mouse((1000, 800))  # move slightly up for the cursor to hover over the website
-
-        sleep(1.5)
-        um.base_macro.InputPresser.scroll(0, -1)
-
-        fh.press_register_attendance()
-
-        um.base_macro.InputPresser.move_mouse((687, 595))
-        um.base_macro.InputPresser.left_click()
-
-        um.base_macro.InputPresser.type(attendance_code)
-        um.base_macro.InputPresser.tab()
-        um.base_macro.InputPresser.tap(' ')
-        um.base_macro.InputPresser.enter()
-
-    @goto_group.action("youtube")
-    def _goto_youtube():
-        console_base.focus_release()
-        fh = FirefoxHandler(_on_firefox_macro_fail)
-        fh.open_website("https://www.youtube.com/")
+    # @goto_group.action("youtube")
+    # def _goto_youtube():
+    #     console_base.focus_release()
+    #     fh = FirefoxHandler(_on_firefox_macro_fail)
+    #     fh.open_website("https://www.youtube.com/")

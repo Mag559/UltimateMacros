@@ -1,7 +1,7 @@
 from time import sleep
 
 from .preview_window import PreviewWindow
-from um.profiles import ProfileReader
+from um.profiles import ProfileReader, REFERENCE_IMAGES
 import um.screen_match
 
 
@@ -54,9 +54,9 @@ class ScreenshotPreview:
         """
         sleep(ProfileReader.profile().screenshot_delay_before_save)
         self.capturer.capture_screenshot().save(
-            um.screen_match.REFERENCE_IMAGES / f"{name}.png",
+            REFERENCE_IMAGES / f"{name}.png",
             "PNG"
         )
-        with open(um.screen_match.REFERENCE_IMAGES / f"{name}.txt", "w") as f:
+        with open(REFERENCE_IMAGES / f"{name}.txt", "w") as f:
             f.write(",".join([str(x) for x in self.window.get_all_numbers()]))
         self.window.destroy()

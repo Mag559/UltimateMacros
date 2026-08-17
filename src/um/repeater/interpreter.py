@@ -126,12 +126,12 @@ class Interpreter(BaseInterpreter):
             try:
                 self.logger.debug(f"interpreting: {line}")
                 self._interpret(line)
-            except (KeyboardController.InvalidKeyException, BaseInterpreter.InvalidInstruction):
+            except (KeyboardController.InvalidKeyException, BaseInterpreter.InvalidInstruction, FileNotFoundError) as e:
                 if self.mode == BaseInterpreter.Mode.END_ON_FAIL:
-                    self.logger.exception(f"Ending interpreter session after failing to interpret: {line}")
+                    self.logger.exception(f"Ending interpreter session after failing to interpret: {line}\n {e}")
                     return
                 else:
-                    self.logger.exception(f"Skipping instruction after failing to interpret: {line}")
+                    self.logger.exception(f"Skipping instruction after failing to interpret: {line}\n {e}")
             except KeyError as e:
                 if self.mode == BaseInterpreter.Mode.END_ON_FAIL:
                     self.logger.exception(f"Ending interpreter session after: {e}")
