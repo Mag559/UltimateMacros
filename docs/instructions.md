@@ -31,7 +31,7 @@ options:
 ## tap
 
 ```
-usage: tap [-h] [--duration DURATION] key
+usage: tap [-h] [--duration DURATION] [--with_ctrl] key
 
 tap a key on the keyboard
 
@@ -41,6 +41,8 @@ positional arguments:
 options:
   -h, --help           show this help message and exit
   --duration DURATION  how many seconds between press and release
+  --with_ctrl          Press control_l before tapping the key and release it
+                       after
 
 ```
 
@@ -127,48 +129,17 @@ options:
 ## jump
 
 ```
-usage: jump [-h] by
+usage: jump [-h] [-if | -unless] (-by BY | -to TO)
 
-jump to previous or next instruction
-
-positional arguments:
-  by          by how much to change the instruction counter on top of the
-              default +1 (jump 0 does nothing)
+jump to an instruction of label
 
 options:
   -h, --help  show this help message and exit
-
-```
-
-## jump_if
-
-```
-usage: jump_if [-h] by
-
-jump to previous or next instruction if the flag is set
-
-positional arguments:
-  by          by how much to change the instruction counter on top of the
-              default +1 (jump 0 does nothing)
-
-options:
-  -h, --help  show this help message and exit
-
-```
-
-## jump_if_not
-
-```
-usage: jump_if_not [-h] by
-
-jump to previous or next instruction if the flag is NOT set
-
-positional arguments:
-  by          by how much to change the instruction counter on top of the
-              default +1 (jump 0 does nothing)
-
-options:
-  -h, --help  show this help message and exit
+  -if         perform the jump only if the flag is set
+  -unless     perform the jump only if the flag is NOT set
+  -by BY      by how much to change the instruction counter on top of the
+              default +1 (jump -by 0 does nothing)
+  -to TO      to what the label to jump to (> this_is_a_label)
 
 ```
 
