@@ -187,12 +187,14 @@ options:
 ## end
 
 ```
-usage: end [-h]
+usage: end [-h] [-if | -unless]
 
 end the interpreting
 
 options:
   -h, --help  show this help message and exit
+  -if         end only if the flag is set
+  -unless     end only if the flag is NOT set
 
 ```
 
