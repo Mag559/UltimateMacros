@@ -117,6 +117,17 @@ def create_parsers() -> dict[str, ThrowingArgumentParser]:
     )
 
     end_parser = ThrowingArgumentParser(prog="end", description="end the interpreting")
+    conditional_group = end_parser.add_mutually_exclusive_group()
+    conditional_group.add_argument(
+        "-if",
+        action='store_true',
+        help="end only if the flag is set"
+    )
+    conditional_group.add_argument(
+        "-unless",
+        action="store_true",
+        help="end only if the flag is NOT set"
+    )
 
     # ----------------- screen matching -----------------
     detect_parser = ThrowingArgumentParser(

@@ -238,12 +238,10 @@ class Interpreter(BaseInterpreter):
                 InputPresser.scroll(parsed.x, parsed.y)
 
             case "jump":
-                if parsed.__dict__["if"]:
-                    if not self.the_flag:
-                        return
-                if parsed.unless:
-                    if self.the_flag:
-                        return
+                if parsed.__dict__["if"] and not self.the_flag:
+                    return
+                if parsed.unless and self.the_flag:
+                    return
                 if parsed.by:
                     self._next_instruction_idx += parsed.by
                 else:
@@ -255,6 +253,10 @@ class Interpreter(BaseInterpreter):
             case "log":
                 self.logger.log(parsed.level, f"Log instruction: {parsed.message}")
             case "end":
+                if parsed.__dict__["if"] and not self.the_flag:
+                    return
+                if parsed.unless and self.the_flag:
+                    return
                 self._end_flag = True
 
             case "detect":

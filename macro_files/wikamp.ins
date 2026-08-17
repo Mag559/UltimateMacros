@@ -26,12 +26,10 @@
     0.1 tap enter
     0.1 tap enter
     0.5 await firefox_loading_website.png
-    jump -if -by 1
-    end
+    end -unless
 > go_to_subject
     command is_variable_initialized subject --pass_variables --pass_interpreter
-    jump -if -by 1
-    end
+    end -unless
     command copy_variable subject --pass_variables
     tap e --with_ctrl
     0.03 tap backspace
