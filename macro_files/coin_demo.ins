@@ -8,20 +8,23 @@
 0.1 tap enter
 0.2 type "For this demo I shall keep flipping coins until I get 3 heads in a row"
 0.1 tap enter
-command set_variable coin_streak int 0 --pass_variables
-command coin_toss --pass_interpreter --pass_variables
---- flag raised -> heads -> jump
-jump_if 6
-0.1 type "Tails"
-0.03 tap enter
-0.03 type "Dang it!"
-0.1 tap enter
-0.1 tap enter
-jump -9
-0.1 type "Heads"
-0.1 tap enter
-command is_coin_toss_won --pass_interpreter --pass_variables
-jump_if_not -13
+> start
+    command set_variable coin_streak int 0 --pass_variables
+> continue
+    command coin_toss --pass_interpreter --pass_variables
+    --- flag raised -> heads -> jump
+    jump -if -to heads
+    0.1 type "Tails"
+    0.03 tap enter
+    0.03 type "Dang it!"
+    0.1 tap enter
+    0.1 tap enter
+    jump -to start
+> heads
+    0.1 type "Heads"
+    0.1 tap enter
+    command is_coin_toss_won --pass_interpreter --pass_variables
+    jump -unless -to continue
 0.03 type "Easy work"
 log "Coin tossing demo successful" --level 20
 end

@@ -194,6 +194,7 @@ class Interpreter(BaseInterpreter):
         :return:
         """
         from um.base_macro import InputPresser
+        line = line.strip()
         if line.startswith("---") or line.startswith(">"):
             return
 

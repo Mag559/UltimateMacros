@@ -117,12 +117,17 @@ The "standard" instructions used for detecting images on the screen,
 manipulating the mouse and keyboard intentionally constrain their output
 to a single flag to better synergize with the jump commands.
 This way, no additional commands are needed to convert a variable to
-a boolean value accessible to `jump_if`.
+a boolean value accessible to `jump -if`.
 
 Extending this approach to `commands`, however, would encourage
 using nonlocal variables in the functions registered to be commands.
 A dictionary is therefore maintained by the interpreter
 and available to commands through the `--pass_variables` flag.
+
+#### special characters
+`---` prefix is used for comments, which must occupy their own line (not after an instruction).
+`>` is used for labels, which also can't share a line with an instruction.
+For code clarity it is possible to prefix instructions with whitespaces.
 
 #### instruction overview
 
@@ -140,9 +145,9 @@ The full help messages are updated automatically and available in `docs/instruct
 - `scroll <by_x> <by_y>` - scroll
 
 
-- `jump <by>` - change instruction counter on top of the +1
-- `jump_if <by>` - change instruction counter on top of the +1 if the flag is set
-- `jump_if_not <by>` - change instruction counter on top of the +1 if the flag is NOT set
+- `jump` - jump to a different instruction, either by adding a value to the instruction counter
+(i.e. `jump -by 1` skips the next instruction)
+or going to a label (i.e. `jump -to start` executes the instructions after `> start`)
 - `set_flag` - set the flag to true
 - `clear_flag` - set the flag to false
 - `log <message>` - log the specified message
