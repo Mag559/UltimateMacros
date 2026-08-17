@@ -21,8 +21,6 @@ class ProfileReader:
         Get the current profile.
         :return: active, readonly profile
         """
-        if ProfileReader._instance is None:
-            ProfileReader._instance = ProfileReader()
         return ProfileReader._instance.profile
 
     @staticmethod
@@ -44,15 +42,22 @@ class ProfileReader:
         ProfileReader._instance._load_profile(ProfileReader._instance.current_profile)
 
     def __init__(self):
+        if ProfileReader._instance is not None:
+            raise RuntimeError("ProfileReader is a singleton and has already been initialized")
+        ProfileReader._instance = self
         self.current_profile: str
         self.profile: Profile
 
-        with open(COOKIES_PATH, "r") as f:
-            last_profile = f.readline().strip()
-            if last_profile:
-                self._load_profile(last_profile)
-            else:
-                self._load_profile("default")
+        if not COOKIES_PATH.is_file():
+            self.current_profile = "default"
+        else:
+            with open(COOKIES_PATH, "r") as f:
+                last_profile = f.readline().strip()
+                if last_profile:
+                    self.current_profile = last_profile
+                else:
+                    self.current_profile = "default"
+        self._load_profile(self.current_profile)
 
     def _load_profile(self, profile_name: str) -> None:
         """
@@ -186,3 +191,7 @@ class Profile:
     screenshot_preview_spf: float = 0.1
 
     # ----------------- xyz related -----------------
+
+
+# intensionally at import time
+ProfileReader()
