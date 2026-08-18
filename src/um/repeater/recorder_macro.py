@@ -13,6 +13,7 @@ class RecorderMacro(um.base_macro.BaseMacro):
     Filters out SHORTCUT1 and TOGGLE.
     TOGGLE -> pause recording instructions.
     Inputs are still recorded while paused, but they are written as comments in the file
+    3x Alt + ` in quick succession -> exit the macro
     """
 
     def __init__(self, file_path: Path | str):

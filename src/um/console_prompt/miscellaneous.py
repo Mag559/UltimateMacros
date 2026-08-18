@@ -24,12 +24,16 @@ def setup_misc(console_base: ConsoleBase) -> None:
     def _exit():
         raise SystemExit()
 
+    @console_base.default
+    def _view() -> None:
+        print("Recursively list subdirectories and files in the given directory.")
+
     @completer.action("view")
     @completer.param(
         [str(directory.name) for directory in CURRENT_SEMESTER_DIR.iterdir() if directory.is_dir()],
         cast=str
     )
-    def _view(directory: str):
+    def _view_dir(directory: str):
         printer: NumpyPrinter = NumpyPrinter()
         _display(CURRENT_SEMESTER_DIR / directory, 0, printer)
         console_base.toolbar.draw_on_canvas(printer.get_drawing(), 0, 0)

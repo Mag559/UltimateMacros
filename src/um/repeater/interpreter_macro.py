@@ -11,7 +11,7 @@ class InterpreterMacro(um.base_macro.BaseMacro):
     """
     Macro version of the Interpreter.
     TOGGLE -> pause execution (after executing the current instruction is done, not immediately)
-    3x Alt + ` in quick succession -> exit the program
+    3x Alt + ` in quick succession -> exit the macro
     """
 
     def __init__(self, file_path: Path | str):

@@ -51,3 +51,17 @@ class ConsoleBase:
             self.defaults[stripped_prompt]()
         else:
             self.completer.run_action(prompt_result)
+
+    def try_to_be_of_help_to_lost_user(self, prompt_result: str) -> None:
+        """
+        When a prompt is considered invalid, attempt to make some sense of it by
+        checking the first word against the defaults.
+        :param prompt_result: user's prompt
+        :return:
+        """
+        prompt_result = prompt_result.strip()
+        prompt_result = prompt_result.partition(" ")[0]
+        if prompt_result in self.defaults:
+            self.defaults[prompt_result]()
+        else:
+            print("Unrecognized action, please use autocomplete suggestions and reference docs/actions.md")

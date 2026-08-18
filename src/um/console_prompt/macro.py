@@ -5,6 +5,7 @@ import um.macros
 import um.repeater
 from um.profiles import MACRO_FILES
 from .console_base import ConsoleBase
+from .numpy_printer import NumpyPrinter
 
 
 def setup_macro(console_base: ConsoleBase) -> None:
@@ -22,7 +23,16 @@ def setup_macro(console_base: ConsoleBase) -> None:
 
     @console_base.default
     def _macro():
-        print("Command for running macros.")
+        printer: NumpyPrinter = NumpyPrinter()
+        printer.print("command group for running macros")
+        printer.print("")
+        printer.print("type `macro + space bar`")
+        printer.print("for autocomplete to list")
+        printer.print("the available macros")
+        printer.print("")
+        printer.print("also see the reference")
+        printer.print("at docs/actions.md")
+        console_base.toolbar.draw_on_canvas(printer.get_drawing(), 0, 0)
 
     @macro_group.action("clipboard")
     @console_base.completer.param(["2", "3", "5", "10", "100"], cast=int)
@@ -53,4 +63,4 @@ def setup_macro(console_base: ConsoleBase) -> None:
     @macro_group.action("textmap")
     def _text_map_macro():
         console_base.focus_release()
-        um.repeater.TextMapMacro(lambda x: um.macros.surround_with(x, "$\\texttt{", "}$")).start()
+        um.macros.TextMapMacro(lambda x: um.macros.surround_with(x, "$\\texttt{", "}$")).start()

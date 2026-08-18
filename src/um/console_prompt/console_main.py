@@ -111,6 +111,7 @@ class Main:
                 self.console_base.handle_prompt(prompt_result)
             except ValueError:
                 self.logger.error(f"Invalid prompt: {prompt_result}")
+                self.console_base.try_to_be_of_help_to_lost_user(prompt_result)
             except TypeError as e:
                 print(e.__str__())
                 self.logger.error(f"Missing argument in {prompt_result} {e}")

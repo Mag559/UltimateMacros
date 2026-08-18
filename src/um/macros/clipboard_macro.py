@@ -8,7 +8,7 @@ class ClipboardMacro(um.base_macro.BaseMacro):
     """
     Ctrl + c or Ctrl + x -> override the next entry in the stack and make it current
     Ctrl + v -> paste the current clipboard contents, move the current entry to the previous and copy it to clipboard.
-    3x Alt + ` in quick succession -> exit the program
+    3x Alt + ` in quick succession -> exit the macro
 
     If the start / end of the list serving as the stack is reached, it loops
     """
