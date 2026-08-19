@@ -1,4 +1,3 @@
-from pathlib import Path
 from prompt_toolkit.completion import PathCompleter
 
 import um.macros
@@ -45,15 +44,13 @@ def setup_macro(console_base: ConsoleBase) -> None:
     @console_base.completer.param(macro_files_completer, cast=str)
     def _recorder_macro(file_name: str):
         console_base.focus_release()
-        um.repeater.RecorderMacro(Path(file_name)).start()
+        um.repeater.RecorderMacro(file_name).start()
 
     @macro_group.action("interpreter")
     @console_base.completer.param(macro_files_completer, cast=str)
     def _interpreter_macro(file_name: str):
         console_base.focus_release()
-        if not file_name.endswith('.ins'):
-            file_name += '.ins'
-        um.repeater.InterpreterMacro(Path(file_name)).start()
+        um.repeater.InterpreterMacro(file_name).start()
 
     @macro_group.action("repeater")
     def _repeater_macro():

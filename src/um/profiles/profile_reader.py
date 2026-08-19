@@ -1,6 +1,7 @@
 import logging
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 import json
+from pathlib import Path
 
 from .directories_manager import COOKIES_PATH, PROFILES_PATH
 
@@ -134,6 +135,8 @@ class Profile:
     console_penrose_starting_angle: float = 0
     console_penrose_size: int = 20
     console_penrose_rotation_speed: float = 1.2
+
+    pinned_directories: list[str] = field(default_factory=lambda: [str(Path.home())])
 
     # ----------------- macro related -----------------
 

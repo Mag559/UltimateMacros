@@ -9,6 +9,6 @@ test/mytests.log
 
 match_failed.png
 
-profile_files/history.txt
+profile_files/*
 
 macro_files/*
