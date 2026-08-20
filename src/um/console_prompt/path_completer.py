@@ -68,8 +68,6 @@ class UmPathCompleter(Completer):
                 parent_dir: str = os.path.dirname(text)
                 possibilities = self._find_files_with_prefix(parent_dir, file_name)
 
-                print("abs")
-
             elif os.path.dirname(text) == "":  # pathlib has parents, but decides the parent of `name/` isn't `name`
                 # only the name of the pinned directory
                 for pinned_dir in self.get_paths():
@@ -78,7 +76,6 @@ class UmPathCompleter(Completer):
                             (os.path.dirname(pinned_dir), os.path.basename(pinned_dir))
                         )
 
-                print("pinned")
             else:
                 i: str = os.path.dirname(text)
                 pinned_dir_name: str = i
@@ -88,7 +85,6 @@ class UmPathCompleter(Completer):
                     if i == pinned_dir_name:
                         return
 
-                print(f"normal in {pinned_dir_name}")
                 for directory in self.get_paths():
                     if os.path.basename(directory) == pinned_dir_name:
                         pinned_directory: str = directory
@@ -98,14 +94,10 @@ class UmPathCompleter(Completer):
 
                 full_path: str = os.path.join(os.path.dirname(pinned_directory), text)
 
-                print(f"fullpath: {full_path}")
-
                 possibilities = self._find_files_with_prefix(os.path.dirname(full_path), file_name)
 
             # Sort
             possibilities = sorted(possibilities, key=lambda p: p[1])
-
-            print(f"Possibilities: {possibilities}")
 
             # Yield them.
             for dir_name, possible_name in possibilities:

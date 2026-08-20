@@ -1,3 +1,6 @@
+# noinspection PyUnusedImports
+from . import action_completer_patch  # monkey patch on import
+
 import asyncio
 from logging import getLogger
 
