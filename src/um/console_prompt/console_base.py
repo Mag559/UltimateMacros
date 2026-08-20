@@ -46,6 +46,10 @@ class ConsoleBase:
         :param prompt_result: user's prompt
         :return:
         """
+        if prompt_result is None:
+            # most likely a result of app.exit()
+            # may be slightly janky, but treating it the same as exit, should do
+            self.completer.run_action("exit")
         stripped_prompt = prompt_result.strip()
         if stripped_prompt in self.defaults:
             self.defaults[stripped_prompt]()
