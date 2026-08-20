@@ -1,3 +1,4 @@
+import os
 from collections.abc import Generator
 from pathlib import Path
 
@@ -129,24 +130,34 @@ def setup_misc(console_base: ConsoleBase) -> None:
         except OSError:
             printer.print(f"{indent * ' '} X directory inaccessible.")
 
-    # @completer.action("notepad")
-    # @completer.param(
-    #     PathCompleter(
-    #         False,
-    #         lambda: ProfileReader.profile().pinned_directories,
-    #         lambda path: path.endswith('.txt') or (path.find(".") == -1)
-    #     ),
-    #     cast=str
-    # )
-    # def _notepad(file_name: str):
-    #     console_base.focus_release()
-    #     if not file_name.endswith('.txt'):
-    #         file_name += '.txt'
-    #     path_to_open = Path(CURRENT_SEMESTER_DIR / file_name)
-    #     if not path_to_open.exists() or path_to_open.is_dir():
-    #         return
-    #
-    #     os.startfile(path_to_open)
+    @completer.action("open")
+    @completer.param(
+        UmPathCompleter(
+            get_paths=lambda: ProfileReader.profile().pinned_directories,
+        ),
+        cast=str
+    )
+    def _open(str_directory: str):
+        console_base.focus_release()
+        pinned_directories: list[Path] = [Path(directory) for directory in ProfileReader.profile().pinned_directories]
+
+        directory: Path = Path(str_directory)
+        for pinned_dir in pinned_directories:
+            if (
+                    directory.name == pinned_dir.name or
+                    (len(directory.parents) >= 2 and directory.parents[-2].name == pinned_dir.name)
+            ):
+                directory = pinned_dir.parent.joinpath(directory)
+                break
+        else:
+            if not directory.is_absolute():
+                print("Directory not found.")
+                return
+
+        if not directory.exists():
+            return
+
+        os.startfile(directory)
 
     @completer.action("profile")
     @completer.param(
