@@ -1,3 +1,4 @@
+from collections.abc import Generator
 from pathlib import Path
 
 from um.profiles import PROFILES_PATH, ProfileReader
@@ -34,7 +35,21 @@ def setup_misc(console_base: ConsoleBase) -> None:
         ),
         cast=str
     )
-    def _view_dir(str_directory: str):
+    @completer.param(
+        ["-1", "0", "1"],
+        cast=int,
+        display_meta=lambda _, param:
+        {
+            "-1": "infinite depth",
+            "0": "only direct contents",
+            "1": "up to subdirectory content"
+        }[param]
+    )
+    @completer.param(
+        [".txt", ".json", ".ins", ".py"],
+        cast=str,
+    )
+    def _view_dir(str_directory: str, depth: int = -1, extension: str = ""):
         pinned_directories: list[Path] = [Path(directory) for directory in ProfileReader.profile().pinned_directories]
 
         printer: NumpyPrinter = NumpyPrinter()
@@ -51,21 +66,66 @@ def setup_misc(console_base: ConsoleBase) -> None:
                 print("Directory not found.")
                 return
 
-        _display(directory, 0, printer)
+        gen: Generator = _display(directory, printer, depth, extension)
+        for _ in gen:
+            pass
         console_base.toolbar.draw_on_canvas(printer.get_drawing(), 0, 0)
 
-    def _display(directory: Path, indent: int, printer: NumpyPrinter):
+    def _display(
+            directory: Path,
+            printer: NumpyPrinter,
+            depth: int,
+            extension: str,
+            indent: int = 0,
+    ) -> Generator[bool, None, None]:
+        """
+        Recursively display directory contents.
+        Directories with no files of matching extension (and no subdirectories with such files) are not displayed.
+        Directories and files beginning with "." are not displayed.
+        :param directory: the starting directory
+        :param printer: NumpyPrinter object used to convert lines of text into sth displayable on the bottom toolbar.
+        :param depth: how many layers deep should the display be (negative means infinite, 0 means only direct contents)
+        :param extension: what extension should the displayed files have, due to implementation via
+        `str.endswith`, not entirely limited to just extensions. empty string accepts all files
+        :param indent: number of spaces to display before file/dir name (the larger, the deeper)
+        :return: bool Generator whether the parent directory should be displayed
+        (not straight up bool to keep the correct order of printing: directory -> subdirectory -> file)
+        """
         try:
             for item in directory.iterdir():
+                if not printer.has_room():
+                    return
+                if item.name.startswith("."):
+                    continue
                 if item.is_dir():
-                    printer.print(f"{indent * ' '} {item.name}:")
+                    # if out of depth, display the dir
+                    if depth == 0:
+                        yield True
+                        printer.print(f"{indent * ' '} {item.name}/")
+                        continue
 
-                    _display(item, indent + 4, printer)
+                    non_empty: bool = False
+                    for is_content in _display(item, printer, depth - 1, extension, indent + 4):
+                        # guard in case of False yields
+                        if not is_content:
+                            continue
+
+                        # only the first info that it is non-empty is important
+                        if not non_empty:
+                            # first signal higher up
+                            yield True
+                            # then print yourself
+                            printer.print(f"{indent * ' '} {item.name}/")
+                            non_empty = True
+
                     continue
 
-                if not item.name.endswith(".txt"):
+                if not item.name.endswith(extension):
                     continue
+
+                yield True
                 printer.print(f"{indent * ' '} {item.name}")
+
         except OSError:
             printer.print(f"{indent * ' '} X directory inaccessible.")
 

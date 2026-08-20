@@ -24,7 +24,7 @@ class NumpyPrinter:
         :param text: a line of text to print
         :return:
         """
-        if self.line >= self.max_height:
+        if not self.has_room():
             return
         self.canvas[self.line, 0:min(len(text), self.max_width)] = list(text)[:self.max_width]
         self.line = self.line + 1
@@ -35,3 +35,10 @@ class NumpyPrinter:
         :return: array of rows of "<U1" characters
         """
         return self.canvas
+
+    def has_room(self) -> bool:
+        """
+        Check if there are still available lines
+        :return: will the next line be printed or ignored
+        """
+        return self.line < self.max_height
