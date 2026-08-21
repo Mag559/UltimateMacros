@@ -10,5 +10,5 @@ test/mytests.log
 match_failed.png
 
 profile_files/*
-
 macro_files/*
+reference_images/*
