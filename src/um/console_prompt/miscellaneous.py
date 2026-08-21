@@ -33,6 +33,8 @@ def setup_misc(console_base: ConsoleBase) -> None:
         UmPathCompleter(
             True,
             get_paths=lambda: ProfileReader.profile().pinned_directories,
+            # a little cheap, but no feeling like patching another file of a library
+            file_filter=lambda path: path.find("{") == -1
         ),
         cast=str
     )
@@ -134,6 +136,7 @@ def setup_misc(console_base: ConsoleBase) -> None:
     @completer.param(
         UmPathCompleter(
             get_paths=lambda: ProfileReader.profile().pinned_directories,
+            file_filter=lambda path: path.find("{") == -1
         ),
         cast=str
     )
