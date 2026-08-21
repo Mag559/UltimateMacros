@@ -21,24 +21,33 @@ which will exit the program after the next prompt finishes
 ## view
 
 ```
-usage: view directory
+usage: view directory [depth] [extension]
 
-recursively list subdirectories and files in the given directory
+recursively list subdirectories and files in the given directory,
+directories with no files of matching extension (and no subdirectories with such files) are skipped,
+directories and files beginning with "." are not displayed.
 
 positional arguments:
-  directory            which directory to view
+  directory            path to the directory to view:
+                       absolute or beginning at one of the pinned directories set in the profile
+  depth                optional, how many layers deep should the display be (negative means infinite, 0 means only direct contents),
+                       defaults to -1
+  extension            what suffix (usually extension) should the displayed files have,
+                       defaults to "" which means all files
+                       
 
 ```
 
-## notepad
+## open
 
 ```
-usage: notepad file
+usage: open file
 
-open the given text file in the associated application
+open the given file in the associated application
 
 positional arguments:
-  file                 file with a .txt extension
+  file                 path to the file to open:
+                       absolute or beginning at one of the pinned directories set in the profile
 
 ```
 
