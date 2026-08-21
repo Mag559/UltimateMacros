@@ -2,6 +2,7 @@ import logging
 from dataclasses import dataclass, field
 import json
 from pathlib import Path
+from typing import Any
 
 from .directories_manager import COOKIES_PATH, PROFILES_PATH
 
@@ -98,13 +99,19 @@ class Profile:
             self.__setattr__(name, attr)
         _under_construction = False
 
-    def __setattr__(self, name, value):
+    def __setattr__(self, name: str, value: Any):
         if not self._under_construction:
             raise AttributeError("Modifying the profile is forbidden")
 
         if value is list:
             value = tuple(value)
         super().__setattr__(name, value)
+
+    def get_custom_attr(self, name: str, default: Any) -> Any:
+        try:
+            return self.__getattribute__(name)
+        except AttributeError:
+            return default
 
     # ----------------- process related -----------------
     logging_level: int = logging.DEBUG

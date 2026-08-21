@@ -2,6 +2,8 @@
 from . import action_completer_patch  # monkey patch on import
 
 import asyncio
+from collections.abc import Callable
+from importlib import import_module
 from logging import getLogger
 
 from prompt_toolkit import PromptSession
@@ -17,7 +19,7 @@ from .console_base import ConsoleBase
 from .console_drawer import ConsoleDrawer
 from .console_time_keeper import TimeKeeper
 from .console_toolbar import ConsoleToolbar, TOOLBAR_STATE
-from .goto import setup_goto
+
 from .macro import setup_macro
 from .miscellaneous import setup_misc
 from .tool import setup_tool
@@ -167,13 +169,37 @@ class Main:
 
     def _import_actions(self) -> None:
         """
-        Register / import actions from other scripts
+        Register / import actions from other scripts.
+        Currently, there are 3 public scripts: miscellaneous, macro, tool
+        with the possibility of adding custom ones via profiles::
+            "custom_action_groups": {
+                "goto": "um.console_prompt.goto"
+            }
+        such a script must contain a `setup_goto` method that accepts a ConsoleBase argument
         :return:
         """
-        setup_goto(self.console_base)
         setup_macro(self.console_base)
         setup_misc(self.console_base)
         setup_tool(self.console_base)
+
+        # name: absolute import path
+        custom_action_groups: dict[str, str] = ProfileReader.profile().get_custom_attr("custom_action_groups", {})
+        for custom_action_group, import_path in custom_action_groups.items():
+            try:
+                module = import_module(import_path, None)
+            except ImportError as e:
+                self.logger.exception(f"Error importing custom action group {custom_action_group}: {e}")
+                continue
+
+            setup_function_name = f"setup_{custom_action_group}"
+
+            try:
+                setup_function: Callable[[ConsoleBase], None] = getattr(module, setup_function_name)
+                setup_function(self.console_base)
+            except AttributeError as e:
+                self.logger.exception(f"Custom action group {custom_action_group}"
+                                      f" doesn't have an expected setup function {setup_function_name}: {e}")
+                continue
 
     def _create_session(self) -> PromptSession:
         """
