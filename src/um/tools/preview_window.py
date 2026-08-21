@@ -91,7 +91,7 @@ class PreviewWindow(tk.Tk):
         """Return a single numeric input as float or None."""
         try:
             return int(self.number_vars[index].get())
-        except ValueError:
+        except ValueError, tk.TclError:
             return 1
 
     def get_all_numbers(self) -> list[int]:

@@ -85,8 +85,12 @@ class Main:
         """
         Wraps the main ``self._run`` method in prompt toolkit context manager,
         which makes sure users output plays nice with toolbar text below.
+
+        Attach a custom async exception handler to actually log them
         :return:
         """
+        loop = asyncio.get_running_loop()
+        loop.set_exception_handler(self._handle_async_exception)
         with patch_stdout():
             await self._main_loop()
 
@@ -219,6 +223,11 @@ class Main:
             history=FileHistory(PROFILES_PATH / "history.txt"),
             auto_suggest=AutoSuggestFromHistory()
         )
+
+    def _handle_async_exception(self, _loop: asyncio.AbstractEventLoop, context: dict) -> None:
+        exception = context.get("exception")
+        message = context.get("message")
+        self.logger.exception(message or "Unhandled exception", exc_info=exception)
 
 
 def main() -> None:
