@@ -1,10 +1,12 @@
 from logging import getLogger
 from pathlib import Path
+from threading import Thread
 from time import sleep
 
 import um.base_macro
 from um.profiles import ProfileReader, MACRO_FILES
 from .interpreter import Interpreter
+from um.helper_classes import LoggingThread
 
 
 class InterpreterMacro(um.base_macro.BaseMacro):
@@ -36,6 +38,10 @@ class InterpreterMacro(um.base_macro.BaseMacro):
             file_instructions,
             before_next_instruction_callback=self._should_keep_going
         )
+        self.interpreter_thread: Thread = LoggingThread(
+            name="Interpreter in macro interpreter",
+            target=self._interpret
+        )
 
     def _update(self, event_code: um.base_macro.ImportantEvent) -> bool:
         """
@@ -53,12 +59,8 @@ class InterpreterMacro(um.base_macro.BaseMacro):
         Start the Interpreter Macro
         :return:
         """
-        super()._run()
-        self.int_logger.debug(f"Interpreting started")
-        self.interpreter.start()
-        if not self._stop_flag:
-            self.stop()
-        self.int_logger.debug(f"Interpreting ended")
+        self.interpreter_thread.start()
+        super().start()
 
     def _should_keep_going(self) -> bool:
         """
@@ -74,6 +76,17 @@ class InterpreterMacro(um.base_macro.BaseMacro):
             return False
         return True
 
+    def _interpret(self) -> None:
+        """
+        Method run from a thread for interpreting,
+        stops the macro, if the interpreter naturally runs out of instructions
+        """
+        self.int_logger.debug(f"Interpreting started")
+        self.interpreter.start()
+        if not self._stop_flag:
+            self.stop()
+        self.int_logger.debug(f"Interpreting ended")
+
     def stop(self) -> None:
         """
         End the macro execution.
@@ -82,4 +95,5 @@ class InterpreterMacro(um.base_macro.BaseMacro):
         self.int_logger.debug(f"Raising stop flag")
         self._stop_flag = True
         self._pause = False
+        self.interpreter_thread.join()
         super().stop()

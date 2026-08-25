@@ -1,9 +1,10 @@
-from threading import Timer, Event
 from logging import getLogger
+from threading import Timer, Event
 
 from um.helper_classes import OrderedEmitter
 from um.profiles import ProfileReader
 from .macro_event_collector import MacroEventCollector, ImportantEvent
+from .status_window import StatusOverlay
 from .termination_detector import TerminationDetector
 
 
@@ -17,7 +18,9 @@ class BaseMacro:
     def __init__(
             self,
             collector: OrderedEmitter = None,
-            timeout: float = ProfileReader.profile().macro_timeout
+            timeout: float = ProfileReader.profile().macro_timeout,
+            status_window: bool = ProfileReader.profile().macro_status_window,
+            status_window_kwargs: dict | None = None
     ):
         """
         Initialize class and its dependencies.
@@ -25,7 +28,10 @@ class BaseMacro:
         by default a MacroEventCollector hooked up to the InputCollector Singleton
         :param timeout: after how long without ImportantEvents should the macro terminate,
         default determined by ``macro_timeout`` in the profile
+        :param status_window: spawn an overlay window to show macro status.
+        :param status_window_kwargs: keyword arguments to pass to the overlay window
         """
+
         self.logger = getLogger(__name__)
         self._timeout = timeout
 
@@ -39,6 +45,10 @@ class BaseMacro:
         self._exit_timer: Timer = Timer(self._timeout, self.stop)
 
         self._end_event: Event = Event()
+        self.status_window: StatusOverlay | None = None
+        self.use_status_window = status_window
+        if self.use_status_window:
+            self.status_window = StatusOverlay(**(status_window_kwargs or {}))
 
     def start(self):
         """
@@ -47,19 +57,12 @@ class BaseMacro:
         self.logger.debug("Base Macro started")
         self._exit_timer.start()
         self.event_collector.run()
+        if self.use_status_window:
+            self.status_window.start()
 
         # block further execution until it's done
         self._end_event.wait()
         self.logger.debug("Base Macro finished running")
-
-    def _run(self):
-        """
-        Non-blocking version of start, intended for derived classes,
-        which have no need to artificially block the main thread
-        """
-        self.logger.debug("Base Macro started asynchronously")
-        self._exit_timer.start()
-        self.event_collector.run()
 
     def _update(self, event_code: ImportantEvent) -> bool:
         """
@@ -89,4 +92,6 @@ class BaseMacro:
         self.logger.debug("Shutting down base macro")
         self._exit_timer.cancel()
         self.event_collector.remove_callback(self._update)
+        if self.use_status_window:
+            self.status_window.stop()
         self._end_event.set()

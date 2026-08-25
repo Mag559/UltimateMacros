@@ -9,6 +9,7 @@ import um.base_macro
 from um.profiles import ProfileReader, MACRO_FILES
 from .interpreter import Interpreter
 from .recorder import Recorder
+from um.helper_classes.logging_thread import LoggingThread
 
 
 class RepeaterMacro(um.base_macro.BaseMacro):
@@ -116,7 +117,7 @@ class RepeaterMacro(um.base_macro.BaseMacro):
 
         self.repeater_logger.debug("Repeater recording started")
         self._recorder = Recorder()
-        self._record_thread = Thread(target=self._record, name="RepeaterMacro record")
+        self._record_thread = LoggingThread(target=self._record, name="RepeaterMacro record")
 
         self._record_thread.start()
 
@@ -151,7 +152,7 @@ class RepeaterMacro(um.base_macro.BaseMacro):
             self._read_instructions(),
             before_next_instruction_callback=self._should_keep_going
         )
-        self._interpreter_thread = Thread(target=self._interpret, name="RepeaterMacro interpreter")
+        self._interpreter_thread = LoggingThread(target=self._interpret, name="RepeaterMacro interpreter")
 
         self._interpreter_thread.start()
 

@@ -22,7 +22,7 @@ class TextMapMacro(um.base_macro.BaseMacro):
         :param text_map: callable that processes copied text into sth more desirable
         """
         self.text_map_logger: Logger = getLogger(__name__)
-        super().__init__()
+        super().__init__(status_window=False)
         self.text_map = text_map
 
     def _update(self, event_code: um.base_macro.ImportantEvent) -> bool:

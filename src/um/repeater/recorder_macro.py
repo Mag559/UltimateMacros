@@ -1,10 +1,12 @@
 import re
 from logging import getLogger, Logger
 from pathlib import Path
+from threading import Thread
 
 import um.base_macro
 from .recorder import Recorder
 from um.profiles import MACRO_FILES
+from um.helper_classes import LoggingThread
 
 
 class RecorderMacro(um.base_macro.BaseMacro):
@@ -34,15 +36,18 @@ class RecorderMacro(um.base_macro.BaseMacro):
         self._pause: bool = False
         self._pause_toggle: bool = False
 
+        self.recorder_thread: Thread = LoggingThread(
+            name="Recorder in macro recorder",
+            target=self._record
+        )
+
     def start(self) -> None:
         """
         Start recording instructions.
         :return:
         """
-        self.recorder_macro_logger.debug(f"Start recording")
-        super()._run()
-        self._record()
-        self.recorder_macro_logger.debug(f"Ended recording")
+        self.recorder_thread.start()
+        super().start()
 
     def _update(self, event_code: um.base_macro.ImportantEvent) -> bool:
         """
@@ -61,6 +66,7 @@ class RecorderMacro(um.base_macro.BaseMacro):
         Due to a very low priority in the OrderedEmitter, should run after all the other handlers.
         :return:
         """
+        self.recorder_macro_logger.debug(f"Start recording")
         with open(self._file_path, 'w') as file:
             for instruction in self._recorder.start():
                 if self._pause or self._pause_toggle:
@@ -68,6 +74,7 @@ class RecorderMacro(um.base_macro.BaseMacro):
                     continue
 
                 self._write_to_file_mode(instruction, file)
+        self.recorder_macro_logger.debug(f"Ended recording")
 
     def _pause_mode(self, instruction: str, file) -> None:
         """
@@ -139,4 +146,5 @@ class RecorderMacro(um.base_macro.BaseMacro):
         :return:
         """
         self._recorder.stop()
+        self.recorder_thread.join()
         super().stop()

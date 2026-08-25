@@ -164,6 +164,9 @@ class Profile:
 
     macro_recorder_time_precision: int = 5
 
+    macro_status_window: bool = True
+    macro_status_window_refresh_ms: int = 100
+
     # ----------------- receive and generate inputs -----------------
 
     input_double_click_time: float = 0.2

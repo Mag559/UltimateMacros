@@ -1,4 +1,19 @@
+"""
+Small always-on-top status overlay window using tkinter.
+
+Thread safety
+-------------
+Tkinter itself is NOT thread-safe: widgets and StringVars must only be
+touched from the thread running mainloop(). set_name()/set_state()/
+set_details() are safe to call from ANY thread -- they just push the
+update onto a queue.Queue(). The Tk main loop drains that queue on a
+timer (via after()) and applies the changes on the correct thread.
+"""
+
+import queue
 import tkinter as tk
+
+from um.profiles import ProfileReader
 
 
 # Claude generated
@@ -15,6 +30,7 @@ class StatusOverlay:
         bg="#1e1e1e",
         fg="#e6e6e6",
         accent="#5fb0ff",
+        poll_ms=ProfileReader.profile().macro_status_window_refresh_ms,
     ):
         self.root = tk.Tk()
         self.root.title(name)
@@ -68,11 +84,16 @@ class StatusOverlay:
         for widget in draggable:
             widget.bind("<Button-1>", self._start_move)
             widget.bind("<B1-Motion>", self._on_move)
-            widget.bind("<Button-3>", lambda e: self.root.destroy())  # right-click closes
+            widget.bind("<Button-3>", lambda e: self._close())  # right-click closes
 
-        self.root.bind("<Escape>", lambda e: self.root.destroy())
+        self.root.bind("<Escape>", lambda e: self._close())
 
         self._drag_data = {"x": 0, "y": 0}
+
+        # --- thread-safe update queue ---
+        self._updates = queue.Queue()
+        self._poll_ms = poll_ms
+        self.root.after(self._poll_ms, self._drain_queue)
 
     def _position(self, width, height, corner, margin):
         self.root.update_idletasks()
@@ -99,45 +120,68 @@ class StatusOverlay:
         y = self.root.winfo_y() + (event.y - self._drag_data["y"])
         self.root.geometry(f"+{x}+{y}")
 
-    # --- public API for updating live from your own code ---
-    def set_name(self, text):
-        self.name_var.set(text)
+    # --- queue draining, runs on the Tk main thread via after() ---
+    def _drain_queue(self):
+        try:
+            while True:
+                kind, value = self._updates.get_nowait()
+                if kind == "name":
+                    self.name_var.set(value)
+                elif kind == "state":
+                    self.state_var.set(value)
+                elif kind == "details":
+                    self.details_var.set(value)
+                elif kind == "close":
+                    self._close()
+                    return  # don't reschedule, window is gone
+        except queue.Empty:
+            pass
+        self.root.after(self._poll_ms, self._drain_queue)
 
-    def set_state(self, text):
-        self.state_var.set(text)
-
-    def set_details(self, text):
-        self.details_var.set(text)
-
-    def start(self):
-        self.root.mainloop()
-
-    def stop(self):
+    def _close(self):
         try:
             self.root.destroy()
         except tk.TclError:
             pass
 
+    # --- public API: safe to call from any thread ---
+    def set_name(self, text):
+        self._updates.put(("name", text))
+
+    def set_state(self, text):
+        self._updates.put(("state", text))
+
+    def set_details(self, text):
+        self._updates.put(("details", text))
+
+    def start(self):
+        self.root.mainloop()
+
+    def stop(self):
+        self._updates.put(("close", None))
+
 
 if __name__ == "__main__":
-    overlay = StatusOverlay(name="Backup Job", state="running", details="Copying files (124/900)...")
+    import threading
+    import time
 
-    # Demo: cycle through a few states using tkinter's own event loop (after()),
-    # so you can see how set_state()/set_details() work without threads.
-    demo_steps = [
-        ("running", "Copying files (124/900)..."),
-        ("running", "Copying files (612/900)..."),
-        ("paused", "Waiting for network..."),
-        ("running", "Copying files (900/900)..."),
-        ("done", "Backup complete."),
-    ]
+    overlay = StatusOverlay(name="Backup Job", state="idle", details="Waiting to start...")
 
-    def advance(i=0):
-        if i < len(demo_steps):
-            state, details = demo_steps[i]
-            overlay.set_state(state)
-            overlay.set_details(details)
-            overlay.root.after(2000, advance, i + 1)
+    def worker():
+        # This runs on a background thread. It only ever calls set_state /
+        # set_details / set_name, never touches Tk widgets directly.
+        time.sleep(1)
+        overlay.set_state("running")
+        steps = [
+            "Copying files (124/900)...",
+            "Copying files (612/900)...",
+            "Copying files (900/900)...",
+        ]
+        for step in steps:
+            overlay.set_details(step)
+            time.sleep(1.5)
+        overlay.set_state("done")
+        overlay.set_details("Backup complete.")
 
-    overlay.root.after(2000, advance)
-    overlay.start()
+    threading.Thread(target=worker, daemon=True).start()
+    overlay.start()  # mainloop() stays on the main thread, as it must

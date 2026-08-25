@@ -6,6 +6,7 @@ from threading import Thread
 from pynput import keyboard as py_keyboard, mouse as py_mouse
 
 from um.helper_classes import OrderedEmitter, SingletonMeta, CALLBACK
+from um.helper_classes.logging_thread import LoggingThread
 
 
 class InputType(Enum):
@@ -80,7 +81,7 @@ class InputCollector(OrderedEmitter, metaclass=SingletonMeta):
         """
         Create the consumer thread responsible for going through the event queue and emitting them.
         """
-        self._consumer = Thread(target=self._consume_events, name="InputCollector consumer")
+        self._consumer = LoggingThread(target=self._consume_events, name="InputCollector consumer")
         self._event_queue = Queue()
 
     def add_callback(self, callback: CALLBACK, priority: int = 0) -> None:

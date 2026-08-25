@@ -18,7 +18,11 @@ class ClipboardMacro(um.base_macro.BaseMacro):
         :param init_size: Number of slots in the circular clipboard buffer,
         each slot is initialized to an empty string.
         """
-        super().__init__()
+        super().__init__(status_window_kwargs={
+            "name": "ClipboardMacro",
+            "state": "running",
+            "details": f"Index: {init_size - 1}\nClipboard: {pyperclip.paste()}"
+        })
         self.copy_entries: list[str] = [''] * init_size
         self.current_index: int = -1
 
@@ -37,6 +41,9 @@ class ClipboardMacro(um.base_macro.BaseMacro):
             case um.base_macro.ImportantEvent.PASTE:
                 self.retrieve()
         self.logger.debug(f"Entries after event processing: {self.copy_entries}")
+        self.status_window.set_details(
+            f"Index: {self.current_index}\nClipboard: {self.copy_entries[self.current_index]}"
+        )
 
         return super()._update(event_code)
 
