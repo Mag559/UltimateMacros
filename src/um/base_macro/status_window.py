@@ -23,13 +23,14 @@ class StatusOverlay:
         name="StatusOverlay",
         state="initializing",
         details="",
-        width=280,
-        height=140,
-        corner="bottom-left",   # "top-left", "bottom-right", "bottom-left"
-        margin=5,
-        bg="#1e1e1e",
-        fg="#e6e6e6",
-        accent="#5fb0ff",
+        width=ProfileReader.profile().macro_status_window_width,
+        height=ProfileReader.profile().macro_status_window_height,
+        corner=ProfileReader.profile().macro_status_window_corner,   # "top-left", "bottom-right", "bottom-left"
+        margin_x=ProfileReader.profile().macro_status_window_margin_x,
+        margin_y=ProfileReader.profile().macro_status_window_margin_y,
+        bg=ProfileReader.profile().macro_status_window_bg,
+        fg=ProfileReader.profile().macro_status_window_fg,
+        accent=ProfileReader.profile().macro_status_window_accent,
         poll_ms=ProfileReader.profile().macro_status_window_refresh_ms,
     ):
         self.root = tk.Tk()
@@ -41,12 +42,12 @@ class StatusOverlay:
         self.root.attributes("-topmost", True)
         try:
             # Cosmetic slight transparency; not supported everywhere, so ignore failures.
-            self.root.attributes("-alpha", 0.95)
+            self.root.attributes("-alpha", ProfileReader.profile().macro_status_window_alpha)
         except tk.TclError:
             pass
 
         self.root.configure(bg=bg)
-        self._position(width, height, corner, margin)
+        self._position(width, height, corner, margin_x, margin_y)
 
         # --- top row: name (left) + state (right) ---
         top = tk.Frame(self.root, bg=bg)
@@ -95,19 +96,19 @@ class StatusOverlay:
         self._poll_ms = poll_ms
         self.root.after(self._poll_ms, self._drain_queue)
 
-    def _position(self, width, height, corner, margin):
+    def _position(self, width, height, corner, margin_x, margin_y):
         self.root.update_idletasks()
         screen_w = self.root.winfo_screenwidth()
         screen_h = self.root.winfo_screenheight()
 
         if corner == "top-left":
-            x, y = margin, margin
+            x, y = margin_x, margin_y
         elif corner == "bottom-right":
-            x, y = screen_w - width - margin, screen_h - height - margin
+            x, y = screen_w - width - margin_x, screen_h - height - margin_y
         elif corner == "bottom-left":
-            x, y = margin, screen_h - height - margin
+            x, y = margin_x, screen_h - height - margin_y
         else:  # "top-right" default
-            x, y = screen_w - width - margin, margin
+            x, y = screen_w - width - margin_x, margin_y
 
         self.root.geometry(f"{width}x{height}+{x}+{y}")
 

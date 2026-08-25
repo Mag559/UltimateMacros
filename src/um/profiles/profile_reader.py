@@ -166,6 +166,16 @@ class Profile:
 
     macro_status_window: bool = True
     macro_status_window_refresh_ms: int = 100
+    macro_status_window_width: int = 320
+    macro_status_window_height: int = 140
+    macro_status_window_margin_x: int = 5
+    macro_status_window_margin_y: int = 60
+    macro_status_window_corner: str = "bottom-left"
+
+    macro_status_window_bg: str = "#1e1e1e"
+    macro_status_window_fg: str = "#e6e6e6"
+    macro_status_window_accent: str = "#5fb0ff"
+    macro_status_window_alpha: float = 0.95
 
     # ----------------- receive and generate inputs -----------------
 
