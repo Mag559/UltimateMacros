@@ -33,7 +33,10 @@ class RepeaterMacro(um.base_macro.BaseMacro):
         :param dir_path: path of the directory to store recorded scripts,
         absolute or relative to project root if program is run in the right way
         """
-        super().__init__()
+        super().__init__(status_window_kwargs={
+            "name": "RepeaterMacro",
+            "state": "initializing"
+        })
         self.repeater_logger = getLogger(__name__)
 
         self._recorder: Recorder | None = None
@@ -69,6 +72,7 @@ class RepeaterMacro(um.base_macro.BaseMacro):
         :return:
         """
         self.repeater_logger.debug("Repeater starting")
+        self.status_window.set_state("idle")
         super().start()
 
         if self._interpreter_thread is not None:
@@ -114,6 +118,7 @@ class RepeaterMacro(um.base_macro.BaseMacro):
         """
         self._file_idx += 1
         self.state = RepeaterMacro.State.RECORDING
+        self._update_status()
 
         self.repeater_logger.debug("Repeater recording started")
         self._recorder = Recorder()
@@ -134,6 +139,7 @@ class RepeaterMacro(um.base_macro.BaseMacro):
         self.repeater_logger.debug("Repeater recording ended")
 
         self.state = RepeaterMacro.State.IDLE
+        self._update_status()
         self._recorder = None
 
     def start_interpreting(self) -> None:
@@ -145,6 +151,7 @@ class RepeaterMacro(um.base_macro.BaseMacro):
         :return:
         """
         self.state = RepeaterMacro.State.INTERPRETING
+        self._update_status()
 
         self.repeater_logger.debug(f"Interpreting started")
 
@@ -159,6 +166,7 @@ class RepeaterMacro(um.base_macro.BaseMacro):
     def _interpret(self) -> None:
         self._interpreter.start()
         self.state = RepeaterMacro.State.IDLE
+        self._update_status()
 
     def stop_interpreting(self) -> None:
         """
@@ -206,9 +214,11 @@ class RepeaterMacro(um.base_macro.BaseMacro):
         with open(self._get_current_file(), 'w') as file:
             for instruction in self._recorder.start():
                 if self._pause or self._pause_toggle:
+                    self.status_window.set_details(f"Commented instruction: {instruction}")
                     self._pause_mode(instruction, file)
                     continue
 
+                self.status_window.set_details(f"Recorded instruction: {instruction}")
                 self._write_to_file_mode(instruction, file)
 
     def _pause_mode(self, instruction: str, file) -> None:
@@ -234,6 +244,7 @@ class RepeaterMacro(um.base_macro.BaseMacro):
         if self._pause_toggle:
             self._pause_toggle = False
             self._pause = not self._pause
+            self._update_status()
 
     def _write_to_file_mode(self, instruction: str, file) -> None:
         """
@@ -285,18 +296,21 @@ class RepeaterMacro(um.base_macro.BaseMacro):
         if self._pause_toggle:
             self._pause = True
             self._pause_toggle = False
+            self._update_status()
 
         while self._pause:
             sleep(ProfileReader.profile().macro_interpreter_sleep_spf)
             if self._pause_toggle:
                 self._pause = False
                 self._pause_toggle = False
+                self._update_status()
 
         if self._stop_flag or self._end_interpreting_flag:
             self.repeater_logger.debug(f"Stopped reading instructions from {self._get_current_file()}")
             self._end_interpreting_flag = False
             return False
 
+        self.status_window.set_details(f"Interpreting: {self._interpreter.current_instruction}")
         return True
 
     def _read_instructions(self) -> list[str]:
@@ -310,3 +324,11 @@ class RepeaterMacro(um.base_macro.BaseMacro):
         else:
             self.repeater_logger.debug(f"File {self._get_current_file()} does not exist")
             return []
+
+    def _update_status(self) -> None:
+        """
+        Update status window status based on the state and paused members
+        """
+        self.status_window.set_state(
+            ("(P) " if self._pause and self.state != RepeaterMacro.State.IDLE else "") + self.state.name
+        )

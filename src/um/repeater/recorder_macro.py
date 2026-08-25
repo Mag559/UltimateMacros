@@ -25,7 +25,10 @@ class RecorderMacro(um.base_macro.BaseMacro):
         relative to `macro_files` in the project root directory.
         """
         self.recorder_macro_logger: Logger = getLogger(__name__)
-        super().__init__()
+        super().__init__(status_window_kwargs={
+            "name": "RecorderMacro",
+            "state": "initializing"
+        })
 
         self._recorder = Recorder()
         self._file_path = MACRO_FILES / file_path
@@ -47,7 +50,9 @@ class RecorderMacro(um.base_macro.BaseMacro):
         :return:
         """
         self.recorder_thread.start()
+        self.status_window.set_state("recording")
         super().start()
+        self.recorder_thread.join()
 
     def _update(self, event_code: um.base_macro.ImportantEvent) -> bool:
         """
@@ -70,9 +75,11 @@ class RecorderMacro(um.base_macro.BaseMacro):
         with open(self._file_path, 'w') as file:
             for instruction in self._recorder.start():
                 if self._pause or self._pause_toggle:
+                    self.status_window.set_details(f"Commented instruction: {instruction}")
                     self._pause_mode(instruction, file)
                     continue
 
+                self.status_window.set_details(f"Recorded instruction: {instruction}")
                 self._write_to_file_mode(instruction, file)
         self.recorder_macro_logger.debug(f"Ended recording")
 
@@ -99,6 +106,7 @@ class RecorderMacro(um.base_macro.BaseMacro):
         if self._pause_toggle:
             self._pause_toggle = False
             self._pause = not self._pause
+            self.status_window.set_state("paused" if self._pause else "recording")
 
     def _write_to_file_mode(self, instruction: str, file) -> None:
         """
@@ -146,5 +154,4 @@ class RecorderMacro(um.base_macro.BaseMacro):
         :return:
         """
         self._recorder.stop()
-        self.recorder_thread.join()
         super().stop()

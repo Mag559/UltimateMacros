@@ -93,6 +93,8 @@ class Interpreter(BaseInterpreter):
 
         self.before_next_instruction_callback = before_next_instruction_callback
 
+        self.current_instruction: str = ""
+
     @property
     def screen_match(self) -> um.screen_match.ScreenMatch:
         """
@@ -109,29 +111,34 @@ class Interpreter(BaseInterpreter):
         :return:
         """
         while True:
-            keep_going: bool = self.before_next_instruction_callback()
-            self._end_flag = self._end_flag or (not keep_going)
-
-            if self._end_flag:
-                break
-
             self._instruction_counter = self._next_instruction_idx
             self._next_instruction_idx += 1
             if self._instruction_counter >= len(self._lines):
                 self.logger.info("No more instructions to execute")
                 break
 
-            line: str = self._lines[self._instruction_counter]
+            self.current_instruction = self._lines[self._instruction_counter]
+
+            # update the current instruction first, so it can be displayed / checked in the callback
+            keep_going: bool = self.before_next_instruction_callback()
+            self._end_flag = self._end_flag or (not keep_going)
+
+            if self._end_flag:
+                break
 
             try:
-                self.logger.debug(f"interpreting: {line}")
-                self._interpret(line)
+                self.logger.debug(f"interpreting: {self.current_instruction.strip()}")
+                self._interpret(self.current_instruction)
             except (KeyboardController.InvalidKeyException, BaseInterpreter.InvalidInstruction, FileNotFoundError) as e:
                 if self.mode == BaseInterpreter.Mode.END_ON_FAIL:
-                    self.logger.exception(f"Ending interpreter session after failing to interpret: {line}\n {e}")
+                    self.logger.exception(
+                        f"Ending interpreter session after failing to interpret: {self.current_instruction}\n {e}"
+                    )
                     return
                 else:
-                    self.logger.exception(f"Skipping instruction after failing to interpret: {line}\n {e}")
+                    self.logger.exception(
+                        f"Skipping instruction after failing to interpret: {self.current_instruction}\n {e}"
+                    )
             except KeyError as e:
                 if self.mode == BaseInterpreter.Mode.END_ON_FAIL:
                     self.logger.exception(f"Ending interpreter session after: {e}")

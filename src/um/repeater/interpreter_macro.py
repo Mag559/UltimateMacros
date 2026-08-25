@@ -22,7 +22,10 @@ class InterpreterMacro(um.base_macro.BaseMacro):
         :param file_path: path to the text file with instructions, relative to `macro_files`,
         by convention with .ins extension
         """
-        super().__init__()
+        super().__init__(status_window_kwargs={
+            "name": "InterpreterMacro",
+            "state": "initializing"
+        })
         self.int_logger = getLogger(__name__)
         self._file_path = MACRO_FILES / file_path
 
@@ -51,6 +54,7 @@ class InterpreterMacro(um.base_macro.BaseMacro):
         """
         if event_code == um.base_macro.ImportantEvent.TOGGLE:
             self._pause = not self._pause
+            self.status_window.set_state("paused" if self._pause else "running")
 
         return super()._update(event_code)
 
@@ -60,7 +64,9 @@ class InterpreterMacro(um.base_macro.BaseMacro):
         :return:
         """
         self.interpreter_thread.start()
+        self.status_window.set_state("running")
         super().start()
+        self.interpreter_thread.join()
 
     def _should_keep_going(self) -> bool:
         """
@@ -74,6 +80,8 @@ class InterpreterMacro(um.base_macro.BaseMacro):
         if self._stop_flag:
             self.int_logger.debug(f"Stopped reading instructions from {self._file_path}")
             return False
+
+        self.status_window.set_details(f"Interpreting: {self.interpreter.current_instruction}")
         return True
 
     def _interpret(self) -> None:
@@ -95,5 +103,4 @@ class InterpreterMacro(um.base_macro.BaseMacro):
         self.int_logger.debug(f"Raising stop flag")
         self._stop_flag = True
         self._pause = False
-        self.interpreter_thread.join()
         super().stop()
