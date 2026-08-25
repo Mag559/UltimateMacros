@@ -63,7 +63,6 @@ if __name__ == "__main__":
     stdout.flush()
     try:
         main()
-    except SystemExit:
+    finally:
         stdout.write('\x1b[?1004l')
         stdout.flush()
-        raise

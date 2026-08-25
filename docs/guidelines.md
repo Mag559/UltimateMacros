@@ -3,7 +3,7 @@
 which should only start after calling the `start` or `run` method
 - end of `start` method execution should mean all threads started by that class
 have been joined
-- `run` should not block further code execution
+- `run` should not block further code execution (exactly opposite the threading library)
 - `stop` method should terminate all threads managed by that class
 - package `__init__.py` files should feature lazy imports
 - imports from outside the package should take the form of `import um.xyz`

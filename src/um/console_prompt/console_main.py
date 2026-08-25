@@ -79,7 +79,11 @@ class Main:
         Executes the main coroutine with asyncio.
         :return:
         """
-        asyncio.run(self._main_with_patch_stdout())
+        try:
+            asyncio.run(self._main_with_patch_stdout())
+        except Exception as e:
+            self.logger.exception(f"Unhandled exception {e}")
+            raise
 
     async def _main_with_patch_stdout(self) -> None:
         """
