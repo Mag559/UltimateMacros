@@ -5,11 +5,13 @@ _helper_classes_lazy_imports = {
     "CALLBACK": ".ordered_emitter",
     "OrderedEmitter": ".ordered_emitter",
     "SingletonMeta": ".meta_singleton",
+    "LoggingThread": ".logging_thread",
 }
 
 if TYPE_CHECKING:
     from .meta_singleton import SingletonMeta
     from .ordered_emitter import OrderedEmitter, CALLBACK
+    from .logging_thread import LoggingThread
 
 __all__ = list(_helper_classes_lazy_imports)
 
