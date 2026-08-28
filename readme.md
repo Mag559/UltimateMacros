@@ -18,33 +18,35 @@ A good example of such a macro is `clipboard_macro`, which makes the clipboard a
 copy puts the copied text on the stack, paste pastes the topmost text and retrieves
 the one below to be pasted next.
 
-`um.base_macro.BaseMacro` serves as a base class for all other macros,
-simplifying the logic to:
-*on event caught via _update, if event A, do a, if event B, do b*,
-which makes new macros very easy to create.
-
-One of the main features is also the `interpreter_macro`, which can read and realize instructions
-written in a text file (by convention .ins), best for relatively simple tasks which can be
-broken down into step-by-step instructions with little (interpreting can be paused)
-to no human input required. 
-
-`recorder_macro` allows the user to records his/her inputs into a format used by `interpreter_macro`
-and therefore skip the tedius part of typing out individual key presses.
-
-For very short and repetitive tasks, such as prefixing variables with 'static final' in java
-a combination of the previous two macros can be used. Quickly record the typing
-and then repeat the inputs with the press of a button.
+The project supports two main kinds of automation:
+- macros - custom classes derived from BaseMacro -
+intended for situations where something should happen
+after the user performs a certain action i.e. play the cutting sound when user presses ctrl+X
+- (instruction) scripts - written in macro instruction format .ins files,
+executed by the InterpreterMacro - intended for long, sequences of actions
+with little to no user involvement i.e. clicking through an installation gui (if no quiet terminal option is available)
 
 
 ## How to run
 1. Download the source code: `git clone https://github.com/Mag559/UltimateMacros`
+or manually download and extract a compressed archive
 2. Make sure you have python 3.14 available (optionally create a new virtual environment)
 3. Download dependencies: `python -m pip install --upgrade pip`, `pip install -e .`
 
 The following has to be done in a terminal (PyCharm and other code editor embedded terminals won't work):
 1. Enter the project directory
 2. Tell python where the modules are: `$PYTHONPATH=".\src"` (not always required)
-3. Run it: `<python> -m um`
+3. Run it: `python -m um`
+
+Common issues:
+- `No module named um` - python doesn't know where that module is,
+if setting the `PYTHONPATH` environment variable didn't work,
+it is possible to run the project with `src` as the current directory (`cd ./src/`).
+- Using wrong python version. Ensure `python -v` reports version 3.14 (or higher).
+This can be solved in a crude way by replacing python with a path to the right `python.exe` executable
+- `prompt_toolkit.output.win32.NoConsoleScreenBufferError: No Windows console found. Are you running cmd.exe?`
+console isn't compatible with prompt toolkit, try using cmd or PowerShell instead
+
 
 ## Compatibility
 Project has been developed on Windows, however the most important libraries:
@@ -88,86 +90,3 @@ These values can be overridden with profile files in JSON as only compatible typ
 A rudimentary example of a dev profile is also provided.
 Switching between profiles is done at runtime with `profile`, which updates `profile_files/cookies.txt`
 and relevant variables. Only a select few properties require a restart of the program to take effect.
-
-### Restart
-`restart` exits the python process with a special exit code of 10, which can be leveraged
-to restart it with an outside script:
-
-```shell
-set PYTHONPATH=%PROJECT_DIR%\src
-REM alternatively pip install -e <project directory> 
-
-:run_program
-"%PYTHON_PATH%" -m um
-
-if %ERRORLEVEL%==10 (
-    goto run_program
-)
-```
-where `PYTHON_PATH` is either just `python` or the path to the python executable
-of the right virtual environment and `PROJECT_DIR` is the root directory of the project.
-
-## Macro instructions format
-Based on the command line instruction format , using `shlex` and `argparse` for the parsing itself.
-Most of the default values are stored in the profile, which allows for their easy manipulations
-at a cost of a significant dependency.
-
-
-#### delay
-Due to waiting for applications (or OS) to load / register inputs,
-various delays are often needed. To make it more convenient,
-every instruction can be prefixed with a floating point value,
-which will be interpreted as delay in seconds before executing that instruction.
-
-i.e. `0.4 press enter`
-
-If the delay is omitted it's assumed to be 0
-
-#### registers
-The "standard" instructions used for detecting images on the screen,
-manipulating the mouse and keyboard intentionally constrain their output
-to a single flag to better synergize with the jump commands.
-This way, no additional commands are needed to convert a variable to
-a boolean value accessible to `jump -if`.
-
-Extending this approach to `commands`, however, would encourage
-using nonlocal variables in the functions registered to be commands.
-A dictionary is therefore maintained by the interpreter
-and available to commands through the `--pass_variables` flag.
-
-#### special characters
-`---` prefix is used for comments, which must occupy their own line (not after an instruction).
-`>` is used for labels, which also can't share a line with an instruction.
-For code clarity it is possible to prefix instructions with whitespaces.
-
-#### instruction overview
-
-The full help messages are updated automatically and available in `docs/instructions.md`.
-
-- `press <key>` - press a key on the keyboard
-- `release <key>` - release a key on the keyboard
-- `tap <key>` - press a key and release a key
-- `type <string>` - tap each key corresponding to each letter in the string
-
-
-- `move <tox> <toy>` - move mouse to absolute coordinates
-- `shift <tox> <toy>` - move mouse to relative coordinates
-- `click {left | middle | right}` - click mouse button
-- `scroll <by_x> <by_y>` - scroll
-
-
-- `jump` - jump to a different instruction, either by adding a value to the instruction counter
-(i.e. `jump -by 1` skips the next instruction)
-or going to a label (i.e. `jump -to start` executes the instructions after `> start`)
-- `set_flag` - set the flag to true
-- `clear_flag` - set the flag to false
-- `log <message>` - log the specified message
-- `end` - end the interpreting of this script
-
-
-- `detect <image_path>` - detect the image anywhere on the screen
-- `match <image_path>` - match a section of the screen against the image
-- `await <image_path>` - wait until the image is present on the screen
-
-
-- `command <function_name> <arguments>...` - trigger a registered function - command

@@ -70,9 +70,24 @@ positional arguments:
 usage: restart
 
 close the program with a special exit code of 10,
-which assuming a small outside script detailed in the readme, leads to running it again 
+which assuming a small outside script, leads to running it again 
 
 ```
+
+```shell
+set PYTHONPATH=%PROJECT_DIR%\src
+REM alternatively pip install -e <project directory> 
+
+:run_program
+"%PYTHON_PATH%" -m um
+
+if %ERRORLEVEL%==10 (
+    goto run_program
+)
+```
+where `PYTHON_PATH` is either just `python` or the path to the python executable
+of the right virtual environment and `PROJECT_DIR` is the root directory of the project.
+
 
 ## macro clipboard
 
