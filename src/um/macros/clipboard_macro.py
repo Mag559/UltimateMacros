@@ -1,3 +1,4 @@
+from time import sleep
 import pyperclip
 
 from um.profiles import ProfileReader
@@ -52,6 +53,7 @@ class ClipboardMacro(um.base_macro.BaseMacro):
         Advance the circular buffer index and store the current system clipboard contents into that slot.
         """
         self.current_index = (self.current_index + 1) % len(self.copy_entries)
+        sleep(0.03)
         self.copy_entries[self.current_index] = pyperclip.paste()
 
     def retrieve(self) -> None:
