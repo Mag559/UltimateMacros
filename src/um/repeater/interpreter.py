@@ -249,7 +249,7 @@ class Interpreter(BaseInterpreter):
                     return
                 if parsed.unless and self.the_flag:
                     return
-                if parsed.by:
+                if parsed.by is not None:
                     self._next_instruction_idx += parsed.by
                 else:
                     self._next_instruction_idx = self._labels[parsed.to]

@@ -80,4 +80,8 @@ def create_function_registry() -> dict[str, Callable]:
     def is_variable_initialized(interpreter, variables, variable_name: str) -> None:
         interpreter.the_flag = variable_name in variables
 
+    @registered
+    def is_clipboard_equal(interpreter, expected: str) -> None:
+        interpreter.the_flag = pyperclip.paste() == expected
+
     return registry
