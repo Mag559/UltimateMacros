@@ -12,6 +12,8 @@ ctypes.windll.shcore.SetProcessDpiAwareness(PROCESS_PER_MONITOR_DPI_AWARE)
 def clean_logs():
     log_path = PROJECT_ROOT / "myapp.log"
     metalog_path = PROJECT_ROOT / "myapp_meta.log"
+    if not log_path.exists():
+        return
 
     initial_log_size: int = log_path.stat().st_size
     if initial_log_size < ProfileReader.profile().logging_min_size_to_clean:

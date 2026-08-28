@@ -35,6 +35,17 @@ For very short and repetitive tasks, such as prefixing variables with 'static fi
 a combination of the previous two macros can be used. Quickly record the typing
 and then repeat the inputs with the press of a button.
 
+
+## How to run
+1. Download the source code: `git clone https://github.com/Mag559/UltimateMacros`
+2. Make sure you have python 3.14 available (optionally create a new virtual environment)
+3. Download dependencies: `python -m pip install --upgrade pip`, `pip install -e .`
+
+The following has to be done in a terminal (PyCharm and other code editor embedded terminals won't work):
+1. Enter the project directory
+2. Tell python where the modules are: `$PYTHONPATH=".\src"` (not always required)
+3. Run it: `<python> -m um`
+
 ## Compatibility
 Project has been developed on Windows, however the most important libraries:
 `pynput`, `mss` and `prompt_toolkit` are all cross-platform, so while
