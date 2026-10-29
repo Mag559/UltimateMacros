@@ -5,11 +5,13 @@ _macros_lazy_imports = {
     "TextMapMacro": ".text_map_macro",
     "surround_with": ".text_map_macro",
     "ClipboardMacro": ".clipboard_macro",
+    "PinnedClipboardMacro": ".pinned_clipboard_macro",
 }
 
 if TYPE_CHECKING:
     from .text_map_macro import TextMapMacro, surround_with
     from .clipboard_macro import ClipboardMacro
+    from .pinned_clipboard_macro import PinnedClipboardMacro
 
 __all__ = list(_macros_lazy_imports)
 

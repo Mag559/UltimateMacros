@@ -155,6 +155,7 @@ class Profile:
     macro_termination_event_window: float = 1
 
     macro_clipboard_stack_size: int = 10
+    macro_pinned_texts: list[str] = field(default_factory=lambda: [])
 
     macro_text_map_copy_delay: float = 0.1
     macro_text_map_paste_delay: float = 0.1

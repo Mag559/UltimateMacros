@@ -40,6 +40,12 @@ def setup_macro(console_base: ConsoleBase) -> None:
         macro: um.macros.ClipboardMacro = um.macros.ClipboardMacro(stack_size)
         macro.start()
 
+    @macro_group.action("pinned")
+    def _clipboard_macro():
+        console_base.focus_release()
+        macro: um.macros.PinnedClipboardMacro = um.macros.PinnedClipboardMacro()
+        macro.start()
+
     @macro_group.action("recorder")
     @console_base.completer.param(macro_files_completer, cast=str)
     def _recorder_macro(file_name: str):

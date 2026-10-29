@@ -109,6 +109,22 @@ Ctrl + v to paste the current clipboard contents, move the current entry to the 
 
 If the start / end of the list serving as the stack is reached, it loops
 
+## macro pinned clipboard
+
+```
+usage: macro pinned
+
+run the pinned clipboard macro, which allows the user to pin pieces of text in a separate buffer,
+access them with SHORTCUT1 and cycle through them with SHORTCUT2
+
+
+```
+
+SHORTCUT1 to copy pinned text into the clipboard or restore previous contents
+SHORTCUT2 to cycle through pinned texts
+Ctrl + v (if pinned text selected) to paste the current pinned text and restore previous clipboard contents
+3x Alt + ` in quick succession to exit the macro
+
 ## macro recorder
 
 ```
