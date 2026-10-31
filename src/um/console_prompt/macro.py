@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from prompt_toolkit.completion import PathCompleter
 
 import um.macros
@@ -5,6 +7,8 @@ import um.repeater
 from um.profiles import MACRO_FILES
 from .console_base import ConsoleBase
 from .numpy_printer import NumpyPrinter
+from .path_completer import UmPathCompleter, resolve_autocompleted_path
+from .. import ProfileReader
 
 
 def setup_macro(console_base: ConsoleBase) -> None:
@@ -41,9 +45,34 @@ def setup_macro(console_base: ConsoleBase) -> None:
         macro.start()
 
     @macro_group.action("pinned")
-    def _clipboard_macro():
+    def _pinned_macro():
         console_base.focus_release()
         macro: um.macros.PinnedClipboardMacro = um.macros.PinnedClipboardMacro()
+        macro.start()
+
+    @macro_group.action("screenshot")
+    @console_base.completer.param(
+        UmPathCompleter(only_directories=True),
+        cast=str
+    )
+    @console_base.completer.param(
+        ["1", "2"],
+        cast=int
+    )
+    def _screenshot_macro(
+            str_directory: str,
+            monitor: int = ProfileReader.profile().macro_screenshot_monitor
+    ):
+        console_base.focus_release()
+
+        directory: Path = resolve_autocompleted_path(str_directory)
+        if not directory.exists():
+            return
+
+        macro: um.macros.ScreenshotMacro = um.macros.ScreenshotMacro(
+            directory,
+            monitor
+        )
         macro.start()
 
     @macro_group.action("recorder")

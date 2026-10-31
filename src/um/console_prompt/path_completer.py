@@ -1,8 +1,36 @@
 import os
 from collections.abc import Callable, Iterable
+from pathlib import Path
 
 from prompt_toolkit.completion import CompleteEvent, Completer, Completion
 from prompt_toolkit.document import Document
+
+from um import ProfileReader
+
+
+def resolve_autocompleted_path(str_path: str) -> Path:
+    """
+    Match the beginning of an autocompleted path to the pinned directory
+    and find the absolute path of the specified path
+
+    :param str_path: path acquired from `UmPathCompleter`
+    :return: absolute path of the specified path of empty Path if not found
+    """
+    pinned_directories: list[Path] = [Path(directory) for directory in ProfileReader.profile().pinned_directories]
+
+    directory: Path = Path(str_path)
+    for pinned_dir in pinned_directories:
+        if (
+                directory.name == pinned_dir.name or
+                (len(directory.parents) >= 2 and directory.parents[-2].name == pinned_dir.name)
+        ):
+            return pinned_dir.parent.joinpath(directory)
+
+    if directory.is_absolute():
+        return directory
+
+    print("Directory not found.")
+    return Path("")
 
 
 class UmPathCompleter(Completer):
@@ -23,8 +51,9 @@ class UmPathCompleter(Completer):
     def __init__(
         self,
         only_directories: bool = False,
-        get_paths: Callable[[], list[str]] | None = None,
-        file_filter: Callable[[str], bool] | None = None,
+        get_paths: Callable[[], list[str]] | None = lambda: ProfileReader.profile().pinned_directories,
+        # a little cheap, but no feeling like patching another file of a library
+        file_filter: Callable[[str], bool] | None = lambda path: path.find("{") == -1,
         min_input_len: int = 0,
         expanduser: bool = False,
     ) -> None:

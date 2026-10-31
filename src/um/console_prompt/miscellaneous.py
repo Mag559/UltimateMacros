@@ -5,7 +5,7 @@ from pathlib import Path
 from um.profiles import PROFILES_PATH, ProfileReader
 from .console_base import ConsoleBase
 from .numpy_printer import NumpyPrinter
-from .path_completer import UmPathCompleter
+from .path_completer import UmPathCompleter, resolve_autocompleted_path
 
 RESTART_CODE = 10
 
@@ -30,12 +30,7 @@ def setup_misc(console_base: ConsoleBase) -> None:
 
     @completer.action("view")
     @completer.param(
-        UmPathCompleter(
-            True,
-            get_paths=lambda: ProfileReader.profile().pinned_directories,
-            # a little cheap, but no feeling like patching another file of a library
-            file_filter=lambda path: path.find("{") == -1
-        ),
+        UmPathCompleter(only_directories=True),
         cast=str
     )
     @completer.param(
@@ -53,21 +48,10 @@ def setup_misc(console_base: ConsoleBase) -> None:
         cast=str,
     )
     def _view_dir(str_directory: str, depth: int = -1, extension: str = ""):
-        pinned_directories: list[Path] = [Path(directory) for directory in ProfileReader.profile().pinned_directories]
-
         printer: NumpyPrinter = NumpyPrinter()
-        directory: Path = Path(str_directory)
-        for pinned_dir in pinned_directories:
-            if (
-                    directory.name == pinned_dir.name or
-                    (len(directory.parents) >= 2 and directory.parents[-2].name == pinned_dir.name)
-            ):
-                directory = pinned_dir.parent.joinpath(directory)
-                break
-        else:
-            if not directory.is_absolute():
-                print("Directory not found.")
-                return
+        directory: Path = resolve_autocompleted_path(str_directory)
+        if not directory.exists():
+            return
 
         gen: Generator = _display(directory, printer, depth, extension)
         for _ in gen:

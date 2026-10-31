@@ -157,6 +157,9 @@ class Profile:
     macro_clipboard_stack_size: int = 10
     macro_pinned_texts: list[str] = field(default_factory=lambda: [])
 
+    macro_screenshot_monitor: int = 2  # 0 - all monitors merged together, 1 - main monitor
+    macro_screenshot_section: str = "0,0,1920,1020"
+
     macro_text_map_copy_delay: float = 0.1
     macro_text_map_paste_delay: float = 0.1
 

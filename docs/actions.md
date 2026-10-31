@@ -125,6 +125,28 @@ SHORTCUT2 to cycle through pinned texts
 Ctrl + v (if pinned text selected) to paste the current pinned text and restore previous clipboard contents
 3x Alt + ` in quick succession to exit the macro
 
+## macro screenshot
+
+```
+usage: macro screenshot directory [monitor]
+
+run the screenshot clipboard macro, which allows the user take screenshots of a specified section
+of one of the monitors
+
+positional arguments:
+  directory            path to the directory to save the screenshots at:
+                       absolute or beginning at one of the pinned directories set in the profile
+  monitor              which monitor to take screenshots of,
+                       default can be specified in the profile under `macro_screenshot_monitor`
+
+Section has to be specified in the profile under `macro_screenshot_section`
+
+
+```
+
+SHORTCUT2 to perform the screenshot
+3x Alt + ` in quick succession to exit the macro
+
 ## macro recorder
 
 ```
